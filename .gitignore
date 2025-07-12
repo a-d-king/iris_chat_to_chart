@@ -104,4 +104,7 @@ ehthumbs.db
 Thumbs.db
 
 # TypeScript
-*.tsbuildinfo 
+*.tsbuildinfo
+
+# Audit logs (contain sensitive data)
+server/audit-logs/ 

@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import OpenAI from 'openai';
+import { DataAnalysis } from './data-analysis.service';
 
 // Initialize OpenAI client only if API key is available
 const openai = process.env.OPENAI_API_KEY ? new OpenAI() : null;
@@ -49,9 +50,10 @@ export class OpenAiService {
  * Send a prompt to GPT and get back a structured chart specification
  * If OpenAI API key is not available, returns mock data for testing
  * @param prompt - Natural language description of the desired chart
+ * @param dataAnalysis - Analysis of available data for context
  * @returns Promise<ChartSpecDto> - Structured chart specification
  */
-    async prompt(prompt: string) {
+    async prompt(prompt: string, dataAnalysis?: DataAnalysis) {
         // If OpenAI is not available, return mock data based on the prompt
         if (!openai) {
             console.log('🤖 OpenAI API key not found, returning mock data for prompt:', prompt);
@@ -59,12 +61,31 @@ export class OpenAiService {
         }
 
         try {
+            // Build enhanced prompt with data context
+            let enhancedPrompt = `Please analyze this request and generate a chart specification: ${prompt}`;
+
+            if (dataAnalysis) {
+                enhancedPrompt += `\n\nContext about available data:\n${dataAnalysis.dataContext}`;
+
+                enhancedPrompt += `\n\nAvailable metrics:\n`;
+                dataAnalysis.availableMetrics.forEach(metric => {
+                    enhancedPrompt += `- ${metric.name}: ${metric.description} (${metric.type}, ${metric.valueType})\n`;
+                });
+
+                if (dataAnalysis.suggestedChartTypes.length > 0) {
+                    enhancedPrompt += `\n\nChart type recommendations:\n`;
+                    dataAnalysis.suggestedChartTypes.forEach(suggestion => {
+                        enhancedPrompt += `- ${suggestion.chartType}: ${suggestion.reason} (confidence: ${suggestion.confidence})\n`;
+                    });
+                }
+            }
+
             const response = await openai.chat.completions.create({
                 model: 'gpt-4o',
                 temperature: 0, // Use deterministic responses
                 messages: [{
                     role: 'user',
-                    content: `Please analyze this request and generate a chart specification: ${prompt}`
+                    content: enhancedPrompt
                 }],
                 tools: TOOL_SCHEMA,
                 tool_choice: { type: 'function', function: { name: 'create_chart' } }

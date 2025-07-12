@@ -7,6 +7,8 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { OpenAiService } from './openai.service';
 import { MetricsService } from './metrics.service';
+import { DataAnalysisService } from './data-analysis.service';
+import { AuditService } from './audit.service';
 
 /**
  * Main application module
@@ -14,7 +16,7 @@ import { MetricsService } from './metrics.service';
  */
 @Module({
     controllers: [AppController],
-    providers: [OpenAiService, MetricsService]
+    providers: [OpenAiService, MetricsService, DataAnalysisService, AuditService]
 })
 class AppModule { }
 

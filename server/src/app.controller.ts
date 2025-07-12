@@ -1,7 +1,9 @@
-import { Body, Controller, Post, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Post, Get, ValidationPipe } from '@nestjs/common';
 import { ChatDto } from './chat.dto';
 import { OpenAiService } from './openai.service';
 import { MetricsService } from './metrics.service';
+import { AuditService } from './audit.service';
+import { config } from './config';
 
 /**
  * Main application controller
@@ -11,7 +13,8 @@ import { MetricsService } from './metrics.service';
 export class AppController {
     constructor(
         private ai: OpenAiService,
-        private metrics: MetricsService
+        private metrics: MetricsService,
+        private audit: AuditService
     ) { }
 
     /**
@@ -23,26 +26,74 @@ export class AppController {
      */
     @Post('chat')
     async chat(@Body(new ValidationPipe()) body: ChatDto) {
-        try {
-            // Step 1: Convert natural language prompt to structured chart spec
-            const spec = await this.ai.prompt(body.prompt);
+        const startTime = Date.now();
 
-            // Step 2: Fetch the relevant data based on the chart spec
+        try {
+            // Step 1: Get data analysis for context
+            const dataAnalysis = await this.metrics.getDataAnalysis();
+
+            // Step 2: Convert natural language prompt to structured chart spec with context
+            const spec = await this.ai.prompt(body.prompt, dataAnalysis);
+
+            // Step 3: Fetch the relevant data based on the chart spec
             const data = await this.metrics.slice(
                 spec.metric,
                 spec.dateRange,
                 spec.groupBy
             );
 
-            // Step 3: Return combined spec and data for the frontend
+            const responseTime = Date.now() - startTime;
+            const usingMockData = !process.env.OPENAI_API_KEY;
+
+            // Step 4: Audit the chart generation
+            const requestId = await this.audit.logChartGeneration(
+                body.prompt,
+                spec,
+                data,
+                dataAnalysis,
+                {
+                    usingMockData,
+                    dataSourceFile: config.dataSource.primaryFile,
+                    responseTimeMs: responseTime,
+                    metricsCount: dataAnalysis.availableMetrics.length
+                }
+            );
+
+            // Step 5: Return combined spec and data for the frontend
             return {
                 ...spec,
                 data,
-                isMockData: !process.env.OPENAI_API_KEY // Indicate if we're using mock data
+                isMockData: usingMockData,
+                requestId,
+                dataAnalysis: {
+                    totalMetrics: dataAnalysis.availableMetrics.length,
+                    suggestedChartTypes: dataAnalysis.suggestedChartTypes.map((s: any) => s.chartType)
+                }
             };
         } catch (error) {
             console.error('Error processing chat request:', error);
             throw new Error('Failed to process chat request');
+        }
+    }
+
+    /**
+     * GET /audit/stats endpoint
+     * Returns audit statistics for monitoring and analysis
+     */
+    @Get('audit/stats')
+    async getAuditStats() {
+        try {
+            const stats = await this.audit.getAuditStats();
+            return {
+                success: true,
+                stats
+            };
+        } catch (error) {
+            console.error('Error getting audit stats:', error);
+            return {
+                success: false,
+                error: 'Failed to get audit statistics'
+            };
         }
     }
 } 
