@@ -1,0 +1,37 @@
+{
+    "name": "chat-to-chart-server",
+    "version": "1.0.0",
+    "description": "NestJS backend for Chat to Chart application",
+    "main": "dist/main.js",
+    "scripts": {
+        "build": "tsc",
+        "start": "node dist/main.js",
+        "dev": "ts-node src/main.ts",
+        "start:dev": "nodemon --exec ts-node src/main.ts"
+    },
+    "dependencies": {
+        "@nestjs/common": "^10.0.0",
+        "@nestjs/core": "^10.0.0",
+        "@nestjs/platform-express": "^10.0.0",
+        "class-transformer": "^0.5.0",
+        "class-validator": "^0.14.0",
+        "dotenv": "^17.2.0",
+        "openai": "^4.0.0",
+        "reflect-metadata": "^0.1.13",
+        "rxjs": "^7.8.0"
+    },
+    "devDependencies": {
+        "@types/node": "^18.0.0",
+        "nodemon": "^3.0.0",
+        "ts-node": "^10.9.0",
+        "typescript": "^5.0.0"
+    },
+    "keywords": [
+        "nestjs",
+        "chat",
+        "chart",
+        "openai"
+    ],
+    "author": "",
+    "license": "MIT"
+}
