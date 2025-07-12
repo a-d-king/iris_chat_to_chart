@@ -14,7 +14,7 @@ A full-stack application that transforms natural language into beautiful charts 
 
 - Node.js 18+ 
 - npm or yarn
-- OpenAI API key (optional - app works with mock data for testing)
+- OpenAI API key
 
 ## 🛠️ Installation
 
@@ -36,13 +36,11 @@ cd ../web
 npm install
 ```
 
-### 4. Configure Environment Variables (Optional)
-For real AI-powered chart generation, create a `.env` file in the `server` directory:
+### 4. Configure Environment Variables
+Create a `.env` file in the `server` directory:
 ```bash
 OPENAI_API_KEY=your_openai_api_key_here
 ```
-
-**Note:** The app works without an API key using mock data for testing! If you don't have an OpenAI API key, you can skip this step and the app will use intelligent mock responses.
 
 ### 5. Prepare your data
 The application comes with sample data in `server/metrics.json`. You can replace this with your own data following the same structure:
@@ -100,20 +98,6 @@ The frontend will start on `http://localhost:3000`
    - "Show conversion rates over time"
 3. **Click "Ask"** or press Enter
 4. **View your generated chart** with the data from your metrics file
-
-### 🎭 Demo Mode (No API Key Required)
-
-If you don't have an OpenAI API key, the app automatically runs in **Demo Mode** with intelligent mock responses:
-
-- **Smart keyword detection**: The app analyzes your prompt and generates appropriate chart specs
-- **All chart types supported**: Test line, bar, stacked-bar, heatmap, and waterfall charts
-- **Dynamic responses**: Different prompts generate different chart configurations
-- **Visual indicator**: A banner shows when you're in demo mode
-
-**Demo Mode Examples:**
-- "Show me revenue trends" → Line chart with revenue data
-- "Display users by country as a bar chart" → Bar chart with users grouped by country
-- "Create a stacked bar chart of sales by region" → Stacked bar chart with regional sales data
 
 ## 🏗️ Project Structure
 
@@ -238,4 +222,4 @@ For support, please open an issue in the GitHub repository or contact the develo
 
 ---
 
-Built with ❤️ using NestJS, Next.js, OpenAI, and ag-charts-react 
+Built with ❤️ using NestJS, Next.js, OpenAI, and ag-charts-react

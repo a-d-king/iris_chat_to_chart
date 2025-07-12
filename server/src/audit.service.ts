@@ -13,7 +13,6 @@ export interface AuditLogEntry {
     dataUsed: any;
     dataAnalysis: any;
     metadata: {
-        usingMockData: boolean;
         dataSourceFile: string;
         responseTimeMs: number;
         metricsCount: number;
@@ -63,7 +62,6 @@ export class AuditService {
         dataUsed: any,
         dataAnalysis: any,
         metadata: {
-            usingMockData: boolean;
             dataSourceFile: string;
             responseTimeMs: number;
             metricsCount: number;
@@ -127,8 +125,7 @@ export class AuditService {
                 chartType: entry.chartSpec.chartType,
                 metric: entry.chartSpec.metric,
                 dataSourceFile: entry.metadata.dataSourceFile,
-                responseTimeMs: entry.metadata.responseTimeMs,
-                usingMockData: entry.metadata.usingMockData
+                responseTimeMs: entry.metadata.responseTimeMs
             });
 
             await fs.writeFile(summaryFile, JSON.stringify(dailySummary, null, 2), 'utf-8');
@@ -146,7 +143,6 @@ export class AuditService {
         todayRequests: number;
         chartTypeBreakdown: Record<string, number>;
         averageResponseTime: number;
-        mockDataUsage: number;
     }> {
         try {
             await this.ensureAuditDirectoryExists();
@@ -163,7 +159,6 @@ export class AuditService {
 
             const chartTypeBreakdown: Record<string, number> = {};
             let totalResponseTime = 0;
-            let mockDataCount = 0;
 
             for (const file of sampleFiles) {
                 try {
@@ -177,11 +172,6 @@ export class AuditService {
 
                     // Response time
                     totalResponseTime += entry.metadata.responseTimeMs;
-
-                    // Mock data usage
-                    if (entry.metadata.usingMockData) {
-                        mockDataCount++;
-                    }
                 } catch (error) {
                     console.error(`Error reading audit file ${file}:`, error);
                 }
@@ -191,8 +181,7 @@ export class AuditService {
                 totalRequests: chartFiles.length,
                 todayRequests: todayFiles.length,
                 chartTypeBreakdown,
-                averageResponseTime: sampleFiles.length > 0 ? totalResponseTime / sampleFiles.length : 0,
-                mockDataUsage: sampleFiles.length > 0 ? (mockDataCount / sampleFiles.length) * 100 : 0
+                averageResponseTime: sampleFiles.length > 0 ? totalResponseTime / sampleFiles.length : 0
             };
         } catch (error) {
             console.error('Error getting audit stats:', error);
@@ -200,8 +189,7 @@ export class AuditService {
                 totalRequests: 0,
                 todayRequests: 0,
                 chartTypeBreakdown: {},
-                averageResponseTime: 0,
-                mockDataUsage: 0
+                averageResponseTime: 0
             };
         }
     }

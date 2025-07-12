@@ -43,7 +43,6 @@ export class AppController {
             );
 
             const responseTime = Date.now() - startTime;
-            const usingMockData = !process.env.OPENAI_API_KEY;
 
             // Step 4: Audit the chart generation
             const requestId = await this.audit.logChartGeneration(
@@ -52,7 +51,6 @@ export class AppController {
                 data,
                 dataAnalysis,
                 {
-                    usingMockData,
                     dataSourceFile: config.dataSource.primaryFile,
                     responseTimeMs: responseTime,
                     metricsCount: dataAnalysis.availableMetrics.length
@@ -63,7 +61,6 @@ export class AppController {
             return {
                 ...spec,
                 data,
-                isMockData: usingMockData,
                 requestId,
                 dataAnalysis: {
                     totalMetrics: dataAnalysis.availableMetrics.length,

@@ -11,7 +11,6 @@ interface ChatBoxProps {
 export default function ChatBox({ onResponse }: ChatBoxProps) {
     const [text, setText] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const [isMockMode, setIsMockMode] = useState(false);
 
     /**
      * Handle form submission - send the prompt to the backend API
@@ -32,9 +31,6 @@ export default function ChatBox({ onResponse }: ChatBoxProps) {
             }
 
             const result = await response.json();
-
-            // Check if the server is using mock data
-            setIsMockMode(result.isMockData || false);
 
             onResponse(result);
             setText(''); // Clear input after successful submission
@@ -57,22 +53,6 @@ export default function ChatBox({ onResponse }: ChatBoxProps) {
 
     return (
         <div>
-            {/* Mock Mode Banner */}
-            {isMockMode && (
-                <div style={{
-                    backgroundColor: '#fff3cd',
-                    border: '1px solid #ffeaa7',
-                    borderRadius: 8,
-                    padding: 12,
-                    marginBottom: 16,
-                    fontSize: 14,
-                    color: '#856404'
-                }}>
-                    <strong>🎭 Demo Mode:</strong> Using mock data for testing.
-                    Set <code>OPENAI_API_KEY</code> environment variable to use real AI.
-                </div>
-            )}
-
             <div style={{
                 display: 'flex',
                 gap: 8,

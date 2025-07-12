@@ -31,13 +31,7 @@ async function bootstrap() {
 
     console.log('🚀 Chat-to-Chart server starting...');
     console.log('📁 Using metrics.json file in the server root directory');
-
-    if (process.env.OPENAI_API_KEY) {
-        console.log('🤖 OpenAI API key found - using GPT-4 for chart generation');
-    } else {
-        console.log('🎭 OpenAI API key not found - using mock data for testing');
-        console.log('💡 Set OPENAI_API_KEY environment variable to use real AI');
-    }
+    console.log('🤖 Using OpenAI GPT-4 for chart generation');
 
     await app.listen(4000);
     console.log('✅ Server is running on http://localhost:4000');

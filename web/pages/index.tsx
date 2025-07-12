@@ -87,7 +87,7 @@ export default function Home() {
                     🚀 Built with Next.js, NestJS, OpenAI, and ag-charts-react
                 </p>
                 <p>
-                    Make sure to set your OPENAI_API_KEY environment variable and place your metrics.json file in the server directory
+                    Make sure to place your metrics.json file in the server directory
                 </p>
             </div>
         </main>
