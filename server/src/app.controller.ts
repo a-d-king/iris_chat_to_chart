@@ -62,6 +62,7 @@ export class AppController {
                 ...spec,
                 data,
                 requestId,
+                originalPrompt: body.prompt, // Include the original user prompt
                 dataAnalysis: {
                     totalMetrics: dataAnalysis.availableMetrics.length,
                     suggestedChartTypes: dataAnalysis.suggestedChartTypes.map((s: any) => s.chartType)

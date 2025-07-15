@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import OpenAI from 'openai';
 import { DataAnalysis } from './data-analysis.service';
 
-// Initialize OpenAI client
 const openai = new OpenAI();
 
 /**
@@ -53,31 +52,80 @@ export class OpenAiService {
      * @returns Promise<ChartSpecDto> - Structured chart specification
      */
     async prompt(prompt: string, dataAnalysis?: DataAnalysis) {
-        // Build enhanced prompt with data context
-        let enhancedPrompt = `Please analyze this request and generate a chart specification that is suitable for the data: ${prompt}`;
+        // Build prompt with structured guidance for model
+        let primaryPrompt = `You are a data visualization expert. Analyze this request and create the most appropriate chart specification.
+
+USER REQUEST: "${prompt}"
+
+CHART TYPE SELECTION GUIDELINES:
+- **line**: Best for time series trends, showing change over time. Use for single or multiple metrics over dates.
+- **bar**: Best for comparing values across categories or discrete time periods. Use when emphasis is on comparison, not trends.
+- **stacked-bar**: Best for showing composition and part-to-whole relationships over categories or time.
+- **heatmap**: Best for showing intensity/correlation patterns across two dimensions (e.g., time vs categories).
+- **waterfall**: Best for showing cumulative effect of sequential positive/negative changes.
+
+DATA STRUCTURE MAPPING:
+- **timeSeries metrics**: Work best with line charts (trends) or bar charts (period comparison)
+- **groupedSeries metrics**: Ideal for stacked-bar (composition) or multi-line charts (comparison)
+- **scalar metrics**: Use bar charts for single values or combine with other metrics
+
+ANALYSIS APPROACH:
+1. First, identify the user's analytical intent (trend analysis, comparison, composition, etc.)
+2. Consider the temporal aspect - are they asking about changes over time?
+3. Match the intent with the most suitable chart type
+4. Choose date ranges that make sense for the analysis (broader for trends, specific for snapshots)
+
+USER INTENT KEYWORDS:
+- "trend/trending/over time/growth/decline" → line chart
+- "compare/comparison/vs/versus/against" → bar chart  
+- "breakdown/composition/parts/segments" → stacked-bar chart
+- "pattern/correlation/intensity" → heatmap chart
+- "impact/effect/contribution/waterfall" → waterfall chart`;
 
         if (dataAnalysis) {
-            enhancedPrompt += `\n\nContext about available data:\n${dataAnalysis.dataContext}`;
+            primaryPrompt += `\n\nAVAILABLE DATA CONTEXT:\n${dataAnalysis.dataContext}`;
 
-            enhancedPrompt += `\n\nAvailable metrics:\n`;
+            primaryPrompt += `\n\nAVAILABLE METRICS:`;
             dataAnalysis.availableMetrics.forEach(metric => {
-                enhancedPrompt += `- ${metric.name}: ${metric.description} (${metric.type}, ${metric.valueType})\n`;
+                primaryPrompt += `\n- **${metric.name}**: ${metric.description}`;
+                primaryPrompt += `\n  └ Type: ${metric.type}, Values: ${metric.valueType}`;
+
+                // Add chart type suggestions based on metric type
+                if (metric.type === 'timeSeries') {
+                    primaryPrompt += ` → Recommended: line (trends) or bar (periods)`;
+                } else if (metric.type === 'groupedSeries') {
+                    primaryPrompt += ` → Recommended: stacked-bar (composition) or line (comparison)`;
+                } else if (metric.type === 'scalar') {
+                    primaryPrompt += ` → Recommended: bar (single value)`;
+                }
             });
 
             if (dataAnalysis.suggestedChartTypes.length > 0) {
-                enhancedPrompt += `\n\nChart type recommendations:\n`;
+                primaryPrompt += `\n\nAUTO-GENERATED SUGGESTIONS:`;
                 dataAnalysis.suggestedChartTypes.forEach(suggestion => {
-                    enhancedPrompt += `- ${suggestion.chartType}: ${suggestion.reason} (confidence: ${suggestion.confidence})\n`;
+                    primaryPrompt += `\n- ${suggestion.chartType}: ${suggestion.reason} (confidence: ${suggestion.confidence})`;
                 });
             }
+
+            primaryPrompt += `\n\nEXAMPLES OF GOOD SELECTIONS:
+- "Show revenue trends" → line chart with revenue metric, full date range
+- "Compare channels" → stacked-bar chart with revenue grouped by channel
+- "June performance" → bar chart with key metrics, dateRange: "2023-06"
+- "User growth over time" → line chart with user metrics, broad date range`;
         }
+
+        primaryPrompt += `\n\nIMPORTANT: 
+- Choose the chart type that best matches the user's analytical intent
+- Select appropriate date ranges (specific months for snapshots, full year for trends)
+- If the request is ambiguous, default to the most informative visualization
+- Prioritize clarity and insight over complexity`;
 
         const response = await openai.chat.completions.create({
             model: 'gpt-4o',
             temperature: 0, // Use deterministic responses
             messages: [{
                 role: 'user',
-                content: enhancedPrompt
+                content: primaryPrompt
             }],
             tools: TOOL_SCHEMA,
             tool_choice: { type: 'function', function: { name: 'create_chart' } }
