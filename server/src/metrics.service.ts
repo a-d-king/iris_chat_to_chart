@@ -5,47 +5,33 @@ import { DataAnalysisService, MetricInfo } from './data-analysis.service';
 import { config } from './config';
 
 /**
- * Service for handling metrics data operations
- * Loads and processes data from metrics.json or sample-june-metrics.json file
+ * Service for handling metrics data operations with caching
  */
 @Injectable()
 export class MetricsService {
-    private cache: any; // Cache to avoid re-reading the file on every request
-    private dataAnalysis: any; // Cache for data analysis results
+    private cache: any;
+    private dataAnalysis: any;
 
     constructor(private dataAnalysisService: DataAnalysisService) { }
 
     /**
-     * Load metrics data from available JSON files
-     * Tries sample-june-metrics.json first, then falls back to metrics.json
+     * Load metrics data from available JSON file
      * Uses caching to improve performance
      * @returns Promise<any> - The loaded metrics data
      */
     async load() {
         if (!this.cache) {
             try {
-                // Try to load primary data file first
-                let raw: string;
-                try {
-                    raw = await fs.readFile(
-                        path.join(__dirname, '..', config.dataSource.primaryFile),
-                        'utf-8'
-                    );
-                    console.log(`📊 Using ${config.dataSource.primaryFile} data`);
-                } catch (primaryError) {
-                    // Fall back to fallback file
-                    raw = await fs.readFile(
-                        path.join(__dirname, '..', config.dataSource.fallbackFile),
-                        'utf-8'
-                    );
-                    console.log(`📊 Using ${config.dataSource.fallbackFile} data`);
-                }
+                const raw = await fs.readFile(
+                    path.join(__dirname, '..', 'sample-june-metrics.json'),
+                    'utf-8'
+                );
+                console.log('📊 Using sample-june-metrics.json data');
 
                 this.cache = JSON.parse(raw);
 
-                // Analyze the data structure
                 this.dataAnalysis = this.dataAnalysisService.analyzeData(this.cache);
-                console.log(`🔍 Detected ${this.dataAnalysis.availableMetrics.length} metrics in the dataset`);
+                console.log(`Detected ${this.dataAnalysis.availableMetrics.length} metrics in the dataset`);
 
             } catch (error) {
                 console.error('Error loading metrics data:', error);
@@ -66,24 +52,22 @@ export class MetricsService {
 
     /**
      * Slice metrics data based on the specified parameters
-     * Intelligently adapts to different data structures
      * @param metric - The metric name to retrieve
      * @param dateRange - Date range filter (YYYY or YYYY-MM)
-     * @param groupBy - Optional grouping dimension
+     * @param groupBy - Optional grouping dimension (unused in current implementation)
      * @returns Promise<any> - The sliced data ready for charting
      */
     async slice(metric: string, dateRange: string, groupBy?: string) {
         const data = await this.load();
         const analysis = this.dataAnalysis;
 
-        // Find the best matching metric
+        // Find the matching metric
         const metricInfo = analysis.availableMetrics.find((m: MetricInfo) =>
             m.name.toLowerCase() === metric.toLowerCase()
         );
 
         if (!metricInfo) {
-            console.log(`❌ Metric "${metric}" not found, falling back to legacy logic`);
-            return this.legacySlice(data, metric, dateRange, groupBy);
+            throw new Error(`Metric "${metric}" not found in dataset`);
         }
 
         // Handle different data structures based on metric type
@@ -95,7 +79,7 @@ export class MetricsService {
             case 'scalar':
                 return this.sliceScalar(data, metricInfo);
             default:
-                return this.legacySlice(data, metric, dateRange, groupBy);
+                throw new Error(`Unsupported metric type: ${metricInfo.type}`);
         }
     }
 
@@ -189,16 +173,5 @@ export class MetricsService {
         };
     }
 
-    /**
-     * Legacy slice method for backward compatibility
-     */
-    private legacySlice(data: any, metric: string, dateRange: string, groupBy?: string) {
-        if (groupBy) {
-            const key = `${metric}By${groupBy.charAt(0).toUpperCase() + groupBy.slice(1)}`;
-            return data[key] || [];
-        }
 
-        const seriesKey = metric + 'Series';
-        return data[seriesKey] || [];
-    }
 } 

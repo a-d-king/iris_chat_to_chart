@@ -111,7 +111,7 @@ export class DataAnalysisService {
 
         const firstItem = value[0];
 
-        // Check if it's a time series (has date/value pairs)
+        // Check if it's time series i.e. has date/value pairs
         if (firstItem && typeof firstItem === 'object' && 'date' in firstItem && 'value' in firstItem) {
             return {
                 name: key,
@@ -138,10 +138,9 @@ export class DataAnalysisService {
     }
 
     /**
-     * Analyze object-based metrics (like grouped series)
+     * Analyze object-based metrics i.e. grouped series
      */
     private analyzeObjectMetric(key: string, value: any): MetricInfo | null {
-        // Check if it's a grouped series structure (has dates and values arrays)
         if (value.dates && value.values && Array.isArray(value.dates) && Array.isArray(value.values)) {
             const groupingDimensions = value.values.map((series: any) => series.label);
 

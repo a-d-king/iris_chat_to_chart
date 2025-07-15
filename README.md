@@ -42,36 +42,6 @@ Create a `.env` file in the `server` directory:
 OPENAI_API_KEY=your_openai_api_key_here
 ```
 
-### 5. Prepare your data
-The application comes with sample data in `server/metrics.json`. You can replace this with your own data following the same structure:
-
-```json
-{
-  "metricNameSeries": {
-    "dates": ["2023-01", "2023-02", "2023-03"],
-    "values": [
-      {
-        "label": "Series Name",
-        "values": [100, 120, 140]
-      }
-    ]
-  },
-  "metricNameByDimension": {
-    "dates": ["2023-01", "2023-02", "2023-03"],
-    "values": [
-      {
-        "label": "Category 1",
-        "values": [50, 60, 70]
-      },
-      {
-        "label": "Category 2",
-        "values": [50, 60, 70]
-      }
-    ]
-  }
-}
-```
-
 ## 🏃‍♂️ Running the Application
 
 ### Start the backend server

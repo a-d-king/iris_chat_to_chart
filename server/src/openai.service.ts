@@ -54,7 +54,7 @@ export class OpenAiService {
      */
     async prompt(prompt: string, dataAnalysis?: DataAnalysis) {
         // Build enhanced prompt with data context
-        let enhancedPrompt = `Please analyze this request and generate a chart specification: ${prompt}`;
+        let enhancedPrompt = `Please analyze this request and generate a chart specification that is suitable for the data: ${prompt}`;
 
         if (dataAnalysis) {
             enhancedPrompt += `\n\nContext about available data:\n${dataAnalysis.dataContext}`;
@@ -84,12 +84,12 @@ export class OpenAiService {
         });
 
         // Debug logging
-        console.log('🔍 OpenAI Response:', JSON.stringify(response.choices[0].message, null, 2));
+        console.log('OpenAI Response:', JSON.stringify(response.choices[0].message, null, 2));
 
         // Parse the tool call arguments into a chart spec object
         const toolCall = response.choices[0].message.tool_calls?.[0];
         if (toolCall?.function?.arguments) {
-            console.log('✅ Tool call successful, parsing arguments');
+            console.log('Tool call successful, parsing arguments');
             return JSON.parse(toolCall.function.arguments);
         } else {
             throw new Error('OpenAI did not return a valid tool call response');
