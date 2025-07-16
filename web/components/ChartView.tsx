@@ -122,19 +122,19 @@ export default function ChartView({ spec }: ChartViewProps) {
 
     const series = data.values && Array.isArray(data.values)
         ? data.values.map((series: any, index: number) => {
-            const diverseColors = [
-                '#3b82f6', // Blue
-                '#ef4444', // Red
-                '#10b981', // Green
-                '#f59e0b', // Amber
-                '#8b5cf6', // Violet
-                '#ec4899', // Pink
+            const basicColors = [
+                '#dc2626', // Red
+                '#2563eb', // Blue
+                '#eab308', // Yellow
+                '#ea580c', // Orange
+                '#16a34a', // Green
+                '#9333ea', // Purple
                 '#06b6d4', // Cyan
+                '#e11d48', // Pink/Rose
                 '#84cc16', // Lime
-                '#f97316', // Orange
-                '#6366f1', // Indigo
-                '#14b8a6', // Teal
-                '#eab308'  // Yellow
+                '#0891b2', // Sky Blue
+                '#f59e0b', // Amber
+                '#7c3aed'  // Violet
             ];
             return {
                 type: chartType === 'stacked-bar' ? 'bar' : chartType,
@@ -142,8 +142,8 @@ export default function ChartView({ spec }: ChartViewProps) {
                 yKey: series.label,
                 yName: series.label,
                 stacked: chartType === 'stacked-bar',
-                fill: diverseColors[index % diverseColors.length],
-                stroke: diverseColors[index % diverseColors.length],
+                fill: basicColors[index % basicColors.length],
+                stroke: basicColors[index % basicColors.length],
                 strokeWidth: 2
             };
         })
@@ -152,8 +152,8 @@ export default function ChartView({ spec }: ChartViewProps) {
             xKey: 'date',
             yKey: 'value',
             yName: metric,
-            fill: '#3b82f6',
-            stroke: '#3b82f6',
+            fill: '#2563eb',
+            stroke: '#2563eb',
             strokeWidth: 2
         }];
 
