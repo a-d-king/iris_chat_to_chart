@@ -42,7 +42,7 @@ export class DataAnalysisService {
     analyzeData(data: any): DataAnalysis {
         const metrics = this.extractMetricsRecursively(data);
         const suggestions = this.generateChartSuggestions(metrics);
-        const context = this.generateDataContext(metrics);
+        const context = this.generateDataContext(metrics, data);
 
         return {
             availableMetrics: metrics,
@@ -501,7 +501,7 @@ export class DataAnalysisService {
     /**
      * Generate contextual information about the data for the AI model
      */
-    private generateDataContext(metrics: MetricInfo[]): string {
+    private generateDataContext(metrics: MetricInfo[], data?: any): string {
         const timeSeriesCount = metrics.filter(m => m.hasTimeData).length;
         const groupedCount = metrics.filter(m => m.hasGrouping).length;
         const scalarCount = metrics.filter(m => m.type === 'scalar').length;
@@ -539,6 +539,44 @@ export class DataAnalysisService {
 
         if (countMetrics.length > 0) {
             context += `Count metrics include: ${countMetrics.map(m => m.name).join(', ')}. `;
+        }
+
+        // Try to detect the year range from actual data
+        if (data) {
+            let detectedYear = null;
+
+            // Look for dates in various common structures
+            const checkForDates = (obj: any, path: string = ''): string | null => {
+                if (Array.isArray(obj)) {
+                    for (const item of obj.slice(0, 3)) { // Check first few items
+                        if (item && typeof item === 'object' && item.date) {
+                            const dateStr = String(item.date);
+                            const yearMatch = dateStr.match(/^(\d{4})-/);
+                            if (yearMatch) return yearMatch[1];
+                        }
+                    }
+                } else if (obj && typeof obj === 'object') {
+                    // Check for dates arrays in grouped data
+                    if (obj.dates && Array.isArray(obj.dates) && obj.dates.length > 0) {
+                        const dateStr = String(obj.dates[0]);
+                        const yearMatch = dateStr.match(/^(\d{4})-/);
+                        if (yearMatch) return yearMatch[1];
+                    }
+
+                    // Recursively check nested objects
+                    for (const key of Object.keys(obj).slice(0, 10)) { // Limit to avoid deep recursion
+                        const result = checkForDates(obj[key], path + '.' + key);
+                        if (result) return result;
+                    }
+                }
+                return null;
+            };
+
+            detectedYear = checkForDates(data);
+
+            if (detectedYear) {
+                context += `Data appears to be from ${detectedYear}. Use ${detectedYear} for date ranges unless user specifies otherwise. `;
+            }
         }
 
         return context;

@@ -110,7 +110,7 @@ USER INTENT KEYWORDS:
             primaryPrompt += `\n\nEXAMPLES OF GOOD SELECTIONS:
 - "Show revenue trends" → line chart with revenue metric, full date range
 - "Compare channels" → stacked-bar chart with revenue grouped by channel
-- "June performance" → bar chart with key metrics, dateRange: "2023-06"
+- "June performance" → bar chart with key metrics, dateRange: "2025-06"
 - "User growth over time" → line chart with user metrics, broad date range`;
         }
 

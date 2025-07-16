@@ -98,7 +98,7 @@ export class MetricsService {
 
         // Filter by date range if specified
         let filteredData = rawData;
-        if (dateRange && dateRange !== '2023') {
+        if (dateRange) {
             filteredData = rawData.filter((item: any) => {
                 if (dateRange.includes('-')) {
                     // Month-specific filter (e.g., "2025-06")
@@ -139,7 +139,7 @@ export class MetricsService {
         let dates = rawData.dates;
         let values = rawData.values;
 
-        if (dateRange && dateRange !== '2023') {
+        if (dateRange) {
             const filteredIndices: number[] = [];
             dates.forEach((date: string, index: number) => {
                 if (dateRange.includes('-')) {

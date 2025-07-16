@@ -105,10 +105,15 @@ export default function ChartView({ spec }: ChartViewProps) {
     const chartData = data.dates ?
         data.dates.map((date: string, index: number) => {
             const dataPoint: any = {
-                date: new Date(date).toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric'
-                })
+                date: (() => {
+                    // Parse date as local date to avoid timezone shifts
+                    const [year, month, day] = date.split('-').map(Number);
+                    const localDate = new Date(year, month - 1, day); // month is 0-indexed
+                    return localDate.toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric'
+                    });
+                })()
             };
 
             if (data.values && Array.isArray(data.values)) {
