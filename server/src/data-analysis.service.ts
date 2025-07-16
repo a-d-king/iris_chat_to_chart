@@ -495,6 +495,24 @@ export class DataAnalysisService {
             });
         }
 
+        // Heatmap charts for correlation/pattern analysis
+        const correlationMetrics = metrics.filter(m =>
+            (m.hasGrouping && m.hasTimeData) || // Time + category data
+            (m.type === 'embeddedMetrics' && m.groupingDimensions && m.groupingDimensions.length > 3) || // Multiple entities
+            m.name.toLowerCase().includes('correlation') ||
+            m.name.toLowerCase().includes('pattern') ||
+            m.name.toLowerCase().includes('intensity') ||
+            m.name.toLowerCase().includes('density')
+        );
+        if (correlationMetrics.length > 0) {
+            suggestions.push({
+                chartType: 'heatmap',
+                confidence: 0.65,
+                reason: 'Perfect for visualizing patterns and intensity across multiple dimensions',
+                bestForMetrics: correlationMetrics.map(m => m.name)
+            });
+        }
+
         return suggestions.sort((a, b) => b.confidence - a.confidence);
     }
 

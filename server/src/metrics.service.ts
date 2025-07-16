@@ -57,32 +57,77 @@ export class MetricsService {
      * @returns Promise<any> - The sliced data ready for charting
      */
     async slice(metric: string, dateRange: string, groupBy?: string) {
-        const data = await this.load();
-        const analysis = this.dataAnalysis;
+        try {
+            const data = await this.load();
+            const analysis = this.dataAnalysis;
 
-        // Find the matching metric
-        const metricInfo = analysis.availableMetrics.find((m: MetricInfo) =>
-            m.name.toLowerCase() === metric.toLowerCase()
-        );
+            // Validate inputs
+            if (!metric || metric.trim() === '') {
+                throw new Error('Metric name is required');
+            }
 
-        if (!metricInfo) {
-            throw new Error(`Metric "${metric}" not found in dataset`);
-        }
+            if (!dateRange || dateRange.trim() === '') {
+                throw new Error('Date range is required');
+            }
 
-        // Handle different data structures based on metric type
-        switch (metricInfo.type) {
-            case 'timeSeries':
-                return this.sliceTimeSeries(data, metricInfo, dateRange);
-            case 'groupedSeries':
-                return this.sliceGroupedSeries(data, metricInfo, dateRange);
-            case 'scalar':
-                return this.sliceScalar(data, metricInfo);
-            case 'dynamicKeyObject':
-                return this.sliceDynamicKeyObject(data, metricInfo);
-            case 'embeddedMetrics':
-                return this.sliceEmbeddedMetrics(data, metricInfo);
-            default:
-                throw new Error(`Unsupported metric type: ${metricInfo.type}`);
+            // Validate date range format
+            if (!/^\d{4}(-\d{2})?$/.test(dateRange)) {
+                throw new Error('Date range must be in YYYY or YYYY-MM format');
+            }
+
+            // Find the matching metric with flexible matching
+            let metricInfo = analysis.availableMetrics.find((m: MetricInfo) =>
+                m.name.toLowerCase() === metric.toLowerCase()
+            );
+
+            // If exact match not found, try partial matching
+            if (!metricInfo) {
+                metricInfo = analysis.availableMetrics.find((m: MetricInfo) =>
+                    m.name.toLowerCase().includes(metric.toLowerCase()) ||
+                    metric.toLowerCase().includes(m.name.toLowerCase())
+                );
+            }
+
+            if (!metricInfo) {
+                const availableMetrics = analysis.availableMetrics.map((m: MetricInfo) => m.name);
+                throw new Error(
+                    `Metric "${metric}" not found in dataset. Available metrics: ${availableMetrics.join(', ')}`
+                );
+            }
+
+            // Handle different data structures based on metric type
+            switch (metricInfo.type) {
+                case 'timeSeries':
+                    return this.sliceTimeSeries(data, metricInfo, dateRange);
+                case 'groupedSeries':
+                    return this.sliceGroupedSeries(data, metricInfo, dateRange);
+                case 'scalar':
+                    return this.sliceScalar(data, metricInfo);
+                case 'dynamicKeyObject':
+                    return this.sliceDynamicKeyObject(data, metricInfo);
+                case 'embeddedMetrics':
+                    return this.sliceEmbeddedMetrics(data, metricInfo);
+                case 'array':
+                    return this.sliceArray(data, metricInfo);
+                default:
+                    throw new Error(`Unsupported metric type: ${metricInfo.type}`);
+            }
+        } catch (error) {
+            // Log the error for debugging
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            console.error('Error in metrics slice:', {
+                metric,
+                dateRange,
+                groupBy,
+                error: errorMessage
+            });
+
+            // Re-throw with additional context if it's not already a user-friendly error
+            if (errorMessage.includes('not found') || errorMessage.includes('required') || errorMessage.includes('format')) {
+                throw error;
+            } else {
+                throw new Error(`Failed to process metric "${metric}": ${errorMessage}`);
+            }
         }
     }
 
@@ -299,6 +344,28 @@ export class MetricsService {
         return {
             dates: categories,
             values: values
+        };
+    }
+
+    /**
+     * Extract data from simple arrays
+     */
+    private sliceArray(data: any, metricInfo: MetricInfo): any {
+        const rawData = this.getNestedValue(data, metricInfo.name);
+
+        if (!Array.isArray(rawData) || rawData.length === 0) {
+            return [];
+        }
+
+        // Generate simple indices as categories (Item 1, Item 2, etc.)
+        const categories = rawData.map((_, index) => `Item ${index + 1}`);
+
+        return {
+            dates: categories,
+            values: [{
+                label: metricInfo.description,
+                values: rawData.map(value => typeof value === 'number' ? value : 0)
+            }]
         };
     }
 

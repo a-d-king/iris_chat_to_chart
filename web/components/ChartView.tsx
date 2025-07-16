@@ -106,13 +106,28 @@ export default function ChartView({ spec }: ChartViewProps) {
         data.dates.map((date: string, index: number) => {
             const dataPoint: any = {
                 date: (() => {
-                    // Parse date as local date to avoid timezone shifts
-                    const [year, month, day] = date.split('-').map(Number);
-                    const localDate = new Date(year, month - 1, day); // month is 0-indexed
-                    return localDate.toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric'
-                    });
+                    // Enhanced date parsing with validation
+                    try {
+                        // Handle different date formats
+                        if (date.includes('-')) {
+                            const [year, month, day] = date.split('-').map(Number);
+                            if (year && month && day) {
+                                const localDate = new Date(year, month - 1, day); // month is 0-indexed
+                                return localDate.toLocaleDateString('en-US', {
+                                    month: 'short',
+                                    day: 'numeric'
+                                });
+                            }
+                        }
+                        // Fallback for other formats
+                        return new Date(date).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric'
+                        });
+                    } catch (error) {
+                        console.warn('Date parsing error:', error, 'for date:', date);
+                        return date; // Return original if parsing fails
+                    }
                 })()
             };
 
@@ -125,42 +140,147 @@ export default function ChartView({ spec }: ChartViewProps) {
             return dataPoint;
         }) : [];
 
-    const series = data.values && Array.isArray(data.values)
-        ? data.values.map((series: any, index: number) => {
-            const basicColors = [
-                '#dc2626', // Red
-                '#2563eb', // Blue
-                '#eab308', // Yellow
-                '#ea580c', // Orange
-                '#16a34a', // Green
-                '#9333ea', // Purple
-                '#06b6d4', // Cyan
-                '#e11d48', // Pink/Rose
-                '#84cc16', // Lime
-                '#0891b2', // Sky Blue
-                '#f59e0b', // Amber
-                '#7c3aed'  // Violet
-            ];
-            return {
+    // Configure series based on chart type
+    const configureSeries = () => {
+        if (chartType === 'heatmap') {
+            // Heatmap requires special configuration
+            if (!data.values || !Array.isArray(data.values) || data.values.length === 0) {
+                console.warn('Heatmap requires grouped data with multiple series');
+                // Fallback to bar chart for single metrics
+                return [{
+                    type: 'bar',
+                    xKey: 'date',
+                    yKey: 'value',
+                    yName: metric,
+                    fill: '#2563eb',
+                    stroke: '#2563eb',
+                    strokeWidth: 2
+                }];
+            }
+
+            return [{
+                type: 'heatmap',
+                xKey: 'date',
+                yKey: 'category', // We'll need to transform data for this
+                colorKey: 'value',
+                colorRange: ['#0891b2', '#f59e0b', '#dc2626'],
+                colorName: metric
+            }];
+        }
+
+        if (chartType === 'waterfall') {
+            // Waterfall requires cumulative data structure
+            return [{
+                type: 'waterfall',
+                xKey: 'date',
+                yKey: 'value',
+                yName: metric,
+                fill: '#2563eb',
+                stroke: '#2563eb',
+                strokeWidth: 2
+            }];
+        }
+
+        // Standard line/bar/stacked-bar configuration
+        return data.values && Array.isArray(data.values)
+            ? data.values.map((series: any, index: number) => {
+                const basicColors = [
+                    '#dc2626', // Red
+                    '#2563eb', // Blue
+                    '#eab308', // Yellow
+                    '#ea580c', // Orange
+                    '#16a34a', // Green
+                    '#9333ea', // Purple
+                    '#06b6d4', // Cyan
+                    '#e11d48', // Pink/Rose
+                    '#84cc16', // Lime
+                    '#0891b2', // Sky Blue
+                    '#f59e0b', // Amber
+                    '#7c3aed'  // Violet
+                ];
+                return {
+                    type: chartType === 'stacked-bar' ? 'bar' : chartType,
+                    xKey: 'date',
+                    yKey: series.label,
+                    yName: series.label,
+                    stacked: chartType === 'stacked-bar',
+                    fill: basicColors[index % basicColors.length],
+                    stroke: basicColors[index % basicColors.length],
+                    strokeWidth: 2
+                };
+            })
+            : [{
                 type: chartType === 'stacked-bar' ? 'bar' : chartType,
                 xKey: 'date',
-                yKey: series.label,
-                yName: series.label,
-                stacked: chartType === 'stacked-bar',
-                fill: basicColors[index % basicColors.length],
-                stroke: basicColors[index % basicColors.length],
+                yKey: 'value',
+                yName: metric,
+                fill: '#2563eb',
+                stroke: '#2563eb',
                 strokeWidth: 2
-            };
-        })
-        : [{
-            type: chartType === 'stacked-bar' ? 'bar' : chartType,
-            xKey: 'date',
-            yKey: 'value',
-            yName: metric,
-            fill: '#2563eb',
-            stroke: '#2563eb',
-            strokeWidth: 2
-        }];
+            }];
+    };
+
+    const series = configureSeries();
+
+    // Validate that we have data to display
+    if (!chartData || chartData.length === 0) {
+        return (
+            <div className="flex items-center justify-center h-64 bg-gray-50 border border-gray-200 rounded">
+                <div className="text-center">
+                    <div className="text-gray-500 text-lg mb-2">No Data Available</div>
+                    <div className="text-gray-400 text-sm">
+                        The requested metric "{metric}" doesn't contain any data for the specified date range.
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // Validate that series configuration is valid
+    if (!series || series.length === 0) {
+        return (
+            <div className="flex items-center justify-center h-64 bg-gray-50 border border-gray-200 rounded">
+                <div className="text-center">
+                    <div className="text-gray-500 text-lg mb-2">Chart Configuration Error</div>
+                    <div className="text-gray-400 text-sm">
+                        Unable to configure chart for type "{chartType}" with the available data.
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // Configure axes based on chart type
+    const configureAxes = () => {
+        if (chartType === 'heatmap') {
+            return [
+                {
+                    type: 'category',
+                    position: 'bottom',
+                    title: { text: 'Date' }
+                },
+                {
+                    type: 'category',
+                    position: 'left',
+                    title: { text: 'Category' }
+                }
+            ];
+        }
+
+        return [
+            {
+                type: 'category',
+                position: 'bottom'
+            },
+            {
+                type: 'number',
+                position: 'left',
+                label: {
+                    formatter: ({ value }: any) => formatValue(value, metric)
+                }
+            }
+        ];
+    };
 
     const chartOptions = {
         data: chartData,
@@ -183,19 +303,7 @@ export default function ChartView({ spec }: ChartViewProps) {
         background: {
             fill: 'white'
         },
-        axes: [
-            {
-                type: 'category',
-                position: 'bottom'
-            },
-            {
-                type: 'number',
-                position: 'left',
-                label: {
-                    formatter: ({ value }: any) => formatValue(value, metric)
-                }
-            }
-        ]
+        axes: configureAxes()
     };
 
     return (

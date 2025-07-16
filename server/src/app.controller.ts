@@ -69,8 +69,40 @@ export class AppController {
                 }
             };
         } catch (error) {
-            console.error('Error processing chat request:', error);
-            throw new Error('Failed to process chat request');
+            const responseTime = Date.now() - startTime;
+            const errorMessage = error instanceof Error ? error.message : String(error);
+
+            // Log error for debugging
+            console.error('Chat endpoint error:', {
+                prompt: body.prompt,
+                error: errorMessage,
+                responseTime
+            });
+
+            // Provide user-friendly error messages
+            if (errorMessage.includes('not found in dataset')) {
+                throw new Error(
+                    `I couldn't find the requested metric in the data. ${errorMessage.split('Available metrics:')[1] ?
+                        'Available metrics: ' + errorMessage.split('Available metrics:')[1] : ''}`
+                );
+            } else if (errorMessage.includes('Date range')) {
+                throw new Error(
+                    'Invalid date range format. Please use YYYY or YYYY-MM format (e.g., "2025" or "2025-06").'
+                );
+            } else if (errorMessage.includes('OpenAI') || errorMessage.includes('tool call')) {
+                throw new Error(
+                    'I had trouble understanding your request. Please try rephrasing it more clearly.'
+                );
+            } else if (errorMessage.includes('Unsupported metric type')) {
+                throw new Error(
+                    'This metric type is not yet supported for visualization. Please try a different metric.'
+                );
+            } else {
+                // Generic error for unexpected issues
+                throw new Error(
+                    'Something went wrong while generating your chart. Please try again or contact support.'
+                );
+            }
         }
     }
 
