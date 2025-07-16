@@ -48,6 +48,19 @@ const formatValue = (value: number, metric: string): string => {
 };
 
 /**
+ * Format text for proper title display - converts camelCase/snake_case to Title Case
+ */
+const formatTitle = (text: string): string => {
+    return text
+        // Handle camelCase by adding spaces before capital letters
+        .replace(/([a-z])([A-Z])/g, '$1 $2')
+        // Handle snake_case and kebab-case by replacing _ and - with spaces
+        .replace(/[_-]/g, ' ')
+        // Capitalize first letter of each word
+        .replace(/\b\w/g, l => l.toUpperCase());
+};
+
+/**
  * ChartView component for rendering charts using ag-charts-react
  * Takes a chart specification and renders the appropriate chart type
  */
@@ -109,8 +122,19 @@ export default function ChartView({ spec }: ChartViewProps) {
 
     const series = data.values && Array.isArray(data.values)
         ? data.values.map((series: any, index: number) => {
-            const purpleColors = [
-                '#7c3aed', '#9333ea', '#a855f7', '#c084fc', '#d8b4fe'
+            const diverseColors = [
+                '#3b82f6', // Blue
+                '#ef4444', // Red
+                '#10b981', // Green
+                '#f59e0b', // Amber
+                '#8b5cf6', // Violet
+                '#ec4899', // Pink
+                '#06b6d4', // Cyan
+                '#84cc16', // Lime
+                '#f97316', // Orange
+                '#6366f1', // Indigo
+                '#14b8a6', // Teal
+                '#eab308'  // Yellow
             ];
             return {
                 type: chartType === 'stacked-bar' ? 'bar' : chartType,
@@ -118,8 +142,8 @@ export default function ChartView({ spec }: ChartViewProps) {
                 yKey: series.label,
                 yName: series.label,
                 stacked: chartType === 'stacked-bar',
-                fill: purpleColors[index % purpleColors.length],
-                stroke: purpleColors[index % purpleColors.length],
+                fill: diverseColors[index % diverseColors.length],
+                stroke: diverseColors[index % diverseColors.length],
                 strokeWidth: 2
             };
         })
@@ -128,8 +152,8 @@ export default function ChartView({ spec }: ChartViewProps) {
             xKey: 'date',
             yKey: 'value',
             yName: metric,
-            fill: '#7c3aed',
-            stroke: '#7c3aed',
+            fill: '#3b82f6',
+            stroke: '#3b82f6',
             strokeWidth: 2
         }];
 
@@ -138,18 +162,18 @@ export default function ChartView({ spec }: ChartViewProps) {
         series: series.map((s: any) => ({
             ...s,
             tooltip: {
-                renderer: ({ yValue }: any) => {
+                renderer: (params: any) => {
+                    const { datum, yKey } = params;
+                    const value = datum[yKey];
                     return {
-                        content: formatValue(yValue, metric)
+                        title: s.yName || yKey,
+                        content: formatValue(value, metric)
                     };
                 }
-            },
-            label: {
-                formatter: ({ value }: any) => formatValue(value, metric)
             }
         })),
         title: {
-            text: `${metric} ${groupBy ? `by ${groupBy}` : ''} (${dateRange})`
+            text: `${formatTitle(metric)} ${groupBy ? `by ${formatTitle(groupBy)}` : ''} (${dateRange})`
         },
         background: {
             fill: 'white'
