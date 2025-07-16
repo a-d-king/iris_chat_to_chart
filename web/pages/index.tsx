@@ -20,7 +20,6 @@ export default function Home() {
                 maxWidth: 1200,
                 margin: '0 auto'
             }}>
-                {/* Header with Logo and Branding */}
                 <div style={{
                     textAlign: 'center',
                     marginBottom: 32,
@@ -31,7 +30,6 @@ export default function Home() {
                     backdropFilter: 'blur(10px)',
                     border: '1px solid rgba(255, 255, 255, 0.2)'
                 }}>
-                    {/* Iris Finance Logo */}
                     <img
                         src="/iris.jpeg"
                         alt="Iris Finance"
@@ -74,7 +72,6 @@ export default function Home() {
                     </p>
                 </div>
 
-                {/* Instructions */}
                 <div style={{
                     backgroundColor: 'rgba(255, 255, 255, 0.95)',
                     padding: 20,
@@ -122,7 +119,6 @@ export default function Home() {
                     </ul>
                 </div>
 
-                {/* Chat Input - Keeping white background as requested */}
                 <div style={{
                     backgroundColor: 'white',
                     borderRadius: 12,
@@ -134,7 +130,6 @@ export default function Home() {
                     <ChatBox onResponse={setSpec} />
                 </div>
 
-                {/* Chart Display - Keeping white background as requested */}
                 <div style={{
                     backgroundColor: 'white',
                     borderRadius: 12,
@@ -145,7 +140,6 @@ export default function Home() {
                     <ChartView spec={spec} />
                 </div>
 
-                {/* Footer */}
                 <div style={{
                     marginTop: 40,
                     padding: 20,
@@ -161,7 +155,7 @@ export default function Home() {
                         margin: '0 0 8px 0',
                         fontWeight: '600'
                     }}>
-                        🚀 Iris Finance - AI-Powered Business Intelligence Platform
+                        Iris Finance - AI-Powered Business Intelligence Platform
                     </p>
                     <p style={{
                         margin: 0,

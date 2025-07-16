@@ -33,7 +33,7 @@ export default function ChatBox({ onResponse }: ChatBoxProps) {
             const result = await response.json();
 
             onResponse(result);
-            setText(''); // Clear input after successful submission
+            setText('');
         } catch (error) {
             console.error('Error sending prompt:', error);
             alert('Error: Could not process your request. Make sure the server is running.');
@@ -42,9 +42,6 @@ export default function ChatBox({ onResponse }: ChatBoxProps) {
         }
     };
 
-    /**
-     * Handle Enter key press to submit the form
-     */
     const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter' && !isLoading) {
             ask();
@@ -53,7 +50,6 @@ export default function ChatBox({ onResponse }: ChatBoxProps) {
 
     return (
         <div>
-            {/* Header */}
             <div style={{
                 marginBottom: 16,
                 display: 'flex',
@@ -84,7 +80,6 @@ export default function ChatBox({ onResponse }: ChatBoxProps) {
                 </h3>
             </div>
 
-            {/* Input Area */}
             <div style={{
                 display: 'flex',
                 gap: 12,
@@ -199,7 +194,6 @@ export default function ChatBox({ onResponse }: ChatBoxProps) {
                 </div>
             </div>
 
-            {/* Loading Animation CSS */}
             <style jsx>{`
                 @keyframes spin {
                     0% { transform: rotate(0deg); }

@@ -89,9 +89,6 @@ export default function ChartView({ spec }: ChartViewProps) {
 
     const { chartType, data, metric, groupBy, dateRange, originalPrompt } = spec;
 
-    // Super-basic mapping of data to chart format with proper value formatting
-    // This assumes your data has a structure like:
-    // { dates: ['2023-01', '2023-02', ...], values: [{ label: 'Revenue', values: [100, 120, ...] }] }
     const chartData = data.dates ?
         data.dates.map((date: string, index: number) => {
             const dataPoint: any = {
@@ -101,7 +98,6 @@ export default function ChartView({ spec }: ChartViewProps) {
                 })
             };
 
-            // Add values for each series with original numeric values (formatting handled by tooltips)
             if (data.values && Array.isArray(data.values)) {
                 data.values.forEach((series: any) => {
                     dataPoint[series.label] = series.values[index];
@@ -111,7 +107,6 @@ export default function ChartView({ spec }: ChartViewProps) {
             return dataPoint;
         }) : [];
 
-    // Configure chart series based on chart type and data structure with purple theme
     const series = data.values && Array.isArray(data.values)
         ? data.values.map((series: any, index: number) => {
             const purpleColors = [
@@ -138,7 +133,6 @@ export default function ChartView({ spec }: ChartViewProps) {
             strokeWidth: 2
         }];
 
-    // Chart options for ag-charts with Iris Finance branding and proper value formatting
     const chartOptions = {
         data: chartData,
         series: series.map((s: any) => ({
