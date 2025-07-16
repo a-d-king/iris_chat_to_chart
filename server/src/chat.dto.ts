@@ -1,7 +1,7 @@
 import { IsEnum, IsString, IsOptional, Matches } from 'class-validator';
 
 /**
- * Data Transfer Object for chat requests
+ * DTO for chat requests
  * Validates that the incoming request has a valid prompt string
  */
 export class ChatDto {
@@ -10,7 +10,7 @@ export class ChatDto {
 }
 
 /**
- * Data Transfer Object for chart specifications
+ * DTO for chart specifications
  * Defines the structure and validation rules for chart configuration
  */
 export class ChartSpecDto {

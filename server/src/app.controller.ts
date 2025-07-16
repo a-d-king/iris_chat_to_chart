@@ -3,7 +3,9 @@ import { ChatDto } from './chat.dto';
 import { OpenAiService } from './openai.service';
 import { MetricsService } from './metrics.service';
 import { AuditService } from './audit.service';
-import { config } from './config';
+
+// Name of primary data source JSON file
+export const DATA_SOURCE_FILE = 'sample-june-metrics.json';
 
 /**
  * Main application controller
@@ -51,13 +53,58 @@ export class AppController {
                 data,
                 dataAnalysis,
                 {
-                    dataSourceFile: config.dataSource.primaryFile,
+                    dataSourceFile: DATA_SOURCE_FILE,
                     responseTimeMs: responseTime,
                     metricsCount: dataAnalysis.availableMetrics.length
                 }
             );
 
             // Step 5: Return combined spec and data for the frontend
+            // This is where we would "plug-in" the existing Iris Finance charting library/system
+            // For now, I'm just rendering using the 5 free charts that are available in ag-charts-react in ChartView.tsx
+            // 
+            // DATA SHAPE SPECIFICATION:
+            // {
+            //   // Chart specification (from OpenAI service)
+            //   chartType: 'line' | 'bar' | 'stacked-bar' | 'heatmap' | 'waterfall',
+            //   metric: string,                    // e.g., "sales", "totalGrossSales"
+            //   dateRange: string,                 // YYYY or YYYY-MM format, e.g., "2025" or "2025-06"
+            //   groupBy?: string,                  // Optional grouping dimension, e.g., "connector"
+            //   
+            //   // Processed chart data (from metrics service)
+            //   data: Array<{
+            //     [key: string]: any               // Chart-ready data points
+            //   }>,
+            //   
+            //   // Audit and tracking information
+            //   requestId: string,                 // Unique ID like "1703123456789-abc123def"
+            //   originalPrompt: string,            // User's original input
+            //   
+            //   // Data analysis summary
+            //   dataAnalysis: {
+            //     totalMetrics: number,            // Total number of discovered metrics
+            //     suggestedChartTypes: string[]    // Array of suggested chart types
+            //   }
+            // }
+            //
+            // EXAMPLE RESPONSE:
+            // For prompt "Show me sales trends":
+            // {
+            //   "chartType": "line",
+            //   "metric": "sales", 
+            //   "dateRange": "2025-06",
+            //   "data": [
+            //     {"date": "2025-06-01", "value": 87589.85},
+            //     {"date": "2025-06-02", "value": 79724.74},
+            //     {"date": "2025-06-03", "value": 84655.08}
+            //   ],
+            //   "requestId": "1703123456789-abc123def",
+            //   "originalPrompt": "Show me sales trends",
+            //   "dataAnalysis": {
+            //     "totalMetrics": 99,
+            //     "suggestedChartTypes": ["line", "bar"]
+            //   }
+            // }
             return {
                 ...spec,
                 data,
@@ -72,14 +119,13 @@ export class AppController {
             const responseTime = Date.now() - startTime;
             const errorMessage = error instanceof Error ? error.message : String(error);
 
-            // Log error for debugging
             console.error('Chat endpoint error:', {
                 prompt: body.prompt,
                 error: errorMessage,
                 responseTime
             });
 
-            // Provide user-friendly error messages
+            // User-friendly error messages
             if (errorMessage.includes('not found in dataset')) {
                 throw new Error(
                     `I couldn't find the requested metric in the data. ${errorMessage.split('Available metrics:')[1] ?
@@ -98,7 +144,6 @@ export class AppController {
                     'This metric type is not yet supported for visualization. Please try a different metric.'
                 );
             } else {
-                // Generic error for unexpected issues
                 throw new Error(
                     'Something went wrong while generating your chart. Please try again or contact support.'
                 );

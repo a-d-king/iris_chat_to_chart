@@ -31,16 +31,12 @@ export class AuditService {
         this.ensureAuditDirectoryExists();
     }
 
-    /**
-     * Ensure the audit directory exists
-     */
     private async ensureAuditDirectoryExists(): Promise<void> {
         try {
             await fs.access(this.auditDir);
         } catch (error) {
-            // Directory doesn't exist, create it
             await fs.mkdir(this.auditDir, { recursive: true });
-            console.log(`📋 Created audit directory: ${this.auditDir}`);
+            console.log(`Created audit directory: ${this.auditDir}`);
         }
     }
 
@@ -80,15 +76,13 @@ export class AuditService {
             metadata
         };
 
-        // Save to individual file
         const filename = `chart-${requestId}.json`;
         const filepath = path.join(this.auditDir, filename);
 
         try {
             await fs.writeFile(filepath, JSON.stringify(auditEntry, null, 2), 'utf-8');
-            console.log(`📋 Audit log saved: ${filename}`);
+            console.log(`Audit log saved: ${filename}`);
 
-            // Also append to daily summary log
             await this.appendToDailySummary(auditEntry);
 
             return requestId;
@@ -131,7 +125,6 @@ export class AuditService {
             await fs.writeFile(summaryFile, JSON.stringify(dailySummary, null, 2), 'utf-8');
         } catch (error) {
             console.error('Error updating daily summary:', error);
-            // Don't throw here, as the main audit log was already saved
         }
     }
 
@@ -153,7 +146,6 @@ export class AuditService {
             const today = new Date().toISOString().split('T')[0];
             const todayFiles = chartFiles.filter(f => f.includes(today));
 
-            // Read a sample of files to get stats (limit to avoid performance issues)
             const sampleSize = Math.min(100, chartFiles.length);
             const sampleFiles = chartFiles.slice(-sampleSize);
 
@@ -165,12 +157,10 @@ export class AuditService {
                     const filePath = path.join(this.auditDir, file);
                     const content = await fs.readFile(filePath, 'utf-8');
                     const entry: AuditLogEntry = JSON.parse(content);
-
-                    // Chart type breakdown
                     const chartType = entry.chartSpec.chartType;
+
                     chartTypeBreakdown[chartType] = (chartTypeBreakdown[chartType] || 0) + 1;
 
-                    // Response time
                     totalResponseTime += entry.metadata.responseTimeMs;
                 } catch (error) {
                     console.error(`Error reading audit file ${file}:`, error);
@@ -191,37 +181,6 @@ export class AuditService {
                 chartTypeBreakdown: {},
                 averageResponseTime: 0
             };
-        }
-    }
-
-    /**
-     * Clean up old audit logs (keep last 30 days)
-     */
-    async cleanupOldLogs(): Promise<void> {
-        try {
-            await this.ensureAuditDirectoryExists();
-
-            const files = await fs.readdir(this.auditDir);
-            const thirtyDaysAgo = new Date();
-            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-            let deletedCount = 0;
-
-            for (const file of files) {
-                const filePath = path.join(this.auditDir, file);
-                const stats = await fs.stat(filePath);
-
-                if (stats.mtime < thirtyDaysAgo) {
-                    await fs.unlink(filePath);
-                    deletedCount++;
-                }
-            }
-
-            if (deletedCount > 0) {
-                console.log(`📋 Cleaned up ${deletedCount} old audit log files`);
-            }
-        } catch (error) {
-            console.error('Error cleaning up audit logs:', error);
         }
     }
 } 

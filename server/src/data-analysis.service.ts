@@ -56,7 +56,7 @@ export class DataAnalysisService {
      */
     private extractMetricsRecursively(data: any, keyPath: string[] = [], depth: number = 0): MetricInfo[] {
         const metrics: MetricInfo[] = [];
-        const maxDepth = 5; // Prevent infinite recursion
+        const maxDepth = 10; // Prevent infinite recursion
 
         if (depth > maxDepth || !data || typeof data !== 'object') {
             return metrics;
@@ -264,7 +264,7 @@ export class DataAnalysisService {
         }
 
         // Don't recurse too deep
-        if (path.length > 3) {
+        if (path.length > 5) {
             return false;
         }
 
@@ -275,13 +275,10 @@ export class DataAnalysisService {
      * Analyze a single metric and determine its characteristics
      */
     private analyzeMetric(key: string, value: any, fullPath?: string): MetricInfo | null {
-
-        // Skip null/undefined values
         if (value === null || value === undefined) {
             return null;
         }
 
-        // Handle scalar values
         if (typeof value === 'number') {
             const valueType = this.detectValueType(key, value);
             return {
@@ -297,12 +294,10 @@ export class DataAnalysisService {
             };
         }
 
-        // Handle arrays
         if (Array.isArray(value)) {
             return this.analyzeArrayMetric(key, value, fullPath);
         }
 
-        // Handle objects
         if (typeof value === 'object') {
             return this.analyzeObjectMetric(key, value, fullPath);
         }
@@ -336,7 +331,7 @@ export class DataAnalysisService {
             };
         }
 
-        // Skip arrays of objects - they'll be handled by extractFromObjectArray
+        // Skip arrays of objects - handled by extractFromObjectArray
         if (firstItem && typeof firstItem === 'object') {
             return null;
         }
@@ -497,8 +492,8 @@ export class DataAnalysisService {
 
         // Heatmap charts for correlation/pattern analysis
         const correlationMetrics = metrics.filter(m =>
-            (m.hasGrouping && m.hasTimeData) || // Time + category data
-            (m.type === 'embeddedMetrics' && m.groupingDimensions && m.groupingDimensions.length > 3) || // Multiple entities
+            (m.hasGrouping && m.hasTimeData) ||
+            (m.type === 'embeddedMetrics' && m.groupingDimensions && m.groupingDimensions.length > 3) ||
             m.name.toLowerCase().includes('correlation') ||
             m.name.toLowerCase().includes('pattern') ||
             m.name.toLowerCase().includes('intensity') ||
@@ -635,7 +630,7 @@ export class DataAnalysisService {
                 }
             }
 
-            // Bonus points for embedded metrics if the prompt mentions the container
+            // Handle embedded metrics
             if (metric.embeddedMetrics && metric.embeddedMetrics.some(em =>
                 keywords.some(kw => em.toLowerCase().includes(kw) || kw.includes(em.toLowerCase()))
             )) {

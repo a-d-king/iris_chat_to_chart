@@ -1,4 +1,3 @@
-// Load environment variables from .env file FIRST
 import * as dotenv from 'dotenv';
 dotenv.config();
 
@@ -19,14 +18,9 @@ import { AuditService } from './audit.service';
     providers: [OpenAiService, MetricsService, DataAnalysisService, AuditService]
 })
 class AppModule { }
-
-/**
- * Bootstrap function to start the NestJS application
- * Configures CORS and starts the server on port 4000
- */
 async function bootstrap() {
     const app = await NestFactory.create(AppModule, {
-        cors: true // Enable CORS for frontend communication
+        cors: true
     });
 
     console.log('🚀 Chat-to-Chart server starting...');

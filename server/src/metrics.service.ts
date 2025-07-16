@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import fs from 'fs/promises';
 import path from 'path';
 import { DataAnalysisService, MetricInfo } from './data-analysis.service';
-import { config } from './config';
+import { DATA_SOURCE_FILE } from './app.controller';
 
 /**
  * Service for handling metrics data operations with caching
@@ -23,7 +23,7 @@ export class MetricsService {
         if (!this.cache) {
             try {
                 const raw = await fs.readFile(
-                    path.join(__dirname, '..', 'sample-june-metrics.json'),
+                    path.join(__dirname, '..', DATA_SOURCE_FILE),
                     'utf-8'
                 );
 

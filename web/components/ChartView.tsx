@@ -106,13 +106,12 @@ export default function ChartView({ spec }: ChartViewProps) {
         data.dates.map((date: string, index: number) => {
             const dataPoint: any = {
                 date: (() => {
-                    // Enhanced date parsing with validation
                     try {
                         // Handle different date formats
                         if (date.includes('-')) {
                             const [year, month, day] = date.split('-').map(Number);
                             if (year && month && day) {
-                                const localDate = new Date(year, month - 1, day); // month is 0-indexed
+                                const localDate = new Date(year, month - 1, day);
                                 return localDate.toLocaleDateString('en-US', {
                                     month: 'short',
                                     day: 'numeric'
@@ -126,7 +125,7 @@ export default function ChartView({ spec }: ChartViewProps) {
                         });
                     } catch (error) {
                         console.warn('Date parsing error:', error, 'for date:', date);
-                        return date; // Return original if parsing fails
+                        return date;
                     }
                 })()
             };
@@ -161,7 +160,7 @@ export default function ChartView({ spec }: ChartViewProps) {
             return [{
                 type: 'heatmap',
                 xKey: 'date',
-                yKey: 'category', // We'll need to transform data for this
+                yKey: 'category',
                 colorKey: 'value',
                 colorRange: ['#0891b2', '#f59e0b', '#dc2626'],
                 colorName: metric
@@ -222,7 +221,7 @@ export default function ChartView({ spec }: ChartViewProps) {
 
     const series = configureSeries();
 
-    // Validate that we have data to display
+    // Validate there is data to display
     if (!chartData || chartData.length === 0) {
         return (
             <div className="flex items-center justify-center h-64 bg-gray-50 border border-gray-200 rounded">
