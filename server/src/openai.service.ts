@@ -122,7 +122,8 @@ USER INTENT KEYWORDS:
 
         const response = await openai.chat.completions.create({
             model: 'gpt-4o',
-            temperature: 0, // Use deterministic responses
+            // Deterministic responses
+            temperature: 0,
             messages: [{
                 role: 'user',
                 content: primaryPrompt
@@ -131,7 +132,6 @@ USER INTENT KEYWORDS:
             tool_choice: { type: 'function', function: { name: 'create_chart' } }
         });
 
-        // Debug logging
         console.log('OpenAI Response:', JSON.stringify(response.choices[0].message, null, 2));
 
         // Parse the tool call arguments into a chart spec object

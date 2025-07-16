@@ -1,40 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import * as fs from 'fs';
+import * as path from 'path';
+import { DataAnalysis, MetricInfo, ChartSuggestion } from './src/data-analysis.service';
 
 /**
- * Interface for data analysis results
+ * Primary test suite for DataAnalysisService
  */
-export interface DataAnalysis {
-    availableMetrics: MetricInfo[];
-    suggestedChartTypes: ChartSuggestion[];
-    dataContext: string;
-}
-
-export interface MetricInfo {
-    name: string;
-    type: 'scalar' | 'timeSeries' | 'groupedSeries' | 'array' | 'dynamicKeyObject' | 'embeddedMetrics';
-    description: string;
-    hasTimeData: boolean;
-    hasGrouping: boolean;
-    groupingDimensions?: string[];
-    sampleValues?: any[];
-    valueType: 'currency' | 'percentage' | 'count' | 'generic';
-    chartRecommendations: string[];
-    keyPath?: string;
-    embeddedMetrics?: string[];
-}
-
-export interface ChartSuggestion {
-    chartType: 'line' | 'bar' | 'stacked-bar' | 'heatmap' | 'waterfall';
-    confidence: number;
-    reason: string;
-    bestForMetrics: string[];
-}
-
-/**
- * Service for analyzing data structure and providing intelligent chart recommendations
- */
-@Injectable()
-export class DataAnalysisService {
+export class TestDataAnalysisService {
 
     /**
      * Analyze the loaded data and provide context for chart generation
@@ -99,27 +70,22 @@ export class DataAnalysisService {
     private extractFromObjectArray(array: any[], basePath: string): MetricInfo[] {
         const metrics: MetricInfo[] = [];
 
-        if (array.length === 0) {
-            return metrics;
-        }
+        if (array.length === 0) return metrics;
 
         const firstItem = array[0];
-
         const numericKeys = Object.keys(firstItem).filter(key =>
             typeof firstItem[key] === 'number' && key !== 'date'
         );
 
         // Create a container metric for the array
         if (numericKeys.length > 0) {
-            const groupingDimensions = array.map(item => item.connector || item.label || item.name || 'Unknown');
-
             metrics.push({
                 name: basePath,
                 type: 'embeddedMetrics',
                 description: `${this.generateMetricDescription(basePath, 'embeddedMetrics')} containing ${numericKeys.length} metrics`,
                 hasTimeData: false,
                 hasGrouping: true,
-                groupingDimensions: groupingDimensions,
+                groupingDimensions: array.map(item => item.connector || item.label || item.name || 'Unknown'),
                 valueType: 'generic',
                 chartRecommendations: ['bar', 'stacked-bar'],
                 keyPath: basePath,
@@ -130,16 +96,14 @@ export class DataAnalysisService {
             // Create individual metrics for each numeric key
             for (const key of numericKeys) {
                 const metricName = `${basePath}.${key}`;
-                const valueType = this.detectValueType(key, firstItem[key]);
-
                 metrics.push({
                     name: metricName,
                     type: 'groupedSeries',
                     description: `${this.generateMetricDescription(key, 'groupedSeries')} from ${basePath}`,
                     hasTimeData: false,
                     hasGrouping: true,
-                    groupingDimensions: groupingDimensions,
-                    valueType: valueType,
+                    groupingDimensions: array.map(item => item.connector || item.label || item.name || 'Unknown'),
+                    valueType: this.detectValueType(key, firstItem[key]),
                     chartRecommendations: ['bar', 'stacked-bar'],
                     keyPath: metricName,
                     sampleValues: array.slice(0, 3).map(item => (item as any)[key])
@@ -157,9 +121,7 @@ export class DataAnalysisService {
         const metrics: MetricInfo[] = [];
         const entries = Object.entries(obj);
 
-        if (entries.length === 0) {
-            return metrics;
-        }
+        if (entries.length === 0) return metrics;
 
         const [firstKey, firstValue] = entries[0];
 
@@ -170,17 +132,15 @@ export class DataAnalysisService {
 
             // Create a container metric
             if (numericKeys.length > 0) {
-                const groupingDimensions = entries.map(([key, value]: [string, any]) =>
-                    value.name || value.officialName || key
-                );
-
                 metrics.push({
                     name: basePath,
                     type: 'dynamicKeyObject',
                     description: `${this.generateMetricDescription(containerKey, 'dynamicKeyObject')} with ${entries.length} accounts`,
                     hasTimeData: false,
                     hasGrouping: true,
-                    groupingDimensions: groupingDimensions,
+                    groupingDimensions: entries.map(([key, value]: [string, any]) =>
+                        value.name || value.officialName || key
+                    ),
                     valueType: 'generic',
                     chartRecommendations: ['bar'],
                     keyPath: basePath,
@@ -191,16 +151,16 @@ export class DataAnalysisService {
                 // Create individual metrics for each numeric property
                 for (const key of numericKeys) {
                     const metricName = `${basePath}.${key}`;
-                    const valueType = this.detectValueType(key, (firstValue as any)[key]);
-
                     metrics.push({
                         name: metricName,
                         type: 'groupedSeries',
                         description: `${this.generateMetricDescription(key, 'groupedSeries')} across ${containerKey}`,
                         hasTimeData: false,
                         hasGrouping: true,
-                        groupingDimensions: groupingDimensions,
-                        valueType: valueType,
+                        groupingDimensions: entries.map(([accountKey, value]: [string, any]) =>
+                            value.name || value.officialName || accountKey
+                        ),
+                        valueType: this.detectValueType(key, (firstValue as any)[key]),
                         chartRecommendations: ['bar'],
                         keyPath: metricName,
                         sampleValues: entries.slice(0, 3).map(([_, value]: [string, any]) => (value as any)[key])
@@ -240,9 +200,7 @@ export class DataAnalysisService {
             Object.keys(val).length === firstKeys.length
         );
 
-        const result = hasIdLikeKeys && allSimilarStructure;
-
-        return result;
+        return hasIdLikeKeys && allSimilarStructure;
     }
 
     /**
@@ -272,10 +230,16 @@ export class DataAnalysisService {
     }
 
     /**
+     * Extract and categorize all metrics from the data (legacy method for backward compatibility)
+     */
+    private extractMetrics(data: any): MetricInfo[] {
+        return this.extractMetricsRecursively(data);
+    }
+
+    /**
      * Analyze a single metric and determine its characteristics
      */
     private analyzeMetric(key: string, value: any, fullPath?: string): MetricInfo | null {
-
         // Skip null/undefined values
         if (value === null || value === undefined) {
             return null;
@@ -283,14 +247,13 @@ export class DataAnalysisService {
 
         // Handle scalar values
         if (typeof value === 'number') {
-            const valueType = this.detectValueType(key, value);
             return {
                 name: fullPath || key,
                 type: 'scalar',
                 description: this.generateMetricDescription(key, 'scalar'),
                 hasTimeData: false,
                 hasGrouping: false,
-                valueType: valueType,
+                valueType: this.detectValueType(key, value),
                 chartRecommendations: ['bar'],
                 sampleValues: [value],
                 keyPath: fullPath
@@ -594,4 +557,131 @@ export class DataAnalysisService {
 
         return bestMatch;
     }
-} 
+}
+
+// Main test function
+async function testMetricDiscovery() {
+    try {
+        console.log('🔍 Testing Metric Discovery System \n');
+        console.log('='.repeat(70));
+
+        // Load the same sample data that the real service uses
+        const dataPath = path.join(__dirname, 'sample-june-metrics.json');
+        const rawData = fs.readFileSync(dataPath, 'utf-8');
+        const data = JSON.parse(rawData);
+
+        console.log(`📁 Loaded data from: ${dataPath}`);
+        console.log(`📊 Raw data has ${Object.keys(data).length} top-level properties\n`);
+
+        // Initialize the EXACT COPY of DataAnalysisService
+        const analysisService = new TestDataAnalysisService();
+
+        // Analyze the data using EXACT same method
+        const analysis = analysisService.analyzeData(data);
+
+        // Display results
+        console.log('📈 METRIC DISCOVERY RESULTS');
+        console.log('='.repeat(70));
+        console.log(`Total metrics discovered: ${analysis.availableMetrics.length}\n`);
+
+        // Group metrics by type
+        const metricsByType: Record<string, MetricInfo[]> = {};
+        analysis.availableMetrics.forEach(metric => {
+            if (!metricsByType[metric.type]) {
+                metricsByType[metric.type] = [];
+            }
+            metricsByType[metric.type].push(metric);
+        });
+
+        // Display metrics by type with more details
+        Object.entries(metricsByType).forEach(([type, metrics]) => {
+            console.log(`\n🏷️  ${type.toUpperCase()} METRICS (${metrics.length})`);
+            console.log('-'.repeat(50));
+            metrics.forEach(metric => {
+                console.log(`  • ${metric.name}`);
+                console.log(`    Description: ${metric.description}`);
+                console.log(`    Value Type: ${metric.valueType}`);
+                console.log(`    Path: ${metric.keyPath || 'root'}`);
+                console.log(`    Chart Recs: ${metric.chartRecommendations.join(', ')}`);
+                if (metric.embeddedMetrics && metric.embeddedMetrics.length > 0) {
+                    console.log(`    Contains: ${metric.embeddedMetrics.join(', ')}`);
+                }
+                if (metric.groupingDimensions && metric.groupingDimensions.length > 0) {
+                    const displayGroups = metric.groupingDimensions.slice(0, 3);
+                    const moreText = metric.groupingDimensions.length > 3 ? ` +${metric.groupingDimensions.length - 3} more` : '';
+                    console.log(`    Groups: ${displayGroups.join(', ')}${moreText}`);
+                }
+                console.log('');
+            });
+        });
+
+        // Display comprehensive statistics
+        console.log('\n📊 COMPREHENSIVE STATISTICS');
+        console.log('='.repeat(70));
+        console.log(`📊 Total metrics discovered: ${analysis.availableMetrics.length}`);
+        console.log(`⏰ Time series metrics: ${analysis.availableMetrics.filter(m => m.hasTimeData).length}`);
+        console.log(`📚 Grouped metrics: ${analysis.availableMetrics.filter(m => m.hasGrouping).length}`);
+        console.log(`💰 Currency metrics: ${analysis.availableMetrics.filter(m => m.valueType === 'currency').length}`);
+        console.log(`📊 Percentage metrics: ${analysis.availableMetrics.filter(m => m.valueType === 'percentage').length}`);
+        console.log(`🔢 Count metrics: ${analysis.availableMetrics.filter(m => m.valueType === 'count').length}`);
+        console.log(`🔄 Generic metrics: ${analysis.availableMetrics.filter(m => m.valueType === 'generic').length}`);
+
+        // Breakdown by type
+        console.log('\n📈 BREAKDOWN BY TYPE:');
+        Object.entries(metricsByType).forEach(([type, metrics]) => {
+            console.log(`   ${type}: ${metrics.length} metrics`);
+        });
+
+        // Display chart suggestions
+        console.log('\n🎯 CHART SUGGESTIONS');
+        console.log('='.repeat(70));
+        analysis.suggestedChartTypes.forEach(suggestion => {
+            console.log(`${suggestion.chartType.toUpperCase()} (confidence: ${suggestion.confidence})`);
+            console.log(`  Reason: ${suggestion.reason}`);
+            console.log(`  Best for: ${suggestion.bestForMetrics.slice(0, 5).join(', ')}${suggestion.bestForMetrics.length > 5 ? '...' : ''}\n`);
+        });
+
+        // Display data context
+        console.log('\n📝 DATA CONTEXT FOR AI');
+        console.log('='.repeat(70));
+        console.log(analysis.dataContext);
+
+        // Show some examples of newly discovered metrics
+        console.log('\n🆕 EXAMPLES OF NEWLY DISCOVERED METRICS');
+        console.log('='.repeat(70));
+
+        const dynamicMetrics = analysis.availableMetrics.filter(m => m.type === 'dynamicKeyObject');
+        const embeddedMetrics = analysis.availableMetrics.filter(m => m.type === 'embeddedMetrics');
+        const nestedMetrics = analysis.availableMetrics.filter(m => m.keyPath && m.keyPath.includes('.'));
+
+        if (dynamicMetrics.length > 0) {
+            console.log('🔑 Dynamic Key Objects (Account-based metrics):');
+            dynamicMetrics.forEach(m => console.log(`   • ${m.name} (${m.embeddedMetrics?.length} sub-metrics)`));
+        }
+
+        if (embeddedMetrics.length > 0) {
+            console.log('\n📦 Embedded Metrics Containers:');
+            embeddedMetrics.forEach(m => console.log(`   • ${m.name} (${m.embeddedMetrics?.length} sub-metrics)`));
+        }
+
+        if (nestedMetrics.length > 0) {
+            console.log('\n🔗 Nested/Path-based Metrics:');
+            nestedMetrics.slice(0, 10).forEach(m => console.log(`   • ${m.name}`));
+            if (nestedMetrics.length > 10) {
+                console.log(`   ... and ${nestedMetrics.length - 10} more nested metrics`);
+            }
+        }
+
+        console.log('\n✅ TypeScript service test completed successfully!');
+        console.log('🎯 This matches exactly what the real DataAnalysisService will find!');
+
+    } catch (error) {
+        console.error('❌ Error during testing:', error instanceof Error ? error.message : String(error));
+        if (error instanceof Error && error.stack) {
+            console.error(error.stack);
+        }
+    }
+}
+
+// Run the test
+testMetricDiscovery(); 

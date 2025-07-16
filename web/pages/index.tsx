@@ -10,86 +10,168 @@ export default function Home() {
     const [spec, setSpec] = useState(null);
 
     return (
-        <main style={{
-            padding: 24,
-            maxWidth: 1200,
-            margin: '0 auto',
+        <div style={{
+            minHeight: '100vh',
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
             fontFamily: 'system-ui, -apple-system, sans-serif'
         }}>
-            {/* Header */}
-            <div style={{
-                textAlign: 'center',
-                marginBottom: 32,
-                borderBottom: '2px solid #eee',
-                paddingBottom: 24
+            <main style={{
+                padding: 24,
+                maxWidth: 1200,
+                margin: '0 auto'
             }}>
-                <h1 style={{
-                    fontSize: 32,
-                    fontWeight: 'bold',
-                    color: '#333',
-                    marginBottom: 8
+                {/* Header with Logo and Branding */}
+                <div style={{
+                    textAlign: 'center',
+                    marginBottom: 32,
+                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                    borderRadius: 16,
+                    padding: 32,
+                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)'
                 }}>
-                    Chat → Chart MVP
-                </h1>
-                <p style={{
-                    fontSize: 16,
-                    color: '#666',
-                    margin: 0
+                    {/* Iris Finance Logo */}
+                    <img
+                        src="/iris.jpeg"
+                        alt="Iris Finance"
+                        style={{
+                            width: 64,
+                            height: 64,
+                            margin: '0 auto 16px auto',
+                            display: 'block',
+                            borderRadius: 12,
+                            objectFit: 'cover',
+                            boxShadow: '0 4px 16px rgba(124, 58, 237, 0.3)'
+                        }}
+                    />
+
+                    <h1 style={{
+                        fontSize: 36,
+                        fontWeight: 'bold',
+                        color: '#7c3aed',
+                        marginBottom: 8,
+                        textShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+                    }}>
+                        Iris Finance
+                    </h1>
+                    <h2 style={{
+                        fontSize: 28,
+                        fontWeight: '600',
+                        color: '#5b21b6',
+                        marginBottom: 12,
+                        margin: '8px 0 12px 0'
+                    }}>
+                        Chat → Chart AI
+                    </h2>
+                    <p style={{
+                        fontSize: 18,
+                        color: '#6b46c1',
+                        margin: 0,
+                        fontWeight: '500'
+                    }}>
+                        Transform financial data into intelligent insights with AI-powered visualization
+                    </p>
+                </div>
+
+                {/* Instructions */}
+                <div style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                    padding: 20,
+                    borderRadius: 12,
+                    marginBottom: 24,
+                    border: '1px solid rgba(124, 58, 237, 0.2)',
+                    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
+                    backdropFilter: 'blur(10px)'
                 }}>
-                    Transform natural language into beautiful charts powered by AI
-                </p>
-            </div>
+                    <h3 style={{
+                        fontSize: 18,
+                        fontWeight: 600,
+                        color: '#7c3aed',
+                        margin: '0 0 12px 0',
+                        display: 'flex',
+                        alignItems: 'center'
+                    }}>
+                        <span style={{
+                            width: 24,
+                            height: 24,
+                            backgroundColor: '#7c3aed',
+                            borderRadius: '50%',
+                            color: 'white',
+                            fontSize: 14,
+                            fontWeight: 'bold',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            marginRight: 8
+                        }}>
+                            ?
+                        </span>
+                        How to use:
+                    </h3>
+                    <ul style={{
+                        margin: 0,
+                        paddingLeft: 20,
+                        color: '#5b21b6',
+                        fontSize: 15,
+                        lineHeight: 1.6
+                    }}>
+                        <li><strong>Ask natural questions:</strong> "Show me revenue trends" or "Compare sales by channel"</li>
+                        <li><strong>AI-powered analysis:</strong> Our system automatically discovers 99+ metrics from your data</li>
+                        <li><strong>Intelligent visualizations:</strong> Get the perfect chart type for your business insights</li>
+                    </ul>
+                </div>
 
-            {/* Instructions */}
-            <div style={{
-                backgroundColor: '#f8f9fa',
-                padding: 16,
-                borderRadius: 8,
-                marginBottom: 24,
-                border: '1px solid #e9ecef'
-            }}>
-                <h3 style={{
-                    fontSize: 16,
-                    fontWeight: 600,
-                    color: '#495057',
-                    margin: '0 0 8px 0'
+                {/* Chat Input - Keeping white background as requested */}
+                <div style={{
+                    backgroundColor: 'white',
+                    borderRadius: 12,
+                    padding: 20,
+                    marginBottom: 24,
+                    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
+                    border: '2px solid #7c3aed'
                 }}>
-                    How to use:
-                </h3>
-                <ul style={{
-                    margin: 0,
-                    paddingLeft: 20,
-                    color: '#6c757d',
-                    fontSize: 14
+                    <ChatBox onResponse={setSpec} />
+                </div>
+
+                {/* Chart Display - Keeping white background as requested */}
+                <div style={{
+                    backgroundColor: 'white',
+                    borderRadius: 12,
+                    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
+                    border: '2px solid #7c3aed',
+                    overflow: 'hidden'
                 }}>
-                    <li>Type a natural language request for a chart</li>
-                    <li>The AI will interpret your request and generate the appropriate chart</li>
-                    <li>Make sure your server is running and has access to metrics.json</li>
-                </ul>
-            </div>
+                    <ChartView spec={spec} />
+                </div>
 
-            {/* Chat Input */}
-            <ChatBox onResponse={setSpec} />
-
-            {/* Chart Display */}
-            <ChartView spec={spec} />
-
-            {/* Footer */}
-            <div style={{
-                marginTop: 40,
-                padding: 16,
-                textAlign: 'center',
-                fontSize: 12,
-                color: '#999',
-                borderTop: '1px solid #eee'
-            }}>
-                <p>
-                    🚀 Built with Next.js, NestJS, OpenAI, and ag-charts-react
-                </p>
-                <p>
-                    Make sure to place your metrics.json file in the server directory
-                </p>
-            </div>
-        </main>
+                {/* Footer */}
+                <div style={{
+                    marginTop: 40,
+                    padding: 20,
+                    textAlign: 'center',
+                    fontSize: 14,
+                    color: 'rgba(255, 255, 255, 0.9)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    borderRadius: 12,
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)'
+                }}>
+                    <p style={{
+                        margin: '0 0 8px 0',
+                        fontWeight: '600'
+                    }}>
+                        🚀 Iris Finance - AI-Powered Business Intelligence Platform
+                    </p>
+                    <p style={{
+                        margin: 0,
+                        fontSize: 12,
+                        color: 'rgba(255, 255, 255, 0.7)'
+                    }}>
+                        Built with Next.js, NestJS, OpenAI GPT-4, and ag-charts-react
+                    </p>
+                </div>
+            </main>
+        </div>
     );
 } 

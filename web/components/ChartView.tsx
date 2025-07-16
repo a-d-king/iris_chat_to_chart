@@ -55,17 +55,34 @@ export default function ChartView({ spec }: ChartViewProps) {
     if (!spec) {
         return (
             <div style={{
-                padding: 20,
+                padding: 40,
                 textAlign: 'center',
-                color: '#666',
-                border: '2px dashed #ddd',
-                borderRadius: 8,
-                marginTop: 20
+                color: '#6b7280',
+                background: 'linear-gradient(135deg, #f8faff 0%, #f1f5f9 100%)',
+                borderRadius: 12,
+                margin: 20
             }}>
-                <p>No chart to display. Ask for a chart using the input above!</p>
-                <p style={{ fontSize: 12 }}>
-                    Try: "Show me revenue trends for 2023" or "Display user counts by region"
-                </p>
+                <div style={{
+                    width: 80,
+                    height: 80,
+                    backgroundColor: '#e5e7eb',
+                    borderRadius: '50%',
+                    margin: '0 auto 20px auto',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: 32
+                }}>
+                    📊
+                </div>
+                <h3 style={{
+                    fontSize: 20,
+                    fontWeight: '600',
+                    color: '#7c3aed',
+                    margin: '0 0 12px 0'
+                }}>
+                    No chart to display
+                </h3>
             </div>
         );
     }
@@ -94,109 +111,254 @@ export default function ChartView({ spec }: ChartViewProps) {
             return dataPoint;
         }) : [];
 
-    // Configure chart series based on chart type and data structure
+    // Configure chart series based on chart type and data structure with purple theme
     const series = data.values && Array.isArray(data.values)
-        ? data.values.map((series: any) => ({
-            type: chartType === 'stacked-bar' ? 'bar' : chartType,
-            xKey: 'date',
-            yKey: series.label,
-            yName: series.label,
-            stacked: chartType === 'stacked-bar'
-        }))
+        ? data.values.map((series: any, index: number) => {
+            const purpleColors = [
+                '#7c3aed', '#9333ea', '#a855f7', '#c084fc', '#d8b4fe'
+            ];
+            return {
+                type: chartType === 'stacked-bar' ? 'bar' : chartType,
+                xKey: 'date',
+                yKey: series.label,
+                yName: series.label,
+                stacked: chartType === 'stacked-bar',
+                fill: purpleColors[index % purpleColors.length],
+                stroke: purpleColors[index % purpleColors.length],
+                strokeWidth: 2
+            };
+        })
         : [{
             type: chartType === 'stacked-bar' ? 'bar' : chartType,
             xKey: 'date',
             yKey: 'value',
-            yName: metric
+            yName: metric,
+            fill: '#7c3aed',
+            stroke: '#7c3aed',
+            strokeWidth: 2
         }];
 
-    // Chart options for ag-charts (simplified to avoid TypeScript conflicts)
+    // Chart options for ag-charts with Iris Finance branding and proper value formatting
     const chartOptions = {
         data: chartData,
-        series: series,
+        series: series.map((s: any) => ({
+            ...s,
+            tooltip: {
+                renderer: ({ yValue }: any) => {
+                    return {
+                        content: formatValue(yValue, metric)
+                    };
+                }
+            },
+            label: {
+                formatter: ({ value }: any) => formatValue(value, metric)
+            }
+        })),
         title: {
             text: `${metric} ${groupBy ? `by ${groupBy}` : ''} (${dateRange})`
-        }
+        },
+        background: {
+            fill: 'white'
+        },
+        axes: [
+            {
+                type: 'category',
+                position: 'bottom'
+            },
+            {
+                type: 'number',
+                position: 'left',
+                label: {
+                    formatter: ({ value }: any) => formatValue(value, metric)
+                }
+            }
+        ]
     };
 
     return (
-        <div style={{
-            marginTop: 20,
-            padding: 20,
-            border: '1px solid #ddd',
-            borderRadius: 8,
-            backgroundColor: '#fff'
-        }}>
-            {/* User Prompt Display */}
-            {originalPrompt && (
+        <div>
+            {/* Header with AI indicator */}
+            <div style={{
+                padding: 20,
+                borderBottom: '2px solid #7c3aed',
+                backgroundColor: '#f8faff'
+            }}>
                 <div style={{
-                    marginBottom: 16,
-                    padding: 16,
-                    backgroundColor: '#f8f9fa',
-                    borderRadius: 6,
-                    borderLeft: '4px solid #007bff'
+                    display: 'flex',
+                    alignItems: 'center',
+                    marginBottom: 12
                 }}>
                     <div style={{
-                        fontSize: 12,
-                        color: '#6c757d',
-                        marginBottom: 4,
-                        fontWeight: 500,
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.5px'
-                    }}>
-                        User Request
-                    </div>
-                    <div style={{
+                        width: 32,
+                        height: 32,
+                        backgroundColor: '#7c3aed',
+                        borderRadius: '50%',
+                        color: 'white',
                         fontSize: 16,
-                        color: '#495057',
-                        fontStyle: 'italic'
+                        fontWeight: 'bold',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        marginRight: 12
                     }}>
-                        "{originalPrompt}"
+                        🤖
                     </div>
+                    <h3 style={{
+                        fontSize: 18,
+                        fontWeight: '600',
+                        color: '#7c3aed',
+                        margin: 0
+                    }}>
+                        AI-Generated Chart
+                    </h3>
                 </div>
-            )}
+
+                {/* User Prompt Display */}
+                {originalPrompt && (
+                    <div style={{
+                        padding: 16,
+                        backgroundColor: 'white',
+                        borderRadius: 8,
+                        border: '1px solid #e5e7eb',
+                        borderLeft: '4px solid #7c3aed'
+                    }}>
+                        <div style={{
+                            fontSize: 12,
+                            color: '#6b7280',
+                            marginBottom: 4,
+                            fontWeight: 500,
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.5px'
+                        }}>
+                            Your Request
+                        </div>
+                        <div style={{
+                            fontSize: 16,
+                            color: '#374151',
+                            fontStyle: 'italic',
+                            fontWeight: '500'
+                        }}>
+                            "{originalPrompt}"
+                        </div>
+                    </div>
+                )}
+            </div>
 
             {/* Chart Metadata */}
             <div style={{
-                marginBottom: 16,
-                padding: 12,
-                backgroundColor: '#f0f8ff',
-                borderRadius: 4,
-                fontSize: 14
+                padding: 16,
+                backgroundColor: '#f8faff',
+                borderBottom: '1px solid #e5e7eb'
             }}>
-                <strong>Chart Type:</strong> {chartType} |
-                <strong> Metric:</strong> {metric} |
-                <strong> Date Range:</strong> {dateRange}
-                {groupBy && <span> | <strong>Grouped by:</strong> {groupBy}</span>}
+                <div style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: 16,
+                    fontSize: 14
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <span style={{
+                            width: 12,
+                            height: 12,
+                            backgroundColor: '#7c3aed',
+                            borderRadius: '50%',
+                            marginRight: 8
+                        }}></span>
+                        <strong style={{ color: '#7c3aed' }}>Chart Type:</strong>
+                        <span style={{ color: '#374151', marginLeft: 4 }}>{chartType}</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <span style={{
+                            width: 12,
+                            height: 12,
+                            backgroundColor: '#9333ea',
+                            borderRadius: '50%',
+                            marginRight: 8
+                        }}></span>
+                        <strong style={{ color: '#7c3aed' }}>Metric:</strong>
+                        <span style={{ color: '#374151', marginLeft: 4 }}>{metric}</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <span style={{
+                            width: 12,
+                            height: 12,
+                            backgroundColor: '#a855f7',
+                            borderRadius: '50%',
+                            marginRight: 8
+                        }}></span>
+                        <strong style={{ color: '#7c3aed' }}>Period:</strong>
+                        <span style={{ color: '#374151', marginLeft: 4 }}>{dateRange}</span>
+                    </div>
+                    {groupBy && (
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <span style={{
+                                width: 12,
+                                height: 12,
+                                backgroundColor: '#c084fc',
+                                borderRadius: '50%',
+                                marginRight: 8
+                            }}></span>
+                            <strong style={{ color: '#7c3aed' }}>Grouped by:</strong>
+                            <span style={{ color: '#374151', marginLeft: 4 }}>{groupBy}</span>
+                        </div>
+                    )}
+                </div>
             </div>
 
-            {/* Chart with Formatted Data */}
-            <div style={{ height: 400 }}>
+            {/* Chart with White Background */}
+            <div style={{
+                height: 450,
+                padding: 20,
+                backgroundColor: 'white'
+            }}>
                 <AgChartsReact options={chartOptions} />
             </div>
 
             {/* Data Formatting Legend */}
             <div style={{
-                marginTop: 12,
-                padding: 8,
-                backgroundColor: '#f8f9fa',
-                borderRadius: 4,
-                fontSize: 12,
-                color: '#6c757d'
+                padding: 16,
+                backgroundColor: '#f8faff',
+                borderTop: '1px solid #e5e7eb',
+                fontSize: 13,
+                color: '#6b7280'
             }}>
-                <strong>Data Formatting:</strong> {
-                    metric.toLowerCase().includes('sales') ||
-                        metric.toLowerCase().includes('profit') ||
-                        metric.toLowerCase().includes('revenue') ||
-                        metric.toLowerCase().includes('cost') ||
-                        metric.toLowerCase().includes('cash') ? 'Currency (USD)' :
-                        metric.toLowerCase().includes('percentage') ||
-                            metric.toLowerCase().includes('rate') ? 'Percentage (%)' :
-                            metric.toLowerCase().includes('order') ||
-                                metric.toLowerCase().includes('count') ||
-                                metric.toLowerCase().includes('customer') ? 'Count (whole numbers)' :
-                                'Numeric values'
-                }
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    marginBottom: 8
+                }}>
+                    <div style={{
+                        width: 20,
+                        height: 20,
+                        backgroundColor: '#7c3aed',
+                        borderRadius: 4,
+                        marginRight: 8,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'white',
+                        fontSize: 12,
+                        fontWeight: 'bold'
+                    }}>
+                        i
+                    </div>
+                    <strong style={{ color: '#7c3aed' }}>Data Formatting:</strong>
+                </div>
+                <div style={{ marginLeft: 28 }}>
+                    {
+                        metric.toLowerCase().includes('sales') ||
+                            metric.toLowerCase().includes('profit') ||
+                            metric.toLowerCase().includes('revenue') ||
+                            metric.toLowerCase().includes('cost') ||
+                            metric.toLowerCase().includes('cash') ? 'Currency values displayed in USD format' :
+                            metric.toLowerCase().includes('percentage') ||
+                                metric.toLowerCase().includes('rate') ? 'Percentage values with 2 decimal places' :
+                                metric.toLowerCase().includes('order') ||
+                                    metric.toLowerCase().includes('count') ||
+                                    metric.toLowerCase().includes('customer') ? 'Count values as whole numbers' :
+                                    'Numeric values with up to 2 decimal places'
+                    }
+                </div>
             </div>
         </div>
     );

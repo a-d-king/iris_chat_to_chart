@@ -26,7 +26,6 @@ export class MetricsService {
                     path.join(__dirname, '..', 'sample-june-metrics.json'),
                     'utf-8'
                 );
-                console.log('📊 Using sample-june-metrics.json data');
 
                 this.cache = JSON.parse(raw);
 
@@ -78,6 +77,10 @@ export class MetricsService {
                 return this.sliceGroupedSeries(data, metricInfo, dateRange);
             case 'scalar':
                 return this.sliceScalar(data, metricInfo);
+            case 'dynamicKeyObject':
+                return this.sliceDynamicKeyObject(data, metricInfo);
+            case 'embeddedMetrics':
+                return this.sliceEmbeddedMetrics(data, metricInfo);
             default:
                 throw new Error(`Unsupported metric type: ${metricInfo.type}`);
         }
@@ -87,7 +90,7 @@ export class MetricsService {
      * Extract time series data
      */
     private sliceTimeSeries(data: any, metricInfo: MetricInfo, dateRange: string): any {
-        const rawData = data[metricInfo.name];
+        const rawData = this.getNestedValue(data, metricInfo.name);
 
         if (!rawData || !Array.isArray(rawData)) {
             return [];
@@ -107,7 +110,7 @@ export class MetricsService {
             });
         }
 
-        // Convert to chart format
+        // Convert to AG Chart format
         return {
             dates: filteredData.map((item: any) => item.date),
             values: [{
@@ -121,7 +124,12 @@ export class MetricsService {
      * Extract grouped series data
      */
     private sliceGroupedSeries(data: any, metricInfo: MetricInfo, dateRange: string): any {
-        const rawData = data[metricInfo.name];
+        // Handle nested path metrics (like dataBySalesConnectors.grossSales)
+        if (metricInfo.keyPath && metricInfo.keyPath.includes('.')) {
+            return this.sliceNestedGroupedSeries(data, metricInfo, dateRange);
+        }
+
+        const rawData = this.getNestedValue(data, metricInfo.name);
 
         if (!rawData || !rawData.dates || !rawData.values) {
             return [];
@@ -159,10 +167,37 @@ export class MetricsService {
     }
 
     /**
+     * Extract nested grouped series data (for metrics like dataBySalesConnectors.grossSales)
+     */
+    private sliceNestedGroupedSeries(data: any, metricInfo: MetricInfo, dateRange: string): any {
+        const pathParts = metricInfo.keyPath!.split('.');
+        const containerPath = pathParts.slice(0, -1).join('.');
+        const metricKey = pathParts[pathParts.length - 1];
+
+        const containerData = this.getNestedValue(data, containerPath);
+
+        if (!Array.isArray(containerData)) {
+            return [];
+        }
+
+        // Convert array of objects to grouped series format
+        const categories = containerData.map(item => item.connector || item.label || item.name || 'Unknown');
+        const values = containerData.map(item => (item as any)[metricKey] || 0);
+
+        return {
+            dates: categories,
+            values: [{
+                label: metricInfo.description,
+                values: values
+            }]
+        };
+    }
+
+    /**
      * Extract scalar data
      */
     private sliceScalar(data: any, metricInfo: MetricInfo) {
-        const value = data[metricInfo.name];
+        const value = this.getNestedValue(data, metricInfo.name);
 
         return {
             dates: ['Total'],
@@ -173,5 +208,106 @@ export class MetricsService {
         };
     }
 
+    /**
+     * Extract data from dynamic key objects (like cashDetails, creditCardDetails)
+     */
+    private sliceDynamicKeyObject(data: any, metricInfo: MetricInfo): any {
+        const rawData = this.getNestedValue(data, metricInfo.name);
 
+        if (!rawData || typeof rawData !== 'object') {
+            return [];
+        }
+
+        const entries = Object.entries(rawData);
+        if (entries.length === 0) {
+            return [];
+        }
+
+        // If this is a container metric, return summary of all accounts
+        if (!metricInfo.keyPath?.includes('.') || metricInfo.keyPath.split('.').length === 1) {
+            const categories = entries.map(([key, value]: [string, any]) =>
+                value.name || value.officialName || key
+            );
+
+            // Get the first numeric property as the default metric
+            const firstEntry = entries[0][1];
+            const firstNumericKey = Object.keys(firstEntry).find(key =>
+                typeof (firstEntry as any)[key] === 'number'
+            );
+
+            if (!firstNumericKey) {
+                return [];
+            }
+
+            const values = entries.map(([_, value]: [string, any]) => (value as any)[firstNumericKey] || 0);
+
+            return {
+                dates: categories,
+                values: [{
+                    label: `${firstNumericKey} by account`,
+                    values: values
+                }]
+            };
+        }
+
+        // If this is a specific metric within the dynamic object
+        const pathParts = metricInfo.keyPath.split('.');
+        const metricKey = pathParts[pathParts.length - 1];
+
+        const categories = entries.map(([key, value]: [string, any]) =>
+            value.name || value.officialName || key
+        );
+        const values = entries.map(([_, value]: [string, any]) => (value as any)[metricKey] || 0);
+
+        return {
+            dates: categories,
+            values: [{
+                label: metricInfo.description,
+                values: values
+            }]
+        };
+    }
+
+    /**
+     * Extract data from embedded metrics (like dataBySalesConnectors)
+     */
+    private sliceEmbeddedMetrics(data: any, metricInfo: MetricInfo): any {
+        const rawData = this.getNestedValue(data, metricInfo.name);
+
+        if (!Array.isArray(rawData) || rawData.length === 0) {
+            return [];
+        }
+
+        const categories = rawData.map(item => item.connector || item.label || item.name || 'Unknown');
+
+        // Get all numeric keys from the first item
+        const firstItem = rawData[0];
+        const numericKeys = Object.keys(firstItem).filter(key =>
+            typeof firstItem[key] === 'number' && key !== 'date'
+        );
+
+        if (numericKeys.length === 0) {
+            return [];
+        }
+
+        // Create series for each numeric metric
+        const values = numericKeys.map(key => ({
+            label: key,
+            values: rawData.map(item => (item as any)[key] || 0)
+        }));
+
+        return {
+            dates: categories,
+            values: values
+        };
+    }
+
+    /**
+     * Helper method to get nested values from object using dot notation
+     */
+    private getNestedValue(obj: any, path: string): any {
+        return path.split('.').reduce((current, key) => {
+            return current && current[key] !== undefined ? current[key] : undefined;
+        }, obj);
+    }
 } 

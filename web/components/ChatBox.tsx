@@ -53,26 +53,64 @@ export default function ChatBox({ onResponse }: ChatBoxProps) {
 
     return (
         <div>
+            {/* Header */}
+            <div style={{
+                marginBottom: 16,
+                display: 'flex',
+                alignItems: 'center'
+            }}>
+                <div style={{
+                    width: 32,
+                    height: 32,
+                    backgroundColor: '#7c3aed',
+                    borderRadius: '50%',
+                    color: 'white',
+                    fontSize: 16,
+                    fontWeight: 'bold',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginRight: 12
+                }}>
+                    💬
+                </div>
+                <h3 style={{
+                    fontSize: 18,
+                    fontWeight: '600',
+                    color: '#7c3aed',
+                    margin: 0
+                }}>
+                    Ask Iris Finance AI
+                </h3>
+            </div>
+
+            {/* Input Area */}
             <div style={{
                 display: 'flex',
-                gap: 8,
-                marginBottom: 20,
+                gap: 12,
+                marginBottom: 16,
                 padding: 16,
-                border: '1px solid #ddd',
-                borderRadius: 8,
-                backgroundColor: '#f9f9f9'
+                border: '2px solid #e5e7eb',
+                borderRadius: 12,
+                backgroundColor: '#fafafa',
+                transition: 'all 0.2s ease',
+                ...(text.trim() ? { borderColor: '#7c3aed', backgroundColor: '#f8faff' } : {})
             }}>
                 <input
                     value={text}
                     onChange={(e) => setText(e.target.value)}
                     onKeyPress={handleKeyPress}
-                    placeholder="Ask for a chart (e.g., 'Show me revenue trends for 2023')"
+                    placeholder="Ask about your financial data here..."
                     style={{
                         flex: 1,
-                        padding: 8,
-                        border: '1px solid #ccc',
-                        borderRadius: 4,
-                        fontSize: 14
+                        padding: '12px 16px',
+                        border: 'none',
+                        borderRadius: 8,
+                        fontSize: 16,
+                        backgroundColor: 'white',
+                        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
+                        outline: 'none',
+                        fontFamily: 'inherit'
                     }}
                     disabled={isLoading}
                 />
@@ -80,18 +118,94 @@ export default function ChatBox({ onResponse }: ChatBoxProps) {
                     onClick={ask}
                     disabled={isLoading || !text.trim()}
                     style={{
-                        padding: '8px 16px',
-                        backgroundColor: isLoading ? '#ccc' : '#007bff',
+                        padding: '12px 24px',
+                        backgroundColor: isLoading ? '#9ca3af' : (text.trim() ? '#7c3aed' : '#d1d5db'),
                         color: 'white',
                         border: 'none',
-                        borderRadius: 4,
-                        cursor: isLoading ? 'not-allowed' : 'pointer',
-                        fontSize: 14
+                        borderRadius: 8,
+                        cursor: isLoading ? 'not-allowed' : (text.trim() ? 'pointer' : 'default'),
+                        fontSize: 16,
+                        fontWeight: '600',
+                        transition: 'all 0.2s ease',
+                        minWidth: 100,
+                        boxShadow: text.trim() && !isLoading ? '0 4px 12px rgba(124, 58, 237, 0.3)' : 'none',
+                        transform: text.trim() && !isLoading ? 'translateY(-1px)' : 'none'
                     }}
                 >
-                    {isLoading ? 'Processing...' : 'Ask'}
+                    {isLoading ? (
+                        <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <span style={{
+                                width: 16,
+                                height: 16,
+                                border: '2px solid white',
+                                borderTop: '2px solid transparent',
+                                borderRadius: '50%',
+                                animation: 'spin 1s linear infinite'
+                            }}></span>
+                            Processing...
+                        </span>
+                    ) : 'Generate Chart'}
                 </button>
             </div>
+
+            {/* Example Prompts */}
+            <div style={{
+                fontSize: 14,
+                color: '#6b7280'
+            }}>
+                <strong style={{ color: '#7c3aed' }}>Try these examples:</strong>
+                <div style={{
+                    marginTop: 8,
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: 8
+                }}>
+                    {[
+                        "Show me sales trends over time",
+                        "Compare revenue by sales channel",
+                        "Account performance breakdown",
+                        "Cash flow analysis"
+                    ].map((example, index) => (
+                        <button
+                            key={index}
+                            onClick={() => setText(example)}
+                            disabled={isLoading}
+                            style={{
+                                padding: '6px 12px',
+                                backgroundColor: 'white',
+                                border: '1px solid #e5e7eb',
+                                borderRadius: 6,
+                                fontSize: 13,
+                                color: '#6b7280',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease'
+                            }}
+                            onMouseOver={(e) => {
+                                if (!isLoading) {
+                                    e.currentTarget.style.borderColor = '#7c3aed';
+                                    e.currentTarget.style.color = '#7c3aed';
+                                }
+                            }}
+                            onMouseOut={(e) => {
+                                if (!isLoading) {
+                                    e.currentTarget.style.borderColor = '#e5e7eb';
+                                    e.currentTarget.style.color = '#6b7280';
+                                }
+                            }}
+                        >
+                            "{example}"
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            {/* Loading Animation CSS */}
+            <style jsx>{`
+                @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
+            `}</style>
         </div>
     );
 } 
