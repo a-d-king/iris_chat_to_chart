@@ -22,13 +22,14 @@ export default function Home() {
             }}>
                 <div style={{
                     textAlign: 'center',
-                    marginBottom: 32,
+                    margin: '0 auto 32px auto',
                     backgroundColor: 'rgba(255, 255, 255, 0.95)',
                     borderRadius: 16,
                     padding: 32,
                     boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
                     backdropFilter: 'blur(10px)',
-                    border: '1px solid rgba(255, 255, 255, 0.2)'
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    maxWidth: 360
                 }}>
                     <img
                         src="/iris.jpeg"
@@ -53,6 +54,14 @@ export default function Home() {
                     }}>
                         Iris Finance
                     </h1>
+                    <h2 style={{
+                        fontSize: 24,
+                        color: '#7c3aed',
+                        marginBottom: 8,
+                        textShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+                    }}>
+                        Chat → Chart AI
+                    </h2>
                 </div>
 
                 <div style={{
