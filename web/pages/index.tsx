@@ -53,23 +53,6 @@ export default function Home() {
                     }}>
                         Iris Finance
                     </h1>
-                    <h2 style={{
-                        fontSize: 28,
-                        fontWeight: '600',
-                        color: '#5b21b6',
-                        marginBottom: 12,
-                        margin: '8px 0 12px 0'
-                    }}>
-                        Chat → Chart AI
-                    </h2>
-                    <p style={{
-                        fontSize: 18,
-                        color: '#6b46c1',
-                        margin: 0,
-                        fontWeight: '500'
-                    }}>
-                        Transform financial data into intelligent insights with AI-powered visualization
-                    </p>
                 </div>
 
                 <div style={{

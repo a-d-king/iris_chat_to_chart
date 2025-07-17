@@ -26,4 +26,4 @@ export class ChartSpecDto {
 
     @Matches(/^\d{4}(-\d{2})?$/) // Matches YYYY or YYYY-MM format
     dateRange: string;
-} 
+}

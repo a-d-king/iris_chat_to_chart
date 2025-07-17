@@ -1,5 +1,12 @@
 import React from 'react';
 import { AgChartsReact } from 'ag-charts-react';
+import { AgGridReact } from 'ag-grid-react';
+import { ModuleRegistry, AllCommunityModule } from 'ag-grid-community';
+import 'ag-grid-community/styles/ag-grid.css';
+import 'ag-grid-community/styles/ag-theme-alpine.css';
+
+// Register AG Grid modules
+ModuleRegistry.registerModules([AllCommunityModule]);
 
 interface ChartViewProps {
     spec: any;
@@ -58,6 +65,34 @@ const formatTitle = (text: string): string => {
         .replace(/[_-]/g, ' ')
         // Capitalize first letter of each word
         .replace(/\b\w/g, l => l.toUpperCase());
+};
+
+/**
+ * Generate AG Grid column definitions based on the chart data structure
+ */
+const generateColumnDefs = (data: any[], metric: string) => {
+    if (!data || data.length === 0) {
+        return [];
+    }
+
+    const sampleRow = data[0];
+    return Object.keys(sampleRow).map(key => ({
+        field: key,
+        headerName: formatTitle(key),
+        sortable: true,
+        filter: true,
+        resizable: true,
+        flex: 1,
+        valueFormatter: (key === 'date' || key === 'index') ? undefined :
+            (params: any) => {
+                if (params.value == null) return '';
+                // Check if it's a numeric value that should be formatted
+                if (typeof params.value === 'number') {
+                    return formatValue(params.value, metric);
+                }
+                return params.value;
+            }
+    }));
 };
 
 /**
@@ -138,6 +173,28 @@ export default function ChartView({ spec }: ChartViewProps) {
 
             return dataPoint;
         }) : [];
+
+    // Use chartData directly for the grid since it's already processed correctly
+    let gridData = chartData && chartData.length > 0 ? chartData : null;
+
+    // If chartData is empty, try to process the raw backend data
+    if (!gridData && data && data.dates && data.values) {
+        // Convert backend format to grid format
+        gridData = data.dates.map((date: string, index: number) => {
+            const row: any = { date };
+
+            // Add each series as a column
+            if (Array.isArray(data.values)) {
+                data.values.forEach((series: any) => {
+                    if (series.label && series.values && series.values[index] !== undefined) {
+                        row[series.label] = series.values[index];
+                    }
+                });
+            }
+
+            return row;
+        });
+    }
 
     // Configure series based on chart type
     const configureSeries = () => {
@@ -443,6 +500,88 @@ export default function ChartView({ spec }: ChartViewProps) {
             }}>
                 <AgChartsReact options={chartOptions} />
             </div>
+
+            {/* Data Table with AG Grid */}
+            {gridData && gridData.length > 0 && (
+                <div>
+                    {/* Data Table Header */}
+                    <div style={{
+                        padding: 16,
+                        backgroundColor: '#f8faff',
+                        borderTop: '2px solid #7c3aed',
+                        borderBottom: '1px solid #e5e7eb'
+                    }}>
+                        <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            marginBottom: 8
+                        }}>
+                            <div style={{
+                                width: 20,
+                                height: 20,
+                                backgroundColor: '#7c3aed',
+                                borderRadius: 4,
+                                marginRight: 8,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: 'white',
+                                fontSize: 12,
+                                fontWeight: 'bold'
+                            }}>
+                                📊
+                            </div>
+                            <strong style={{ color: '#7c3aed', fontSize: 16 }}>Data Table</strong>
+                        </div>
+                        <div style={{
+                            fontSize: 13,
+                            color: '#6b7280'
+                        }}>
+                            Interactive table with sorting, filtering, and export capabilities
+                        </div>
+                    </div>
+
+                    {/* AG Grid */}
+                    <div className="ag-theme-alpine" style={{
+                        height: 400,
+                        backgroundColor: 'white'
+                    }}>
+                        <AgGridReact
+                            rowData={gridData}
+                            columnDefs={generateColumnDefs(gridData, metric)}
+                            defaultColDef={{
+                                sortable: true,
+                                filter: true,
+                                resizable: true,
+                                flex: 1
+                            }}
+                            animateRows={true}
+                            rowSelection="multiple"
+                            suppressRowClickSelection={false}
+                            pagination={true}
+                            paginationPageSize={10}
+                            domLayout="normal"
+                        />
+                    </div>
+                </div>
+            )}
+
+            {/* Show message when no grid data */}
+            {(!gridData || gridData.length === 0) && (
+                <div style={{
+                    padding: 20,
+                    backgroundColor: '#fee2e2',
+                    border: '1px solid #fecaca',
+                    borderRadius: 8,
+                    margin: '16px 0',
+                    textAlign: 'center'
+                }}>
+                    <strong style={{ color: '#dc2626' }}>⚠️ No Data Available for Table</strong>
+                    <div style={{ marginTop: 8, fontSize: 14, color: '#7f1d1d' }}>
+                        The chart is displaying but no tabular data could be processed. Check the debug info above.
+                    </div>
+                </div>
+            )}
 
             {/* Data Formatting Legend */}
             <div style={{
