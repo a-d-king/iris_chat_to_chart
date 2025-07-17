@@ -59,11 +59,8 @@ const formatValue = (value: number, metric: string): string => {
  */
 const formatTitle = (text: string): string => {
     return text
-        // Handle camelCase by adding spaces before capital letters
         .replace(/([a-z])([A-Z])/g, '$1 $2')
-        // Handle snake_case and kebab-case by replacing _ and - with spaces
         .replace(/[_-]/g, ' ')
-        // Capitalize first letter of each word
         .replace(/\b\w/g, l => l.toUpperCase());
 };
 
@@ -174,7 +171,6 @@ export default function ChartView({ spec }: ChartViewProps) {
             return dataPoint;
         }) : [];
 
-    // Use chartData directly for the grid since it's already processed correctly
     let gridData = chartData && chartData.length > 0 ? chartData : null;
 
     // If chartData is empty, try to process the raw backend data
@@ -202,7 +198,7 @@ export default function ChartView({ spec }: ChartViewProps) {
             // Heatmap requires special configuration
             if (!data.values || !Array.isArray(data.values) || data.values.length === 0) {
                 console.warn('Heatmap requires grouped data with multiple series');
-                // Fallback to bar chart for single metrics
+                // Fallback to bar chart for single metrics - this should be changed/improved
                 return [{
                     type: 'bar',
                     xKey: 'date',
@@ -566,7 +562,6 @@ export default function ChartView({ spec }: ChartViewProps) {
                 </div>
             )}
 
-            {/* Show message when no grid data */}
             {(!gridData || gridData.length === 0) && (
                 <div style={{
                     padding: 20,

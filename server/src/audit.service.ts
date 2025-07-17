@@ -21,7 +21,7 @@ export interface AuditLogEntry {
 
 /**
  * Service for auditing chart generation requests
- * Saves data used in chart generation for compliance and debugging
+ * Saves data used in chart generation for compliance/debugging and extension to saving to a database
  */
 @Injectable()
 export class AuditService {
@@ -102,12 +102,10 @@ export class AuditService {
         try {
             let dailySummary: any[] = [];
 
-            // Try to load existing summary
             try {
                 const existingData = await fs.readFile(summaryFile, 'utf-8');
                 dailySummary = JSON.parse(existingData);
             } catch (error) {
-                // File doesn't exist yet, start with empty array
                 dailySummary = [];
             }
 

@@ -6,7 +6,7 @@ const openai = new OpenAI();
 
 /**
  * OpenAI tool schema for chart creation
- * Defines the structure that GPT should follow when generating chart specifications
+ * Define the structure that GPT should follow when generating chart specifications
  */
 const TOOL_SCHEMA = [{
     type: 'function' as const,
@@ -52,7 +52,6 @@ export class OpenAiService {
      * @returns Promise<ChartSpecDto> - Structured chart specification
      */
     async prompt(prompt: string, dataAnalysis?: DataAnalysis) {
-        // Build prompt with structured guidance for model
         let primaryPrompt = `You are a data visualization expert. Analyze this request and create the most appropriate chart specification.
 
 USER REQUEST: "${prompt}"

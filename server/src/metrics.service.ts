@@ -15,8 +15,7 @@ export class MetricsService {
     constructor(private dataAnalysisService: DataAnalysisService) { }
 
     /**
-     * Load metrics data from available JSON file
-     * Uses caching to improve performance
+     * Load metrics data from available JSON file with caching to improve performance
      * @returns Promise<any> - The loaded metrics data
      */
     async load() {
@@ -45,7 +44,7 @@ export class MetricsService {
      * @returns Data analysis including available metrics and suggestions
      */
     async getDataAnalysis() {
-        await this.load(); // Ensure data is loaded
+        await this.load();
         return this.dataAnalysis;
     }
 
@@ -113,7 +112,6 @@ export class MetricsService {
                     throw new Error(`Unsupported metric type: ${metricInfo.type}`);
             }
         } catch (error) {
-            // Log the error for debugging
             const errorMessage = error instanceof Error ? error.message : String(error);
             console.error('Error in metrics slice:', {
                 metric,
@@ -122,7 +120,6 @@ export class MetricsService {
                 error: errorMessage
             });
 
-            // Re-throw with additional context if it's not already a user-friendly error
             if (errorMessage.includes('not found') || errorMessage.includes('required') || errorMessage.includes('format')) {
                 throw error;
             } else {

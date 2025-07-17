@@ -60,7 +60,7 @@ export class AppController {
             );
 
             // Step 5: Return combined spec and data for the frontend
-            // This is where we would "plug-in" the existing Iris Finance charting library/system
+            // This interface is where I am planning to "plug-in" the existing Iris Finance charting library/system
             // For now, I'm just rendering using the 5 free charts that are available in ag-charts-react in ChartView.tsx
             // 
             // DATA SHAPE SPECIFICATION:
@@ -125,7 +125,6 @@ export class AppController {
                 responseTime
             });
 
-            // User-friendly error messages
             if (errorMessage.includes('not found in dataset')) {
                 throw new Error(
                     `I couldn't find the requested metric in the data. ${errorMessage.split('Available metrics:')[1] ?

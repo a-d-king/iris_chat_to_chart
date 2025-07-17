@@ -56,7 +56,7 @@ export class DataAnalysisService {
      */
     private extractMetricsRecursively(data: any, keyPath: string[] = [], depth: number = 0): MetricInfo[] {
         const metrics: MetricInfo[] = [];
-        const maxDepth = 10; // Prevent infinite recursion
+        const maxDepth = 10;
 
         if (depth > maxDepth || !data || typeof data !== 'object') {
             return metrics;
@@ -78,7 +78,7 @@ export class DataAnalysisService {
                 metrics.push(...embeddedMetrics);
             }
 
-            // Handle dynamic key objects (like cashDetails, creditCardDetails)
+            // Handle dynamic key objects (cashDetails, creditCardDetails)
             if (this.isDynamicKeyObject(value)) {
                 const dynamicMetrics = this.extractFromDynamicKeyObject(key, value, currentPath);
                 metrics.push(...dynamicMetrics);
@@ -561,7 +561,7 @@ export class DataAnalysisService {
             // Look for dates in various common structures
             const checkForDates = (obj: any, path: string = ''): string | null => {
                 if (Array.isArray(obj)) {
-                    for (const item of obj.slice(0, 3)) { // Check first few items
+                    for (const item of obj.slice(0, 3)) {
                         if (item && typeof item === 'object' && item.date) {
                             const dateStr = String(item.date);
                             const yearMatch = dateStr.match(/^(\d{4})-/);
@@ -576,8 +576,8 @@ export class DataAnalysisService {
                         if (yearMatch) return yearMatch[1];
                     }
 
-                    // Recursively check nested objects
-                    for (const key of Object.keys(obj).slice(0, 10)) { // Limit to avoid deep recursion
+                    // Recursively check nested objects in data
+                    for (const key of Object.keys(obj).slice(0, 10)) {
                         const result = checkForDates(obj[key], path + '.' + key);
                         if (result) return result;
                     }

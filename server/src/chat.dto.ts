@@ -24,6 +24,7 @@ export class ChartSpecDto {
     @IsString()
     groupBy?: string;
 
-    @Matches(/^\d{4}(-\d{2})?$/) // Matches YYYY or YYYY-MM format
+    // Matches YYYY or YYYY-MM format
+    @Matches(/^\d{4}(-\d{2})?$/)
     dateRange: string;
 }
