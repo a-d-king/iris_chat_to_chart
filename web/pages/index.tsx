@@ -154,7 +154,7 @@ export default function Home() {
                         fontSize: 12,
                         color: 'rgba(255, 255, 255, 0.7)'
                     }}>
-                        Built with Next.js, NestJS, OpenAI GPT-4, and ag-charts-react
+                        Built with Next.js, NestJS, OpenAI GPT-4, ag-charts-react, ag-grid-react, and ag-grid-community
                     </p>
                 </div>
             </main>
