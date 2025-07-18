@@ -138,13 +138,6 @@ export const DATA_SOURCE_FILE = 'sample-june-metrics.json';
 - **Dynamic Objects** - Account-level data (`cashDetails: {"account_123": {...}}`)
 - **Embedded Metrics** - Complex nested structures
 
-## 🎨 Customization
-
-### Add Your Logo
-1. Place logo in `web/public/logo.png`
-2. Update `web/pages/index.tsx` logo placeholder
-3. Recommended: 64x64px PNG with transparent background
-
 ## 🔍 How It Works
 
 1. **Data Analysis** - System discovers metrics in your business data
