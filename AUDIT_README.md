@@ -4,14 +4,16 @@
 
 The audit system automatically logs all chart generation requests for compliance, debugging, and analytics purposes. Every chart request is saved with complete context including the user prompt, generated chart specification, and the actual data used.
 
+This is implemented as a NestJS Injectable service that integrates with the chart generation pipeline.
+
 ## Features
 
 - **Complete Request Logging**: Every chart generation request is logged with full context
 - **Unique Request IDs**: Each request gets a unique identifier for tracking
 - **Daily Summaries**: Consolidated daily logs for easy review
 - **Audit Statistics**: Built-in analytics for monitoring usage patterns
-- **Automatic Cleanup**: Old logs are automatically cleaned up (configurable retention)
 - **Data Privacy**: Audit logs are excluded from version control
+- **Performance Optimized**: Statistics calculations use sampling for large datasets
 
 ## File Structure
 
@@ -48,7 +50,6 @@ Each audit log contains:
     "suggestedChartTypes": [/* AI suggestions */]
   },
   "metadata": {
-    "usingMockData": false,
     "dataSourceFile": "sample-june-metrics.json",
     "responseTimeMs": 1247,
     "metricsCount": 15
@@ -56,13 +57,7 @@ Each audit log contains:
 }
 ```
 
-## API Endpoints
-
-### Chart Generation (with audit)
-```
-POST /chat
-```
-Returns chart data with `requestId` for audit tracking.
+## API Endpoint
 
 ### Audit Statistics
 ```
@@ -70,29 +65,25 @@ GET /audit/stats
 ```
 Returns audit statistics including:
 - Total requests
-- Today's requests
+- Today's requests  
 - Chart type breakdown
 - Average response time
-- Mock data usage percentage
 
-## Configuration
+## Implementation Details
 
-Audit settings in `config.ts`:
+The audit service is implemented as a NestJS Injectable service with the following key methods:
 
-```typescript
-audit: {
-    enabled: true,          // Enable/disable audit logging
-    retentionDays: 30,      // How long to keep audit logs
-    directory: 'audit-logs' // Directory name for audit logs
-}
-```
+- `logChartGeneration()`: Creates individual audit log files and updates daily summaries
+- `getAuditStats()`: Calculates statistics using sampling for performance (max 100 recent files)
+- `generateRequestId()`: Creates unique IDs using timestamp + random string
+- `appendToDailySummary()`: Maintains lightweight daily summary files
 
 ## Privacy and Security
 
 - **Data Sensitivity**: Audit logs contain the actual data used for charts
 - **Version Control**: Audit logs are excluded from Git (in .gitignore)
 - **Access Control**: Ensure proper file system permissions on audit directory
-- **Data Retention**: Old logs are automatically cleaned up based on retention policy
+- **No Automatic Cleanup**: Logs accumulate over time - manual cleanup required
 
 ## Use Cases
 
@@ -104,22 +95,17 @@ audit: {
 
 ## Maintenance
 
-The audit system includes automatic maintenance:
+The audit system includes:
 
 - **Daily Summaries**: Lightweight summaries for quick review
-- **Automatic Cleanup**: Old logs are removed based on retention policy
 - **Error Handling**: Robust error handling ensures audit failures don't break chart generation
+- **Performance Sampling**: Statistics use recent sample to avoid performance issues
 
 ## Example Usage
 
 ```bash
 # View audit statistics
 curl http://localhost:4000/audit/stats
-
-# Generate a chart (automatically audited)
-curl -X POST http://localhost:4000/chat \
-  -H "Content-Type: application/json" \
-  -d '{"prompt": "Show me revenue trends"}'
 ```
 
 ## Troubleshooting
@@ -140,5 +126,14 @@ curl -X POST http://localhost:4000/chat \
 
 1. **Regular Monitoring**: Check audit statistics regularly
 2. **Backup Important Logs**: Consider backing up audit logs for critical compliance needs
-3. **Disk Space Management**: Monitor disk usage and adjust retention as needed
-4. **Access Control**: Secure the audit directory with appropriate permissions 
+3. **Disk Space Management**: Monitor disk usage and implement manual cleanup as needed
+4. **Access Control**: Secure the audit directory with appropriate permissions
+
+## Future Enhancements
+
+The current implementation could be extended with:
+
+- Configurable retention policies with automatic cleanup
+- Database storage option for better querying capabilities
+- More detailed analytics and reporting
+- Configurable audit directory location 

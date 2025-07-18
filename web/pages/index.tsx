@@ -106,7 +106,7 @@ export default function Home() {
                         lineHeight: 1.6
                     }}>
                         <li><strong>Ask natural questions:</strong> "Show me revenue trends" or "Compare sales by channel"</li>
-                        <li><strong>AI-powered analysis:</strong> Our system automatically discovers 99+ metrics from your data</li>
+                        <li><strong>AI-powered analysis:</strong> System automatically discovers metrics from data and logs data used for chart generation</li>
                         <li><strong>Intelligent visualizations:</strong> Get the perfect chart type for your business insights</li>
                     </ul>
                 </div>

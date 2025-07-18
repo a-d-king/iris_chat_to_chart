@@ -12,13 +12,16 @@ Transform natural language into intelligent business charts using AI and automat
 **Frontend (Next.js)**
 - **Next.js** - React framework
 - **ag-charts-react** - Chart rendering
+- **ag-grid-react** - Interactive data tables
+- **ag-grid-community** - Grid functionality with sorting, filtering & pagination
 - **TypeScript** - Type safety
 
 ## ✨ Key Features
 
 - **Natural Language to Charts** - "Show me sales trends" → Line chart
+- **Interactive Data Tables** - View chart data in sortable, filterable tables with pagination
 - **Intelligent Data Discovery** - Automatically finds 99+ metrics in complex business data
-- **6 Chart Types** - Line, bar, stacked-bar, heatmap, waterfall
+- **5 Chart Types** - Line, bar, stacked-bar, heatmap, waterfall
 - **Smart AI Context** - GPT-4 receives data analysis for optimal chart selection
 - **Complete Audit Trail** - Every chart generation logged for compliance
 
@@ -45,7 +48,7 @@ npm install
 ### 2. Environment Variables
 Create `server/.env`:
 ```
-OPENAI_API_KEY=your_openai_api_key_here
+OPENAI_API_KEY=openai_api_key_here
 ```
 
 ### 3. Start Services
@@ -93,13 +96,12 @@ Content-Type: application/json
     {"date": "2025-06-02", "value": 79724.74}
   ],
   "requestId": "1703123456789-abc123def",
-  "originalPrompt": "Show me revenue trends by sales channel"
+  "originalPrompt": "Show me revenue trends by sales channel",
+  "dataAnalysis": {
+    "totalMetrics": 99,
+    "suggestedChartTypes": ["line", "bar"]
+  }
 }
-```
-
-### Audit Statistics
-```bash
-GET http://localhost:4000/audit/stats
 ```
 
 ## 📁 Project Structure
@@ -124,16 +126,9 @@ GET http://localhost:4000/audit/stats
 ## 🔧 Configuration
 
 ### Data Source
-Edit `server/src/config.ts`:
+The data source file is configured in `server/src/app.controller.ts`:
 ```typescript
-dataSource: {
-    primaryFile: 'sample-june-metrics.json',
-    fallbackFile: 'metrics.json'
-},
-audit: {
-    enabled: true,
-    retentionDays: 30
-}
+export const DATA_SOURCE_FILE = 'sample-june-metrics.json';
 ```
 
 ### Supported Data Types
@@ -178,7 +173,3 @@ npm start
 - Set `OPENAI_API_KEY` in your production environment
 - Configure proper file permissions for audit directory
 - Set up monitoring for audit log storage
-
-## 📄 License
-
-MIT License - see LICENSE file for details.
