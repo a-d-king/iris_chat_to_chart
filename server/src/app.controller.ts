@@ -1,8 +1,9 @@
 import { Body, Controller, Post, Get, ValidationPipe } from '@nestjs/common';
-import { ChatDto } from './chat.dto';
+import { ChatDto, DashboardDto } from './chat.dto';
 import { OpenAiService } from './openai.service';
 import { MetricsService } from './metrics.service';
 import { AuditService } from './audit.service';
+import { DashboardService } from './dashboard.service';
 
 // Name of primary data source JSON file
 export const DATA_SOURCE_FILE = 'sample-june-metrics.json';
@@ -16,7 +17,8 @@ export class AppController {
     constructor(
         private ai: OpenAiService,
         private metrics: MetricsService,
-        private audit: AuditService
+        private audit: AuditService,
+        private dashboard: DashboardService
     ) { }
 
     /**
@@ -168,6 +170,43 @@ export class AppController {
                 success: false,
                 error: 'Failed to get audit statistics'
             };
+        }
+    }
+
+    /**
+     * POST /dashboard endpoint
+     * Takes a natural language prompt and generates multiple related charts
+     * @param body - Dashboard request containing the user's prompt and preferences
+     * @returns Promise<object> - Dashboard with multiple charts and metadata
+     */
+    @Post('dashboard')
+    async generateDashboard(@Body(new ValidationPipe()) body: DashboardDto) {
+        const startTime = Date.now();
+
+        try {
+            const result = await this.dashboard.generateDashboard(body);
+
+            // Audit the dashboard generation
+            const requestId = await this.audit.logChartGeneration(
+                body.prompt,
+                { chartType: 'dashboard', metric: 'multiple', dateRange: body.dateRange || '2025-06' },
+                result.charts,
+                await this.metrics.getDataAnalysis(),
+                {
+                    dataSourceFile: DATA_SOURCE_FILE,
+                    responseTimeMs: Date.now() - startTime,
+                    metricsCount: result.charts.length
+                }
+            );
+
+            return {
+                ...result,
+                requestId,
+                originalPrompt: body.prompt
+            };
+        } catch (error) {
+            console.error('Error generating dashboard:', error);
+            throw new Error('Failed to generate dashboard');
         }
     }
 } 

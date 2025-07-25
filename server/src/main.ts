@@ -8,10 +8,11 @@ import { OpenAiService } from './openai.service';
 import { MetricsService } from './metrics.service';
 import { DataAnalysisService } from './data-analysis.service';
 import { AuditService } from './audit.service';
+import { DashboardService } from './dashboard.service';
 
 @Module({
     controllers: [AppController],
-    providers: [OpenAiService, MetricsService, DataAnalysisService, AuditService]
+    providers: [OpenAiService, MetricsService, DataAnalysisService, AuditService, DashboardService]
 })
 class AppModule { }
 async function bootstrap() {

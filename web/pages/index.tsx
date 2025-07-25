@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import ChatBox from '../components/ChatBox';
 import ChartView from '../components/ChartView';
+import DashboardView from '../components/DashboardView';
 
 /**
  * Main home page component
@@ -8,6 +9,7 @@ import ChartView from '../components/ChartView';
  */
 export default function Home() {
     const [spec, setSpec] = useState(null);
+    const [dashboard, setDashboard] = useState(null);
 
     return (
         <div style={{
@@ -119,7 +121,10 @@ export default function Home() {
                     boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
                     border: '2px solid #7c3aed'
                 }}>
-                    <ChatBox onResponse={setSpec} />
+                    <ChatBox
+                        onResponse={setSpec}
+                        onDashboardResponse={setDashboard}
+                    />
                 </div>
 
                 <div style={{
@@ -129,7 +134,11 @@ export default function Home() {
                     border: '2px solid #7c3aed',
                     overflow: 'hidden'
                 }}>
-                    <ChartView spec={spec} />
+                    {dashboard ? (
+                        <DashboardView dashboard={dashboard} />
+                    ) : (
+                        <ChartView spec={spec} />
+                    )}
                 </div>
 
                 <div style={{

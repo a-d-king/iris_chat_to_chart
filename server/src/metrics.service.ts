@@ -222,7 +222,34 @@ export class MetricsService {
             return [];
         }
 
-        // Convert array of objects to grouped series format
+        // Special case: If this is a time series array (has date/value objects) and we're extracting 'value'
+        // then convert it to proper time series format instead of treating as grouped series
+        if (metricKey === 'value' && containerData.length > 0 &&
+            containerData[0].date && containerData[0].value !== undefined) {
+
+            // Filter by date range if specified
+            let filteredData = containerData;
+            if (dateRange) {
+                filteredData = containerData.filter((item: any) => {
+                    if (dateRange.includes('-')) {
+                        return item.date && item.date.startsWith(dateRange);
+                    } else {
+                        return item.date && item.date.startsWith(dateRange);
+                    }
+                });
+            }
+
+            // Return as time series format
+            return {
+                dates: filteredData.map((item: any) => item.date),
+                values: [{
+                    label: metricInfo.description,
+                    values: filteredData.map((item: any) => item.value)
+                }]
+            };
+        }
+
+        // Original logic for true grouped series (like dataBySalesConnectors)
         const categories = containerData.map(item => item.connector || item.label || item.name || 'Unknown');
         const values = containerData.map(item => (item as any)[metricKey] || 0);
 

@@ -139,8 +139,8 @@ export default function ChartView({ spec }: ChartViewProps) {
             const dataPoint: any = {
                 date: (() => {
                     try {
-                        // Handle different date formats
-                        if (date.includes('-')) {
+                        // Check if this is actually a date string (contains numbers and dashes)
+                        if (date.includes('-') && /\d{4}-\d{2}-\d{2}/.test(date)) {
                             const [year, month, day] = date.split('-').map(Number);
                             if (year && month && day) {
                                 const localDate = new Date(year, month - 1, day);
@@ -150,11 +150,17 @@ export default function ChartView({ spec }: ChartViewProps) {
                                 });
                             }
                         }
-                        // Fallback for other formats
-                        return new Date(date).toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric'
-                        });
+
+                        // Check if this looks like a date but might be in different format
+                        if (/^\d{4}-\d{2}/.test(date)) {
+                            return new Date(date).toLocaleDateString('en-US', {
+                                month: 'short',
+                                day: 'numeric'
+                            });
+                        }
+
+                        // If it's not a date format, return as-is (e.g., "Amazon Seller Partner", "Shopify")
+                        return date;
                     } catch (error) {
                         console.warn('Date parsing error:', error, 'for date:', date);
                         return date;
@@ -177,7 +183,37 @@ export default function ChartView({ spec }: ChartViewProps) {
     if (!gridData && data && data.dates && data.values) {
         // Convert backend format to grid format
         gridData = data.dates.map((date: string, index: number) => {
-            const row: any = { date };
+            const processedDate = (() => {
+                try {
+                    // Check if this is actually a date string (contains numbers and dashes)
+                    if (date.includes('-') && /\d{4}-\d{2}-\d{2}/.test(date)) {
+                        const [year, month, day] = date.split('-').map(Number);
+                        if (year && month && day) {
+                            const localDate = new Date(year, month - 1, day);
+                            return localDate.toLocaleDateString('en-US', {
+                                month: 'short',
+                                day: 'numeric'
+                            });
+                        }
+                    }
+
+                    // Check if this looks like a date but might be in different format
+                    if (/^\d{4}-\d{2}/.test(date)) {
+                        return new Date(date).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric'
+                        });
+                    }
+
+                    // If it's not a date format, return as-is (e.g., "Amazon Seller Partner", "Shopify")
+                    return date;
+                } catch (error) {
+                    console.warn('Date parsing error:', error, 'for date:', date);
+                    return date;
+                }
+            })();
+
+            const row: any = { date: processedDate };
 
             // Add each series as a column
             if (Array.isArray(data.values)) {
@@ -350,7 +386,7 @@ export default function ChartView({ spec }: ChartViewProps) {
             }
         })),
         title: {
-            text: `${formatTitle(metric)} ${groupBy ? `by ${formatTitle(groupBy)}` : ''} (${dateRange})`
+            text: `${formatTitle(metric)}${groupBy ? ` by ${formatTitle(groupBy)}` : ''}${dateRange ? ` (${dateRange})` : ''}`
         },
         background: {
             fill: 'white'
