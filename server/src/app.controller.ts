@@ -1,5 +1,5 @@
 import { Body, Controller, Post, Get, ValidationPipe } from '@nestjs/common';
-import { ChatDto, DashboardDto } from './chat.dto';
+import { ChatDto, DashboardDto, EnhancedDashboardDto } from './chat.dto';
 import { OpenAiService } from './openai.service';
 import { MetricsService } from './metrics.service';
 import { AuditService } from './audit.service';
@@ -207,6 +207,49 @@ export class AppController {
         } catch (error) {
             console.error('Error generating dashboard:', error);
             throw new Error('Failed to generate dashboard');
+        }
+    }
+
+    /**
+     * POST /dashboard/enhanced endpoint
+     * Takes structured requirements and generates a contextual dashboard
+     * @param body - Enhanced dashboard request with rich context
+     * @returns Promise<object> - Dashboard with context-aware charts and metadata
+     */
+    @Post('dashboard/enhanced')
+    async generateEnhancedDashboard(@Body(new ValidationPipe()) body: EnhancedDashboardDto) {
+        const startTime = Date.now();
+
+        try {
+            const result = await this.dashboard.generateEnhancedDashboard(body);
+
+            // Audit the enhanced dashboard generation
+            const requestId = await this.audit.logChartGeneration(
+                body.prompt,
+                {
+                    chartType: 'enhanced-dashboard',
+                    metric: 'multiple',
+                    dateRange: body.requirements.dataScope.timeRange?.start || '2025-06',
+                    analysisType: body.requirements.analysisType,
+                    context: body.requirements.context
+                },
+                result.charts,
+                await this.metrics.getDataAnalysis(),
+                {
+                    dataSourceFile: DATA_SOURCE_FILE,
+                    responseTimeMs: Date.now() - startTime,
+                    metricsCount: result.charts.length
+                }
+            );
+
+            return {
+                ...result,
+                requestId,
+                originalPrompt: body.prompt
+            };
+        } catch (error) {
+            console.error('Error generating enhanced dashboard:', error);
+            throw new Error('Failed to generate enhanced dashboard');
         }
     }
 } 

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import ChatBox from '../components/ChatBox';
 import ChartView from '../components/ChartView';
 import DashboardView from '../components/DashboardView';
+import DashboardBuilder from '../components/DashboardBuilder';
 
 /**
  * Main home page component
@@ -10,6 +11,53 @@ import DashboardView from '../components/DashboardView';
 export default function Home() {
     const [spec, setSpec] = useState(null);
     const [dashboard, setDashboard] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [mode, setMode] = useState<'legacy' | 'enhanced'>('enhanced');
+    const [lastRequest, setLastRequest] = useState<string | null>(null);
+
+    const handleEnhancedDashboardGenerate = async (requirements: any) => {
+        // Prevent duplicate requests by checking if the same request is already in progress
+        const requestKey = JSON.stringify({
+            intent: requirements.intent,
+            metrics: requirements.dataScope.metrics.sort(), // Sort to normalize
+            analysisType: requirements.analysisType,
+            timeRange: requirements.dataScope.timeRange
+        });
+
+        // Check if this exact request is already being processed
+        if (isLoading && lastRequest === requestKey) {
+            console.log('Duplicate request prevented - same request already in progress');
+            return;
+        }
+
+        setLastRequest(requestKey);
+        setIsLoading(true);
+        try {
+            const response = await fetch('http://localhost:4000/dashboard/enhanced', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    prompt: requirements.intent,
+                    requirements
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to generate enhanced dashboard');
+            }
+
+            const result = await response.json();
+            setDashboard(result);
+            setSpec(null); // Clear single chart if any
+        } catch (error) {
+            console.error('Error generating enhanced dashboard:', error);
+            alert('Error: Could not generate dashboard. Make sure the server is running.');
+        } finally {
+            setIsLoading(false);
+            // Clear last request after a delay to allow for new requests
+            setTimeout(() => setLastRequest(null), 1000);
+        }
+    };
 
     return (
         <div style={{
@@ -121,10 +169,64 @@ export default function Home() {
                     boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
                     border: '2px solid #7c3aed'
                 }}>
-                    <ChatBox
-                        onResponse={setSpec}
-                        onDashboardResponse={setDashboard}
-                    />
+                    {/* Mode Toggle */}
+                    <div style={{
+                        marginBottom: 20,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 4,
+                        backgroundColor: '#f1f5f9',
+                        borderRadius: 8,
+                        padding: 4,
+                        width: 'fit-content',
+                        margin: '0 auto 20px auto'
+                    }}>
+                        <button
+                            onClick={() => setMode('enhanced')}
+                            style={{
+                                padding: '8px 16px',
+                                backgroundColor: mode === 'enhanced' ? '#7c3aed' : 'transparent',
+                                color: mode === 'enhanced' ? 'white' : '#6b7280',
+                                border: 'none',
+                                borderRadius: 4,
+                                fontSize: 14,
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s'
+                            }}
+                        >
+                            Enhanced Builder
+                        </button>
+                        <button
+                            onClick={() => setMode('legacy')}
+                            style={{
+                                padding: '8px 16px',
+                                backgroundColor: mode === 'legacy' ? '#7c3aed' : 'transparent',
+                                color: mode === 'legacy' ? 'white' : '#6b7280',
+                                border: 'none',
+                                borderRadius: 4,
+                                fontSize: 14,
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s'
+                            }}
+                        >
+                            Legacy Mode
+                        </button>
+                    </div>
+
+                    {mode === 'enhanced' ? (
+                        <DashboardBuilder
+                            onDashboardGenerate={handleEnhancedDashboardGenerate}
+                            isLoading={isLoading}
+                        />
+                    ) : (
+                        <ChatBox
+                            onResponse={setSpec}
+                            onDashboardResponse={setDashboard}
+                        />
+                    )}
                 </div>
 
                 <div style={{

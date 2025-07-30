@@ -21,6 +21,12 @@ interface DashboardViewProps {
             totalCharts: number;
             responseTimeMs: number;
             suggestedInsights: string[];
+            context?: {
+                audience?: string;
+                purpose?: string;
+                updateFrequency?: string;
+            };
+            analysisType?: string;
         };
         requestId: string;
         originalPrompt: string;
@@ -102,7 +108,9 @@ export default function DashboardView({ dashboard }: DashboardViewProps) {
                         color: '#7c3aed',
                         margin: 0
                     }}>
-                        AI-Generated Dashboard ({metadata.totalCharts} Charts)
+                        {metadata.analysisType
+                            ? `${metadata.analysisType.charAt(0).toUpperCase() + metadata.analysisType.slice(1)} Dashboard`
+                            : 'AI-Generated Dashboard'} ({metadata.totalCharts} Charts)
                     </h3>
                 </div>
 
@@ -134,6 +142,43 @@ export default function DashboardView({ dashboard }: DashboardViewProps) {
                         "{originalPrompt}"
                     </div>
                 </div>
+
+                {/* Context Information */}
+                {metadata.context && (
+                    <div style={{
+                        padding: 12,
+                        backgroundColor: '#fef3c7',
+                        borderRadius: 8,
+                        border: '1px solid #fcd34d',
+                        marginBottom: 16
+                    }}>
+                        <h4 style={{
+                            fontSize: 14,
+                            fontWeight: '600',
+                            color: '#92400e',
+                            margin: '0 0 8px 0'
+                        }}>
+                            Dashboard Context
+                        </h4>
+                        <div style={{
+                            fontSize: 13,
+                            color: '#78350f',
+                            display: 'flex',
+                            flexWrap: 'wrap',
+                            gap: 16
+                        }}>
+                            {metadata.context.audience && (
+                                <div><strong>Audience:</strong> {metadata.context.audience}</div>
+                            )}
+                            {metadata.context.purpose && (
+                                <div><strong>Purpose:</strong> {metadata.context.purpose}</div>
+                            )}
+                            {metadata.analysisType && (
+                                <div><strong>Analysis:</strong> {metadata.analysisType}</div>
+                            )}
+                        </div>
+                    </div>
+                )}
 
                 {/* Dashboard Insights */}
                 {metadata.suggestedInsights && metadata.suggestedInsights.length > 0 && (
