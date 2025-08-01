@@ -45,8 +45,6 @@ interface DashboardBuilderProps {
 
 export default function DashboardBuilder({ onDashboardGenerate, isLoading }: DashboardBuilderProps) {
     const [step, setStep] = useState(1);
-    const [mode, setMode] = useState<'quick' | 'builder'>('quick');
-    const [quickPrompt, setQuickPrompt] = useState('');
     const [requirements, setRequirements] = useState<DashboardRequirements>({
         intent: '',
         analysisType: 'performance',
@@ -144,19 +142,6 @@ export default function DashboardBuilder({ onDashboardGenerate, isLoading }: Das
         'Advanced'
     ];
 
-    const handleQuickGenerate = () => {
-        if (!quickPrompt.trim()) return;
-
-        // Convert quick prompt to basic requirements
-        const quickRequirements: DashboardRequirements = {
-            ...requirements,
-            intent: quickPrompt,
-            analysisType: detectAnalysisType(quickPrompt)
-        };
-
-        onDashboardGenerate(quickRequirements);
-    };
-
     const handleBuilderGenerate = () => {
         if (!requirements.intent.trim() || requirements.dataScope.metrics.length === 0) return;
         onDashboardGenerate(requirements);
@@ -203,108 +188,11 @@ export default function DashboardBuilder({ onDashboardGenerate, isLoading }: Das
         }));
     };
 
-    if (mode === 'quick') {
-        return (
-            <div style={{ padding: 20 }}>
-                <div style={{ marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <h3 style={{ color: '#7c3aed', margin: 0 }}>Quick Dashboard Generator</h3>
-                    <button
-                        onClick={() => setMode('builder')}
-                        style={{
-                            padding: '8px 16px',
-                            backgroundColor: '#f3f4f6',
-                            border: '1px solid #d1d5db',
-                            borderRadius: 6,
-                            cursor: 'pointer'
-                        }}
-                    >
-                        Advanced Builder
-                    </button>
-                </div>
-
-                <div style={{ marginBottom: 16 }}>
-                    <input
-                        value={quickPrompt}
-                        onChange={(e) => setQuickPrompt(e.target.value)}
-                        placeholder="Describe what you want to see in your dashboard..."
-                        style={{
-                            width: '100%',
-                            padding: '12px 16px',
-                            border: '2px solid #e5e7eb',
-                            borderRadius: 8,
-                            fontSize: 16,
-                            outline: 'none',
-                            marginBottom: 12
-                        }}
-                        onFocus={(e) => e.target.style.borderColor = '#7c3aed'}
-                        onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
-                    />
-
-                    <button
-                        onClick={handleQuickGenerate}
-                        disabled={isLoading || !quickPrompt.trim()}
-                        style={{
-                            padding: '12px 24px',
-                            backgroundColor: isLoading ? '#9ca3af' : (quickPrompt.trim() ? '#7c3aed' : '#d1d5db'),
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: 8,
-                            cursor: isLoading ? 'not-allowed' : (quickPrompt.trim() ? 'pointer' : 'default'),
-                            fontSize: 16,
-                            fontWeight: '600'
-                        }}
-                    >
-                        {isLoading ? 'Generating...' : 'Generate Quick Dashboard'}
-                    </button>
-                </div>
-
-                <div style={{ fontSize: 14, color: '#6b7280' }}>
-                    <strong>Examples:</strong>
-                    <div style={{ marginTop: 8, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                        {[
-                            "Show me sales performance trends",
-                            "Compare revenue across channels",
-                            "Executive overview dashboard",
-                            "Monthly financial breakdown"
-                        ].map((example, index) => (
-                            <button
-                                key={index}
-                                onClick={() => setQuickPrompt(example)}
-                                style={{
-                                    padding: '6px 12px',
-                                    backgroundColor: 'white',
-                                    border: '1px solid #e5e7eb',
-                                    borderRadius: 6,
-                                    fontSize: 13,
-                                    cursor: 'pointer'
-                                }}
-                            >
-                                "{example}"
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
     return (
         <div style={{ padding: 20 }}>
             {/* Header */}
-            <div style={{ marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ marginBottom: 20 }}>
                 <h3 style={{ color: '#7c3aed', margin: 0 }}>Advanced Dashboard Builder</h3>
-                <button
-                    onClick={() => setMode('quick')}
-                    style={{
-                        padding: '8px 16px',
-                        backgroundColor: '#f3f4f6',
-                        border: '1px solid #d1d5db',
-                        borderRadius: 6,
-                        cursor: 'pointer'
-                    }}
-                >
-                    Quick Mode
-                </button>
             </div>
 
             {/* Step Progress */}
