@@ -1,8 +1,8 @@
-import { Body, Controller, Post, Get, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Get, Post, ValidationPipe } from '@nestjs/common';
 import { ChatDto, DashboardDto, EnhancedDashboardDto } from './chat.dto';
 import { OpenAiService } from './openai.service';
 import { MetricsService } from './metrics.service';
-import { AuditService } from './audit.service';
+import { AuditService, DashboardAuditData } from './audit.service';
 import { DashboardService } from './dashboard.service';
 
 // Name of primary data source JSON file
@@ -175,8 +175,8 @@ export class AppController {
 
     /**
      * POST /dashboard endpoint
-     * Takes a natural language prompt and generates multiple related charts
-     * @param body - Dashboard request containing the user's prompt and preferences
+     * Takes a natural language prompt and generates a multi-chart dashboard
+     * @param body - Dashboard request containing the user's prompt and configuration
      * @returns Promise<object> - Dashboard with multiple charts and metadata
      */
     @Post('dashboard')
@@ -186,7 +186,7 @@ export class AppController {
         try {
             const result = await this.dashboard.generateDashboard(body);
 
-            // Audit the dashboard generation
+            // Original audit functionality - keep this unchanged
             const requestId = await this.audit.logChartGeneration(
                 body.prompt,
                 { chartType: 'dashboard', metric: 'multiple', dateRange: body.dateRange || '2025-06' },
@@ -198,6 +198,22 @@ export class AppController {
                     metricsCount: result.charts.length
                 }
             );
+
+            // Additional PostgreSQL audit preparation - NEW functionality
+            const auditData = await this.audit.prepareDashboardAuditForPostgres(
+                body.prompt,
+                result,
+                'standard',
+                {
+                    dataSourceFile: DATA_SOURCE_FILE,
+                    responseTimeMs: Date.now() - startTime,
+                    metricsCount: result.charts.length
+                }
+            );
+
+            // Insert into your existing PostgreSQL database
+            // Example: await yourPostgresService.insert('audit_logs', auditData);
+            console.log('Ready for PostgreSQL insert:', auditData);
 
             return {
                 ...result,
@@ -223,7 +239,7 @@ export class AppController {
         try {
             const result = await this.dashboard.generateEnhancedDashboard(body);
 
-            // Audit the enhanced dashboard generation
+            // Original audit functionality - keep this unchanged
             const requestId = await this.audit.logChartGeneration(
                 body.prompt,
                 {
@@ -241,6 +257,25 @@ export class AppController {
                     metricsCount: result.charts.length
                 }
             );
+
+            // Additional PostgreSQL audit preparation - NEW functionality
+            const auditData = await this.audit.prepareDashboardAuditForPostgres(
+                body.prompt,
+                result,
+                'enhanced',
+                {
+                    dataSourceFile: DATA_SOURCE_FILE,
+                    responseTimeMs: Date.now() - startTime,
+                    metricsCount: result.charts.length,
+                    analysisType: body.requirements.analysisType,
+                    context: body.requirements.context
+                },
+                body.requirements
+            );
+
+            // Insert into your existing PostgreSQL database
+            // Example: await yourPostgresService.insert('audit_logs', auditData);
+            console.log('Ready for PostgreSQL insert:', auditData);
 
             return {
                 ...result,
