@@ -5,25 +5,352 @@ Transform natural language into intelligent business charts using AI and automat
 ## 🛠️ Tech Stack
 
 **Backend (NestJS)**
-- **NestJS** - Node.js framework
-- **OpenAI GPT-4** - Natural language processing  
-- **TypeScript** - Type safety
+- **NestJS** - Node.js framework for scalable server-side applications
+- **OpenAI GPT-4** - Natural language processing and chart specification generation
+- **TypeScript** - Type safety and enhanced developer experience
 
 **Frontend (Next.js)**
-- **Next.js** - React framework
-- **ag-charts-react** - Chart rendering
-- **ag-grid-react** - Interactive data tables
+- **Next.js** - React framework for server-side rendering and static generation
+- **ag-charts-react** - Professional chart rendering with interactive features
+- **ag-grid-react** - Interactive data tables with advanced functionality
 - **ag-grid-community** - Grid functionality with sorting, filtering & pagination
-- **TypeScript** - Type safety
+- **TypeScript** - Type safety across the frontend stack
 
 ## ✨ Key Features
 
-- **Natural Language to Charts** - "Show me sales trends" → Line chart
+- **Natural Language to Charts** - "Show me sales trends" → Professional line chart
 - **Interactive Data Tables** - View chart data in sortable, filterable tables with pagination
-- **Intelligent Data Discovery** - Automatically finds 99+ metrics in complex business data
-- **5 Chart Types** - Line, bar, stacked-bar, heatmap, waterfall
-- **Smart AI Context** - GPT-4 receives data analysis for optimal chart selection
-- **Complete Audit Trail** - Every chart generation logged for compliance
+- **Intelligent Data Discovery** - Automatically discovers 99+ metrics in complex business data
+- **5 Chart Types** - Line, bar, stacked-bar, heatmap, waterfall charts
+- **Smart AI Context** - GPT-4 receives comprehensive data analysis for optimal chart selection
+- **Complete Audit Trail** - Every chart generation logged for compliance and debugging
+- **Advanced Dashboard Generation** - Create multi-chart dashboards with contextual insights
+- **Enhanced Dashboard Builder** - 4-step wizard for creating sophisticated dashboards with 99+ metrics
+- **PostgreSQL Integration** - Structured audit data preparation for database storage
+- **Real-time Performance Analytics** - Monitor and analyze chart generation statistics
+
+## 🎯 Dashboard Builder Features
+
+### Enhanced Dashboard Builder
+The new **Dashboard Builder** provides a sophisticated 4-step wizard interface for creating advanced dashboards:
+
+**Step 1: Intent & Metrics Selection**
+- Natural language intent description
+- Analysis type selection (performance, comparison, trend, breakdown, correlation, custom)
+- Comprehensive metric selection from 99+ categorized business metrics:
+  - **Revenue**: Total sales, net sales, discounts, refunds, shipping income
+  - **Operations**: Orders, average order value, logistics costs
+  - **Customer**: New customers, acquisition cost, returning customers
+  - **Financial**: Gross profit, margins, COGS, credit balances
+  - **Marketing**: Expenses, efficiency ratios, advertising performance
+  - **Cash Flow**: Cash on hand, burn rate, free cash yield
+  - **Advanced**: Complex data objects for deep analysis
+
+**Step 2: Time Range & Comparison**
+- Flexible time range selection (last 7/30 days, quarter, YTD)
+- Optional comparison features (time-over-time, segment comparison, benchmark)
+
+**Step 3: Visualization Preferences**
+- Layout styles (grid, stacked, tabs)
+- Maximum charts configuration (2-8 charts)
+- KPI and trend inclusion options
+
+**Step 4: Dashboard Context**
+- Target audience (executive, analyst, operational, custom)
+- Purpose (reporting, monitoring, investigation, presentation)
+- Requirements summary and validation
+
+### Mode Toggle Interface
+The application now features dual modes:
+- **Enhanced Builder**: Full wizard experience with structured requirements
+- **Legacy Mode**: Simple natural language input for quick chart generation
+
+## 🏗️ Service Architecture
+
+The application follows a modular service-oriented architecture with six core services that work together to transform natural language into intelligent visualizations.
+
+### **AppController** - API Gateway & Orchestration
+**Purpose**: Central controller that orchestrates all chart generation and dashboard creation workflows.
+
+**Key Responsibilities**:
+- Handles three main API endpoints: `/chat`, `/dashboard`, and `/dashboard/enhanced`
+- Coordinates between OpenAI, data analysis, metrics processing, and audit services
+- Implements comprehensive error handling with user-friendly error messages
+- Manages request/response flow and performance timing
+- **NEW**: PostgreSQL audit data preparation for database integration
+
+**API Endpoints**:
+- **POST `/chat`** - Single chart generation from natural language
+- **POST `/dashboard`** - Multi-chart dashboard generation
+- **POST `/dashboard/enhanced`** - Advanced dashboard with rich context and requirements
+- **GET `/audit/stats`** - Audit statistics for monitoring and analysis
+
+**Error Handling**: Sophisticated error categorization and user-friendly messaging for different failure scenarios.
+
+### **OpenAiService** - AI Integration & Natural Language Processing
+**Purpose**: Bridges natural language requests with structured chart specifications using GPT-4.
+
+**Core Functionality**:
+- **Intelligent Prompt Engineering**: Comprehensive system prompts that guide GPT-4 in optimal chart selection
+- **Tool Schema Definition**: Structured JSON schema for consistent chart specification output
+- **Context-Aware Processing**: Leverages data analysis results to inform chart type recommendations
+- **Chart Type Selection Logic**: Built-in guidelines for matching user intent with appropriate visualizations
+
+**Chart Type Intelligence**:
+- **Line Charts**: Time series trends, growth patterns, temporal analysis
+- **Bar Charts**: Categorical comparisons, discrete value analysis
+- **Stacked Bar Charts**: Composition analysis, part-to-whole relationships
+- **Heatmaps**: Pattern analysis, correlation visualization, intensity mapping
+- **Waterfall Charts**: Sequential impact analysis, cumulative changes
+
+**Advanced Features**:
+- Zero-temperature responses for deterministic outputs
+- Comprehensive metric context injection
+- Intent-based chart type selection
+- Date range optimization based on analysis type
+
+### **DataAnalysisService** - Intelligent Metric Discovery Engine
+**Purpose**: Automatically discovers, categorizes, and analyzes metrics in complex business datasets.
+
+**Advanced Metric Discovery**:
+- **Recursive Analysis**: Deep traversal of nested data structures up to 10 levels
+- **Dynamic Type Detection**: Identifies scalar, time series, grouped series, arrays, and dynamic key objects
+- **Value Type Classification**: Automatically categorizes as currency, percentage, count, or generic
+- **Embedded Metrics Extraction**: Discovers metrics within complex nested structures
+
+**Metric Types Supported**:
+- **Scalar**: Single numerical values (totals, aggregates)
+- **Time Series**: Date/value pairs showing trends over time
+- **Grouped Series**: Multi-category data with time dimensions
+- **Dynamic Key Objects**: Account-level data with variable keys
+- **Embedded Metrics**: Complex nested structures with multiple sub-metrics
+- **Arrays**: Simple collections of values
+
+**Intelligence Features**:
+- **Chart Recommendation Engine**: Suggests optimal chart types based on data characteristics
+- **Flexible Metric Matching**: Partial and fuzzy matching for user queries
+- **Context Generation**: Creates rich descriptions for AI model context
+- **Confidence Scoring**: Rates chart type suggestions with confidence levels
+
+### **MetricsService** - Data Processing & Transformation Engine
+**Purpose**: Processes raw business data and transforms it into chart-ready formats with intelligent filtering.
+
+**Data Processing Capabilities**:
+- **Smart Caching**: Efficient data loading and caching for improved performance
+- **Flexible Date Filtering**: Supports YYYY and YYYY-MM date range formats
+- **Multiple Data Structure Handling**: Processes all metric types discovered by DataAnalysisService
+- **Intelligent Path Resolution**: Handles nested metric paths with dot notation
+
+**Specialized Processing Methods**:
+- **Time Series Processing**: Converts date/value arrays to chart format with date filtering
+- **Grouped Series Processing**: Handles multi-category time-based data with proper grouping
+- **Nested Grouped Series**: Processes complex nested paths like `dataBySalesConnectors.grossSales`
+- **Dynamic Object Processing**: Extracts metrics from account-level data structures
+- **Embedded Metrics Processing**: Handles arrays of objects with multiple numeric properties
+
+**Output Format Standardization**:
+All processed data follows a consistent format:
+```typescript
+{
+  dates: string[],        // X-axis labels (dates, categories, etc.)
+  values: [{
+    label: string,        // Series name
+    values: number[]      // Y-axis values
+  }]
+}
+```
+
+### **AuditService** - Compliance & Analytics Engine
+**Purpose**: Comprehensive logging and monitoring system for chart generation activities.
+
+**Audit Capabilities**:
+- **Complete Request Logging**: Captures user prompts, chart specs, data used, and metadata
+- **Performance Tracking**: Records response times and metrics processing statistics
+- **Daily Summary Generation**: Creates aggregated logs for efficient querying
+- **Statistical Analysis**: Provides chart type breakdowns and usage analytics
+- **NEW**: PostgreSQL audit data preparation for enterprise database integration
+
+**Compliance Features**:
+- **Unique Request IDs**: Generates traceable identifiers for every chart request
+- **Timestamped Entries**: ISO format timestamps for precise audit trails
+- **Data Source Tracking**: Records which data files were used for each chart
+- **Error Logging**: Captures and logs failures for debugging and analysis
+
+**Storage & Management**:
+- **File-based Logging**: Saves individual chart generation logs as JSON files
+- **Directory Management**: Automatically creates and manages audit log directories
+- **Efficient Statistics**: Optimized statistical queries with sampling for large datasets
+- **Data Retention**: Configurable retention policies for audit data
+- **PostgreSQL Integration**: Structured data formatting for database insertion
+
+**PostgreSQL Audit Schema**:
+```typescript
+interface DashboardAuditData {
+  request_id: string;
+  timestamp: Date;
+  user_prompt: string;
+  request_type: 'chart' | 'dashboard' | 'enhanced-dashboard';
+  chart_schemas: Array<{
+    id: string;
+    chartType: string;
+    metric: string;
+    dateRange: string;
+    title: string;
+    groupBy?: string;
+    row: number;
+    col: number;
+    span: number;
+    analysisType?: string;
+    context?: any;
+  }>;
+  total_charts: number;
+  response_time_ms: number;
+  metadata: any;
+}
+```
+
+### **DashboardService** - Multi-Chart Dashboard Generation
+**Purpose**: Orchestrates the creation of comprehensive dashboards with multiple related visualizations.
+
+**Dashboard Generation Modes**:
+- **Standard Dashboard**: Basic multi-chart generation from simple prompts
+- **Enhanced Dashboard**: Context-aware generation with rich requirements and structured inputs
+- **Caching System**: Prevents duplicate dashboard generation with 5-minute cache duration
+
+**Intelligent Chart Selection**:
+- **Related Metrics Discovery**: Identifies metrics related to user prompts using keyword analysis
+- **Context-Aware Generation**: Adapts chart generation based on audience and analysis type
+- **Duplicate Prevention**: Automatically detects and prevents duplicate chart specifications
+- **Performance Optimization**: Parallel chart data fetching for improved performance
+
+**Advanced Features**:
+- **Layout Management**: Configurable grid, stacked, or tabbed layouts
+- **Insight Generation**: AI-powered insights based on dashboard content and context
+- **Requirements Processing**: Handles complex dashboard requirements with structured filtering
+- **Cache Management**: Intelligent caching with automatic cleanup and expiration
+
+**Dashboard Contexts**:
+- **Executive**: High-level KPIs and summary metrics
+- **Analyst**: Detailed metrics for deep-dive analysis
+- **Operational**: Real-time and actionable metrics
+- **Custom**: Flexible context-based generation
+
+## 📡 API Endpoints
+
+### Generate Single Chart
+Transform natural language into a single chart with comprehensive data analysis.
+
+```bash
+POST http://localhost:4000/chat
+Content-Type: application/json
+
+{
+  "prompt": "Show me revenue trends by sales channel"
+}
+```
+
+**Response:**
+```json
+{
+  "chartType": "line",
+  "metric": "dataBySalesConnectors.grossSales",
+  "dateRange": "2025-06",
+  "data": {
+    "dates": ["2025-06-01", "2025-06-02", "2025-06-03"],
+    "values": [{
+      "label": "Gross Sales Trends",
+      "values": [87589.85, 79724.74, 84655.08]
+    }]
+  },
+  "requestId": "1703123456789-abc123def",
+  "originalPrompt": "Show me revenue trends by sales channel",
+  "dataAnalysis": {
+    "totalMetrics": 99,
+    "suggestedChartTypes": ["line", "bar"]
+  }
+}
+```
+
+### Generate Multi-Chart Dashboard
+Create comprehensive dashboards with multiple related visualizations.
+
+```bash
+POST http://localhost:4000/dashboard
+Content-Type: application/json
+
+{
+  "prompt": "Sales performance overview",
+  "maxCharts": 5,
+  "dateRange": "2025-06",
+  "generateInsights": true
+}
+```
+
+### Enhanced Dashboard Generation
+Advanced dashboard creation with rich context and structured requirements.
+
+```bash
+POST http://localhost:4000/dashboard/enhanced
+Content-Type: application/json
+
+{
+  "prompt": "Executive sales dashboard",
+  "requirements": {
+    "intent": "Monthly sales performance review",
+    "analysisType": "performance",
+    "dataScope": {
+      "metrics": ["totalGrossSales", "dataBySalesConnectors"],
+      "timeRange": { "type": "relative", "period": "last30days" },
+      "filters": {}
+    },
+    "comparison": { "enabled": false },
+    "visualization": {
+      "layout": "grid",
+      "maxCharts": 4,
+      "includeKPIs": true,
+      "includeTrends": true,
+      "preferredChartTypes": ["line", "bar"]
+    },
+    "context": {
+      "audience": "executive",
+      "purpose": "reporting"
+    }
+  },
+  "generateInsights": true
+}
+```
+
+**Enhanced Response Features**:
+- Context-aware chart selection based on audience and purpose
+- Structured requirements processing
+- Advanced layout management
+- PostgreSQL audit data preparation
+
+### Audit Statistics
+Monitor chart generation performance and usage analytics.
+
+```bash
+GET http://localhost:4000/audit/stats
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "stats": {
+    "totalRequests": 247,
+    "todayRequests": 12,
+    "chartTypeBreakdown": {
+      "line": 89,
+      "bar": 76,
+      "stacked-bar": 45,
+      "heatmap": 23,
+      "waterfall": 14
+    },
+    "averageResponseTime": 1247
+  }
+}
+```
 
 ## 🚀 Quick Start
 
@@ -66,103 +393,145 @@ Visit `http://localhost:3000` and start asking for charts!
 
 ## 💬 Usage Examples
 
-| **Query** | **Result** |
-|-----------|------------|
-| "Show me sales trends" | Line chart with time series data |
-| "Compare revenue by channel" | Bar chart grouped by sales connector |
-| "June performance breakdown" | Filtered data for June 2025 |
-| "Account cash details" | Bar chart of account-level metrics |
+### Natural Language Queries
+| **Query** | **Result** | **Service Flow** |
+|-----------|------------|------------------|
+| "Show me sales trends" | Line chart with time series data | DataAnalysis → OpenAI → Metrics → Audit |
+| "Compare revenue by channel" | Bar chart grouped by sales connector | DataAnalysis → OpenAI → Metrics → Audit |
+| "June performance breakdown" | Filtered data for June 2025 | DataAnalysis → OpenAI → Metrics → Audit |
+| "Sales dashboard" | Multi-chart dashboard | Dashboard → (Multiple chart generations) → Audit |
 
-## 📡 API Endpoints
-
-### Generate Chart
-```bash
-POST http://localhost:4000/chat
-Content-Type: application/json
-
-{
-  "prompt": "Show me revenue trends by sales channel"
-}
-```
-
-**Response:**
-```json
-{
-  "chartType": "line",
-  "metric": "dataBySalesConnectors.grossSales",
-  "dateRange": "2025-06",
-  "data": [
-    {"date": "2025-06-01", "value": 87589.85},
-    {"date": "2025-06-02", "value": 79724.74}
-  ],
-  "requestId": "1703123456789-abc123def",
-  "originalPrompt": "Show me revenue trends by sales channel",
-  "dataAnalysis": {
-    "totalMetrics": 99,
-    "suggestedChartTypes": ["line", "bar"]
-  }
-}
-```
+### Enhanced Dashboard Builder
+1. **Select Mode**: Choose "Enhanced Builder" from the mode toggle
+2. **Step 1**: Describe your analysis intent and select relevant metrics from 99+ options
+3. **Step 2**: Configure time ranges and enable comparisons if needed
+4. **Step 3**: Set visualization preferences (layout, max charts, KPIs)
+5. **Step 4**: Define context (audience, purpose) and review requirements
+6. **Generate**: Create sophisticated dashboards with structured requirements
 
 ## 📁 Project Structure
 
 ```
-├── server/                    # NestJS Backend
+├── server/                              # NestJS Backend
 │   ├── src/
-│   │   ├── app.controller.ts  # Main API endpoints
-│   │   ├── data-analysis.service.ts  # Metric discovery engine
-│   │   ├── metrics.service.ts # Data processing & slicing
-│   │   ├── openai.service.ts  # GPT-4 integration
-│   │   └── audit.service.ts   # Request logging
-│   ├── sample-june-metrics.json  # Sample business data
-│   └── audit-logs/           # Generated audit logs
-├── web/                      # Next.js Frontend  
+│   │   ├── app.controller.ts           # 🎯 Main API endpoints & orchestration
+│   │   ├── openai.service.ts           # 🤖 GPT-4 integration & NLP processing
+│   │   ├── data-analysis.service.ts    # 🔍 Intelligent metric discovery engine
+│   │   ├── metrics.service.ts          # 📊 Data processing & transformation
+│   │   ├── dashboard.service.ts        # 📈 Multi-chart dashboard generation
+│   │   ├── audit.service.ts            # 📋 Compliance & audit logging + PostgreSQL
+│   │   ├── chat.dto.ts                 # 📝 Data transfer objects & validation
+│   │   └── main.ts                     # 🚀 Application entry point
+│   ├── sample-june-metrics.json        # 📁 Sample business data
+│   └── audit-logs/                     # 📂 Generated audit logs
+├── web/                                # Next.js Frontend  
 │   ├── components/
-│   │   ├── ChatBox.tsx       # User input
-│   │   └── ChartView.tsx     # Chart rendering
-│   └── pages/index.tsx       # Main application
+│   │   ├── ChatBox.tsx                 # 💬 User input interface
+│   │   ├── ChartView.tsx               # 📊 Chart rendering & data tables
+│   │   ├── DashboardView.tsx           # 📈 Multi-chart dashboard display
+│   │   └── DashboardBuilder.tsx        # 🔧 Enhanced dashboard configuration wizard
+│   └── pages/index.tsx                 # 🏠 Main application page with mode toggle
 ```
 
 ## 🔧 Configuration
 
-### Data Source
+### Data Source Configuration
 The data source file is configured in `server/src/app.controller.ts`:
 ```typescript
 export const DATA_SOURCE_FILE = 'sample-june-metrics.json';
 ```
 
-### Supported Data Types
-- **Scalar** - Single values (`totalRevenue: 150000`)
+### Supported Data Types & Structures
+The system intelligently processes various data formats:
+
+- **Scalar Values** - Single metrics (`totalRevenue: 150000`)
 - **Time Series** - Date/value arrays (`sales: [{date: "2025-06-01", value: 1000}]`)
-- **Grouped Series** - Multi-category data over time
+- **Grouped Series** - Multi-category data over time with dates/values structure
 - **Dynamic Objects** - Account-level data (`cashDetails: {"account_123": {...}}`)
-- **Embedded Metrics** - Complex nested structures
+- **Embedded Metrics** - Complex nested structures with multiple sub-metrics
+- **Arrays** - Simple collections of numerical values
 
-## 🔍 How It Works
+### PostgreSQL Integration
+The enhanced audit service prepares structured data for PostgreSQL insertion:
 
-1. **Data Analysis** - System discovers metrics in your business data
-2. **AI Context** - GPT-4 receives data structure and recommendations  
-3. **Smart Selection** - AI chooses optimal chart type based on user intent
-4. **Data Processing** - Metrics service transforms raw data to chart format
-5. **Audit Logging** - Complete request/response logged for compliance
+```typescript
+// Example usage in your existing codebase
+const auditData = await this.audit.prepareDashboardAuditForPostgres(
+  userPrompt,
+  dashboardResult,
+  'enhanced',
+  metadata,
+  requirements
+);
+
+// Insert into your existing PostgreSQL database
+await yourPostgresService.insert('audit_logs', auditData);
+```
+
+## 🔍 How It Works - Complete Data Flow
+
+### Single Chart Generation
+1. **Request Processing** - AppController receives natural language prompt
+2. **Data Analysis** - DataAnalysisService discovers and categorizes all available metrics
+3. **AI Processing** - OpenAiService sends context-rich prompt to GPT-4 for chart specification
+4. **Data Transformation** - MetricsService processes raw data into chart-ready format
+5. **Audit Logging** - AuditService logs complete request/response for compliance
+6. **Response** - Structured chart data returned to frontend for rendering
+
+### Enhanced Dashboard Generation
+1. **Requirements Analysis** - DashboardService analyzes structured requirements from builder
+2. **Metric Discovery** - Processes selected metrics from 99+ available options
+3. **Context Processing** - Applies audience and purpose context to generation
+4. **Parallel Processing** - Generates multiple chart specifications concurrently
+5. **Data Fetching** - Parallel data processing for all dashboard charts
+6. **Layout Management** - Organizes charts in optimal grid/stacked/tabbed layouts
+7. **Insight Generation** - AI-powered insights based on dashboard content
+8. **Audit Integration** - Dual logging (file-based + PostgreSQL preparation)
+9. **Caching** - Results cached to prevent duplicate generation
+
+### Intelligent Metric Discovery Process
+1. **Recursive Traversal** - Deep analysis of nested data structures
+2. **Type Classification** - Automatic categorization of metric types
+3. **Value Analysis** - Detection of currency, percentage, count, and generic values
+4. **Recommendation Engine** - Chart type suggestions based on data characteristics
+5. **Context Generation** - Rich descriptions for AI model optimization
 
 ## 📈 Production Deployment
 
-### Backend
+### Backend Deployment
 ```bash
 cd server
 npm run build
 npm start
 ```
 
-### Frontend
+### Frontend Deployment
 ```bash
 cd web
 npm run build
 npm start
 ```
 
-**Environment Variables for Production:**
-- Set `OPENAI_API_KEY` in your production environment
+### Production Environment Variables
+**Required**:
+- `OPENAI_API_KEY` - Your OpenAI API key for GPT-4 access
+
+**Optional Production Settings**:
 - Configure proper file permissions for audit directory
-- Set up monitoring for audit log storage
+- Set up monitoring for audit log storage and rotation
+- Implement database storage for audit logs (PostgreSQL integration ready)
+- Configure load balancing for high-traffic scenarios
+
+### Performance Considerations
+- **Caching**: Data and dashboard results are cached for improved performance
+- **Parallel Processing**: Multiple charts processed concurrently in dashboards
+- **Optimized Queries**: Statistical analysis uses sampling for large datasets
+- **Memory Management**: Efficient data structure processing with depth limits
+- **Duplicate Prevention**: Smart caching prevents redundant dashboard generation
+
+### Monitoring & Analytics
+- **Audit Statistics**: Real-time monitoring of chart generation performance
+- **Usage Analytics**: Chart type breakdowns and user interaction patterns
+- **Performance Metrics**: Response time tracking and optimization insights
+- **Error Tracking**: Comprehensive error logging for debugging and improvement
+- **PostgreSQL Integration**: Structured audit data for enterprise analytics
