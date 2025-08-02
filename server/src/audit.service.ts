@@ -20,6 +20,20 @@ export interface AuditLogEntry {
 }
 
 /**
+ * Interface for dashboard audit data formatted for PostgreSQL
+ */
+export interface DashboardAuditData {
+    request_id: string;
+    timestamp: Date;
+    user_prompt: string;
+    request_type: string;
+    chart_schemas: any[]; // JSONB data
+    total_charts: number;
+    response_time_ms: number;
+    metadata: any; // JSONB data
+}
+
+/**
  * Service for auditing chart generation requests
  * Saves data used in chart generation for compliance/debugging and extension to saving to a database
  */
@@ -180,5 +194,57 @@ export class AuditService {
                 averageResponseTime: 0
             };
         }
+    }
+
+    /**
+ * Prepare dashboard audit data for PostgreSQL insertion
+ * Call this after dashboard generation to get formatted data for your existing DB
+ */
+    async prepareDashboardAuditForPostgres(
+        userPrompt: string,
+        dashboardResult: any,
+        dashboardType: 'standard' | 'enhanced',
+        metadata: {
+            dataSourceFile: string;
+            responseTimeMs: number;
+            metricsCount: number;
+            analysisType?: string;
+            context?: any;
+        },
+        requirements?: any
+    ): Promise<DashboardAuditData> {
+        const requestId = this.generateRequestId();
+
+        // Extract chart schemas for JSONB storage
+        const chartSchemas = dashboardResult.charts.map((chart: any) => ({
+            id: chart.id,
+            chartType: chart.chartType,
+            metric: chart.metric,
+            dateRange: chart.dateRange,
+            title: chart.title,
+            groupBy: chart.groupBy,
+            row: chart.row,
+            col: chart.col,
+            span: chart.span,
+            analysisType: chart.analysisType,
+            context: chart.context
+        }));
+
+        return {
+            request_id: requestId,
+            timestamp: new Date(),
+            user_prompt: userPrompt,
+            request_type: dashboardType === 'enhanced' ? 'enhanced-dashboard' : 'dashboard',
+            chart_schemas: chartSchemas,
+            total_charts: chartSchemas.length,
+            response_time_ms: metadata.responseTimeMs,
+            metadata: {
+                dataSourceFile: metadata.dataSourceFile,
+                metricsCount: metadata.metricsCount,
+                analysisType: metadata.analysisType,
+                context: metadata.context,
+                requirements
+            }
+        };
     }
 } 
