@@ -3,6 +3,16 @@ import fs from 'fs/promises';
 import path from 'path';
 
 /**
+ * Interface for chart feedback data
+ */
+export interface ChartFeedback {
+    rating: 1 | 2 | 3 | 4 | 5;
+    timestamp: string;
+    comment?: string;
+    chartId?: string; // For dashboard charts
+}
+
+/**
  * Interface for audit log entries
  */
 export interface AuditLogEntry {
@@ -17,6 +27,7 @@ export interface AuditLogEntry {
         responseTimeMs: number;
         metricsCount: number;
     };
+    feedback?: ChartFeedback; // Added feedback field
 }
 
 /**
@@ -137,6 +148,83 @@ export class AuditService {
             await fs.writeFile(summaryFile, JSON.stringify(dailySummary, null, 2), 'utf-8');
         } catch (error) {
             console.error('Error updating daily summary:', error);
+        }
+    }
+
+    /**
+     * Add feedback to an existing audit log entry
+     */
+    async addFeedback(
+        requestId: string,
+        rating: 1 | 2 | 3 | 4 | 5,
+        comment?: string,
+        chartId?: string
+    ): Promise<void> {
+        const feedback: ChartFeedback = {
+            rating,
+            timestamp: new Date().toISOString(),
+            comment,
+            chartId
+        };
+
+        // Update the audit log file
+        const filename = `chart-${requestId}.json`;
+        const filepath = path.join(this.auditDir, filename);
+
+        try {
+            const existingData = await fs.readFile(filepath, 'utf-8');
+            const auditEntry: AuditLogEntry = JSON.parse(existingData);
+
+            auditEntry.feedback = feedback;
+
+            await fs.writeFile(filepath, JSON.stringify(auditEntry, null, 2), 'utf-8');
+            console.log(`Feedback added to audit log: ${filename}`);
+        } catch (error) {
+            console.error('Error adding feedback to audit log:', error);
+            throw new Error('Failed to save feedback');
+        }
+    }
+
+    /**
+     * Get feedback statistics across all audit logs
+     */
+    async getFeedbackStats(): Promise<{
+        totalFeedback: number;
+        averageRating: number;
+        ratingDistribution: Record<number, number>;
+    }> {
+        try {
+            const files = await fs.readdir(this.auditDir);
+            const auditFiles = files.filter(f => f.startsWith('chart-') && f.endsWith('.json'));
+
+            let totalFeedback = 0;
+            let ratingSum = 0;
+            const ratingDistribution: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+
+            for (const file of auditFiles) {
+                try {
+                    const data = await fs.readFile(path.join(this.auditDir, file), 'utf-8');
+                    const entry: AuditLogEntry = JSON.parse(data);
+
+                    if (entry.feedback) {
+                        totalFeedback++;
+                        ratingSum += entry.feedback.rating;
+                        ratingDistribution[entry.feedback.rating]++;
+                    }
+                } catch (error) {
+                    // Skip invalid files
+                    continue;
+                }
+            }
+
+            return {
+                totalFeedback,
+                averageRating: totalFeedback > 0 ? ratingSum / totalFeedback : 0,
+                ratingDistribution
+            };
+        } catch (error) {
+            console.error('Error calculating feedback stats:', error);
+            return { totalFeedback: 0, averageRating: 0, ratingDistribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } };
         }
     }
 

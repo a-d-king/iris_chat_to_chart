@@ -4,12 +4,14 @@ import { AgGridReact } from 'ag-grid-react';
 import { ModuleRegistry, AllCommunityModule } from 'ag-grid-community';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
+import FeedbackWidget from './FeedbackWidget';
 
 // Register AG Grid modules
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 interface ChartViewProps {
     spec: any;
+    showFeedback?: boolean;
 }
 
 /**
@@ -96,7 +98,7 @@ const generateColumnDefs = (data: any[], metric: string) => {
  * ChartView component for rendering charts using ag-charts-react
  * Takes a chart specification and renders the appropriate chart type
  */
-export default function ChartView({ spec }: ChartViewProps) {
+export default function ChartView({ spec, showFeedback = true }: ChartViewProps) {
     if (!spec) {
         return (
             <div style={{
@@ -660,6 +662,14 @@ export default function ChartView({ spec }: ChartViewProps) {
                     }
                 </div>
             </div>
+
+            {/* Feedback Widget */}
+            {showFeedback && spec?.requestId && (
+                <FeedbackWidget
+                    requestId={spec.requestId}
+                    chartId={spec.chartId}
+                />
+            )}
         </div>
     );
 } 

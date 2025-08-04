@@ -14,6 +14,26 @@ export class ChatDto {
 }
 
 /**
+ * DTO for feedback submissions
+ * Validates feedback data for chart quality ratings
+ */
+export class FeedbackDto {
+    @IsString()
+    requestId: string;
+
+    @IsEnum([1, 2, 3, 4, 5])
+    rating: 1 | 2 | 3 | 4 | 5; // 1=heavy dislike, 2=dislike, 3=neutral, 4=like, 5=heavy like
+
+    @IsOptional()
+    @IsString()
+    comment?: string;
+
+    @IsOptional()
+    @IsString()
+    chartId?: string; // For dashboard charts
+}
+
+/**
  * DTO for dashboard requests - supports generating multiple charts
  */
 export class DashboardDto {

@@ -1,5 +1,5 @@
 import { Body, Controller, Post, Get, ValidationPipe } from '@nestjs/common';
-import { ChatDto, DashboardDto } from './chat.dto';
+import { ChatDto, DashboardDto, FeedbackDto } from './chat.dto';
 import { OpenAiService } from './openai.service';
 import { MetricsService } from './metrics.service';
 import { AuditService } from './audit.service';
@@ -187,6 +187,47 @@ export class AppController {
         } catch (error) {
             console.error('Error generating dashboard:', error);
             throw new Error('Failed to generate dashboard');
+        }
+    }
+
+    /**
+     * POST /feedback endpoint
+     * Accepts user feedback for generated charts
+     * @param body - Feedback data containing requestId, rating, and optional comment
+     * @returns Promise<object> - Success response
+     */
+    @Post('feedback')
+    async submitFeedback(@Body(new ValidationPipe()) body: FeedbackDto) {
+        try {
+            await this.audit.addFeedback(
+                body.requestId,
+                body.rating,
+                body.comment,
+                body.chartId
+            );
+
+            return {
+                success: true,
+                message: 'Feedback submitted successfully'
+            };
+        } catch (error) {
+            console.error('Error submitting feedback:', error);
+            throw new Error('Failed to submit feedback');
+        }
+    }
+
+    /**
+     * GET /feedback/stats endpoint
+     * Returns aggregated feedback statistics for analytics
+     * @returns Promise<object> - Feedback statistics
+     */
+    @Get('feedback/stats')
+    async getFeedbackStats() {
+        try {
+            return await this.audit.getFeedbackStats();
+        } catch (error) {
+            console.error('Error getting feedback stats:', error);
+            throw new Error('Failed to get feedback statistics');
         }
     }
 } 
