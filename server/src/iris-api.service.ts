@@ -125,10 +125,11 @@ export class IrisApiService {
     }
 
     /**
-     * Parse date range string and return start/end dates
-     * @param dateRange Date range in YYYY or YYYY-MM format
-     * @returns Object with startDate and endDate in ISO format
-     */
+ * Parse date range string and return start/end dates
+ * Supports multiple formats: YYYY, YYYY-MM, YYYY-MM-DD, ISO strings, and custom ranges
+ * @param dateRange Date range in various formats
+ * @returns Object with startDate and endDate in ISO format
+ */
     private parseDateRange(dateRange?: string): { startDate: string; endDate: string } {
         if (!dateRange) {
             // Default to current week for API calls
@@ -142,8 +143,36 @@ export class IrisApiService {
             };
         }
 
+        // Handle custom date ranges from frontend: "startISO,endISO"
+        if (dateRange.includes(',')) {
+            const [startDate, endDate] = dateRange.split(',');
+
+            // If already in ISO format, use as-is
+            if (startDate.includes('T') && endDate.includes('T')) {
+                return {
+                    startDate: startDate,
+                    endDate: endDate
+                };
+            }
+
+            // If in YYYY-MM-DD format, convert to ISO
+            return {
+                startDate: `${startDate}T00:00:00.000Z`,
+                endDate: `${endDate}T23:59:59.999Z`
+            };
+        }
+
+        // Handle single date values (YYYY-MM-DD format from frontend presets)
+        if (dateRange.match(/^\d{4}-\d{2}-\d{2}$/)) {
+            // Single day range
+            return {
+                startDate: `${dateRange}T00:00:00.000Z`,
+                endDate: `${dateRange}T23:59:59.999Z`
+            };
+        }
+
+        // Handle year format (YYYY)
         if (dateRange.match(/^\d{4}$/)) {
-            // Year format (YYYY)
             const year = parseInt(dateRange);
             return {
                 startDate: `${year}-01-01T00:00:00.000Z`,
@@ -151,8 +180,8 @@ export class IrisApiService {
             };
         }
 
+        // Handle month format (YYYY-MM)
         if (dateRange.match(/^\d{4}-\d{2}$/)) {
-            // Month format (YYYY-MM)
             const [year, month] = dateRange.split('-').map(n => parseInt(n));
             const startDate = new Date(year, month - 1, 1);
             const endDate = new Date(year, month, 0); // Last day of month
@@ -163,6 +192,16 @@ export class IrisApiService {
             };
         }
 
-        throw new Error(`Invalid date range format: ${dateRange}. Use YYYY or YYYY-MM format.`);
+        this.logger.warn(`Unrecognized date range format: ${dateRange}, using default week range`);
+
+        // Fallback to current week
+        const now = new Date();
+        const startOfWeek = new Date(now);
+        startOfWeek.setDate(now.getDate() - 6);
+
+        return {
+            startDate: startOfWeek.toISOString(),
+            endDate: now.toISOString()
+        };
     }
 } 

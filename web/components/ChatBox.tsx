@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import DateRangeSelector from './DateRangeSelector';
 
 interface ChatBoxProps {
     onResponse: (response: any) => void;
@@ -13,6 +14,22 @@ export default function ChatBox({ onResponse, onDashboardResponse }: ChatBoxProp
     const [text, setText] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [mode, setMode] = useState<'single' | 'dashboard'>('single');
+    const [selectedDateRange, setSelectedDateRange] = useState('');
+
+    // Helper function to format date range for API
+    const formatDateRangeForAPI = (range: string): string | undefined => {
+        if (!range) return undefined;
+
+        // Handle custom date ranges (format: "startDate,endDate")
+        if (range.includes(',')) {
+            const [startDate, endDate] = range.split(',');
+            // Convert to ISO format for API
+            return `${startDate}T00:00:00.000Z,${endDate}T23:59:59.999Z`;
+        }
+
+        // Handle preset ranges (already in correct format)
+        return range;
+    };
 
     const handleModeChange = (newMode: 'single' | 'dashboard') => {
         setMode(newMode);
@@ -33,10 +50,18 @@ export default function ChatBox({ onResponse, onDashboardResponse }: ChatBoxProp
         setIsLoading(true);
         try {
             const endpoint = mode === 'dashboard' ? '/dashboard' : '/chat';
+
+            // Prepare request body with optional date range
+            const requestBody: any = { prompt: text };
+            const formattedDateRange = formatDateRangeForAPI(selectedDateRange);
+            if (formattedDateRange) {
+                requestBody.dateRange = formattedDateRange;
+            }
+
             const response = await fetch(`http://localhost:4000${endpoint}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt: text })
+                body: JSON.stringify(requestBody)
             });
 
             if (!response.ok) {
@@ -143,6 +168,12 @@ export default function ChatBox({ onResponse, onDashboardResponse }: ChatBoxProp
                     </button>
                 </div>
             </div>
+
+            {/* Date Range Selector */}
+            <DateRangeSelector
+                selectedRange={selectedDateRange}
+                onRangeChange={setSelectedDateRange}
+            />
 
             <div style={{
                 display: 'flex',

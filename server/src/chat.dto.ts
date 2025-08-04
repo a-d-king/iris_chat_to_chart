@@ -7,6 +7,10 @@ import { IsEnum, IsString, IsOptional, Matches, IsNumber, Min, Max, IsBoolean, I
 export class ChatDto {
     @IsString()
     prompt: string;
+
+    @IsOptional()
+    @IsString()
+    dateRange?: string;
 }
 
 /**

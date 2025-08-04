@@ -30,16 +30,19 @@ export class AppController {
         const startTime = Date.now();
 
         try {
-            // Step 1: Get data analysis for context
-            const dataAnalysis = await this.metrics.getDataAnalysis();
+            // Step 1: Get data analysis for context (use provided dateRange or default)
+            const effectiveDateRange = body.dateRange || undefined;
+            const dataAnalysis = await this.metrics.getDataAnalysis(effectiveDateRange);
 
             // Step 2: Convert natural language prompt to structured chart spec with context
             const spec = await this.ai.prompt(body.prompt, dataAnalysis);
 
             // Step 3: Fetch the relevant data based on the chart spec
+            // Use the provided dateRange from frontend if available, otherwise use spec.dateRange
+            const finalDateRange = body.dateRange || spec.dateRange;
             const data = await this.metrics.slice(
                 spec.metric,
-                spec.dateRange,
+                finalDateRange,
                 spec.groupBy
             );
 
