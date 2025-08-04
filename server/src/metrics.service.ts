@@ -1,50 +1,53 @@
 import { Injectable } from '@nestjs/common';
-import fs from 'fs/promises';
-import path from 'path';
 import { DataAnalysisService, MetricInfo } from './data-analysis.service';
-import { DATA_SOURCE_FILE } from './app.controller';
+import { IrisApiService } from './iris-api.service';
 
 /**
  * Service for handling metrics data operations with caching
  */
 @Injectable()
 export class MetricsService {
-    private cache: any;
+    private cache: Map<string, any> = new Map();
     private dataAnalysis: any;
 
-    constructor(private dataAnalysisService: DataAnalysisService) { }
+    constructor(
+        private dataAnalysisService: DataAnalysisService,
+        private irisApiService: IrisApiService
+    ) { }
 
     /**
-     * Load metrics data from available JSON file with caching to improve performance
+     * Load metrics data from Iris Finance API with caching to improve performance
+     * @param dateRange Optional date range for API calls
      * @returns Promise<any> - The loaded metrics data
      */
-    async load() {
-        if (!this.cache) {
+    async load(dateRange?: string) {
+        // Create cache key based on date range
+        const cacheKey = dateRange || 'default';
+
+        if (!this.cache.has(cacheKey)) {
             try {
-                const raw = await fs.readFile(
-                    path.join(__dirname, '..', DATA_SOURCE_FILE),
-                    'utf-8'
-                );
+                console.log('🌐 Loading data from Iris Finance API...');
+                const data = await this.irisApiService.fetchMetrics(dateRange);
 
-                this.cache = JSON.parse(raw);
-
-                this.dataAnalysis = this.dataAnalysisService.analyzeData(this.cache);
-                console.log(`Detected ${this.dataAnalysis.availableMetrics.length} metrics in the dataset`);
+                this.cache.set(cacheKey, data);
+                this.dataAnalysis = this.dataAnalysisService.analyzeData(data);
+                console.log(`✅ Detected ${this.dataAnalysis.availableMetrics.length} metrics in the dataset`);
 
             } catch (error) {
-                console.error('Error loading metrics data:', error);
-                throw new Error('Failed to load metrics data');
+                console.error('❌ Error loading metrics data from API:', error);
+                throw new Error('Failed to load metrics data from Iris Finance API');
             }
         }
-        return this.cache;
+        return this.cache.get(cacheKey);
     }
 
     /**
      * Get data analysis results
+     * @param dateRange Optional date range for API calls
      * @returns Data analysis including available metrics and suggestions
      */
-    async getDataAnalysis() {
-        await this.load();
+    async getDataAnalysis(dateRange?: string) {
+        await this.load(dateRange);
         return this.dataAnalysis;
     }
 
@@ -57,7 +60,7 @@ export class MetricsService {
      */
     async slice(metric: string, dateRange: string, groupBy?: string) {
         try {
-            const data = await this.load();
+            const data = await this.load(dateRange);
             const analysis = this.dataAnalysis;
 
             // Validate inputs

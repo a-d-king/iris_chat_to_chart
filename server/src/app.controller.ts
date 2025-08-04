@@ -5,9 +5,6 @@ import { MetricsService } from './metrics.service';
 import { AuditService } from './audit.service';
 import { DashboardService } from './dashboard.service';
 
-// Name of primary data source JSON file
-export const DATA_SOURCE_FILE = 'sample-june-metrics.json';
-
 /**
  * Main application controller
  * Handles the chat endpoint that coordinates between OpenAI and metrics data
@@ -55,15 +52,14 @@ export class AppController {
                 data,
                 dataAnalysis,
                 {
-                    dataSourceFile: DATA_SOURCE_FILE,
+                    dataSource: 'Iris Finance API',
                     responseTimeMs: responseTime,
                     metricsCount: dataAnalysis.availableMetrics.length
                 }
             );
 
             // Step 5: Return combined spec and data for the frontend
-            // This interface is where I am planning to "plug-in" the existing Iris Finance charting library/system
-            // For now, I'm just rendering using the 5 free charts that are available in ag-charts-react in ChartView.tsx
+            // Data is now sourced from live Iris Finance API instead of mock JSON
             // 
             // DATA SHAPE SPECIFICATION:
             // {
@@ -86,25 +82,6 @@ export class AppController {
             //   dataAnalysis: {
             //     totalMetrics: number,            // Total number of discovered metrics
             //     suggestedChartTypes: string[]    // Array of suggested chart types
-            //   }
-            // }
-            //
-            // EXAMPLE RESPONSE:
-            // For prompt "Show me sales trends":
-            // {
-            //   "chartType": "line",
-            //   "metric": "sales", 
-            //   "dateRange": "2025-06",
-            //   "data": [
-            //     {"date": "2025-06-01", "value": 87589.85},
-            //     {"date": "2025-06-02", "value": 79724.74},
-            //     {"date": "2025-06-03", "value": 84655.08}
-            //   ],
-            //   "requestId": "1703123456789-abc123def",
-            //   "originalPrompt": "Show me sales trends",
-            //   "dataAnalysis": {
-            //     "totalMetrics": 99,
-            //     "suggestedChartTypes": ["line", "bar"]
             //   }
             // }
             return {
@@ -193,7 +170,7 @@ export class AppController {
                 result.charts,
                 await this.metrics.getDataAnalysis(),
                 {
-                    dataSourceFile: DATA_SOURCE_FILE,
+                    dataSource: 'Iris Finance API',
                     responseTimeMs: Date.now() - startTime,
                     metricsCount: result.charts.length
                 }

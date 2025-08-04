@@ -3,16 +3,19 @@ dotenv.config();
 
 import { NestFactory } from '@nestjs/core';
 import { Module } from '@nestjs/common';
+import { HttpModule } from '@nestjs/axios';
 import { AppController } from './app.controller';
 import { OpenAiService } from './openai.service';
 import { MetricsService } from './metrics.service';
 import { DataAnalysisService } from './data-analysis.service';
 import { AuditService } from './audit.service';
 import { DashboardService } from './dashboard.service';
+import { IrisApiService } from './iris-api.service';
 
 @Module({
+    imports: [HttpModule],
     controllers: [AppController],
-    providers: [OpenAiService, MetricsService, DataAnalysisService, AuditService, DashboardService]
+    providers: [OpenAiService, MetricsService, DataAnalysisService, AuditService, DashboardService, IrisApiService]
 })
 class AppModule { }
 async function bootstrap() {

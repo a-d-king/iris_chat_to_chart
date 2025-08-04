@@ -13,7 +13,7 @@ export interface AuditLogEntry {
     dataUsed: any;
     dataAnalysis: any;
     metadata: {
-        dataSourceFile: string;
+        dataSource: string;
         responseTimeMs: number;
         metricsCount: number;
     };
@@ -72,7 +72,7 @@ export class AuditService {
         dataUsed: any,
         dataAnalysis: any,
         metadata: {
-            dataSourceFile: string;
+            dataSource: string;
             responseTimeMs: number;
             metricsCount: number;
         }
@@ -130,7 +130,7 @@ export class AuditService {
                 userPrompt: entry.userPrompt,
                 chartType: entry.chartSpec.chartType,
                 metric: entry.chartSpec.metric,
-                dataSourceFile: entry.metadata.dataSourceFile,
+                dataSource: entry.metadata.dataSource,
                 responseTimeMs: entry.metadata.responseTimeMs
             });
 
@@ -205,7 +205,7 @@ export class AuditService {
         dashboardResult: any,
         dashboardType: 'standard' | 'enhanced',
         metadata: {
-            dataSourceFile: string;
+            dataSource: string;
             responseTimeMs: number;
             metricsCount: number;
             analysisType?: string;
@@ -239,7 +239,7 @@ export class AuditService {
             total_charts: chartSchemas.length,
             response_time_ms: metadata.responseTimeMs,
             metadata: {
-                dataSourceFile: metadata.dataSourceFile,
+                dataSource: metadata.dataSource,
                 metricsCount: metadata.metricsCount,
                 analysisType: metadata.analysisType,
                 context: metadata.context,
