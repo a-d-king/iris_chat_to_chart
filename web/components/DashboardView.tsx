@@ -202,8 +202,11 @@ export default function DashboardView({ dashboard }: DashboardViewProps) {
                                 chartType: chart.chartType,
                                 metric: chart.metric,
                                 data: chart.data,
-                                originalPrompt: chart.title
+                                originalPrompt: chart.title,
+                                requestId: dashboard.requestId,
+                                chartId: chart.id
                             }}
+                            showFeedback={true}
                         />
                     </div>
                 ))}

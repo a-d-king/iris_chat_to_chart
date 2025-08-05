@@ -3,6 +3,16 @@ import fs from 'fs/promises';
 import path from 'path';
 
 /**
+ * Interface for chart feedback data
+ */
+export interface ChartFeedback {
+    rating: 1 | 2 | 3 | 4 | 5;
+    timestamp: string;
+    comment?: string;
+    chartId?: string;
+}
+
+/**
  * Interface for audit log entries
  */
 export interface AuditLogEntry {
@@ -13,10 +23,11 @@ export interface AuditLogEntry {
     dataUsed: any;
     dataAnalysis: any;
     metadata: {
-        dataSourceFile: string;
+        dataSource: string;
         responseTimeMs: number;
         metricsCount: number;
     };
+    feedback?: ChartFeedback;
 }
 
 /**
@@ -27,10 +38,10 @@ export interface DashboardAuditData {
     timestamp: Date;
     user_prompt: string;
     request_type: string;
-    chart_schemas: any[]; // JSONB data
+    chart_schemas: any[]; // JSONB
     total_charts: number;
     response_time_ms: number;
-    metadata: any; // JSONB data
+    metadata: any; // JSONB
 }
 
 /**
@@ -72,7 +83,7 @@ export class AuditService {
         dataUsed: any,
         dataAnalysis: any,
         metadata: {
-            dataSourceFile: string;
+            dataSource: string;
             responseTimeMs: number;
             metricsCount: number;
         }
@@ -97,8 +108,6 @@ export class AuditService {
             await fs.writeFile(filepath, JSON.stringify(auditEntry, null, 2), 'utf-8');
             console.log(`Audit log saved: ${filename}`);
 
-            await this.appendToDailySummary(auditEntry);
-
             return requestId;
         } catch (error) {
             console.error('Error saving audit log:', error);
@@ -107,36 +116,79 @@ export class AuditService {
     }
 
     /**
-     * Append entry to daily summary log
+     * Add feedback to an existing audit log entry
      */
-    private async appendToDailySummary(entry: AuditLogEntry): Promise<void> {
-        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-        const summaryFile = path.join(this.auditDir, `daily-summary-${today}.json`);
+    async addFeedback(
+        requestId: string,
+        rating: 1 | 2 | 3 | 4 | 5,
+        comment?: string,
+        chartId?: string
+    ): Promise<void> {
+        const feedback: ChartFeedback = {
+            rating,
+            timestamp: new Date().toISOString(),
+            comment,
+            chartId
+        };
+
+        // Update the audit log file
+        const filename = `chart-${requestId}.json`;
+        const filepath = path.join(this.auditDir, filename);
 
         try {
-            let dailySummary: any[] = [];
+            const existingData = await fs.readFile(filepath, 'utf-8');
+            const auditEntry: AuditLogEntry = JSON.parse(existingData);
 
-            try {
-                const existingData = await fs.readFile(summaryFile, 'utf-8');
-                dailySummary = JSON.parse(existingData);
-            } catch (error) {
-                dailySummary = [];
+            auditEntry.feedback = feedback;
+
+            await fs.writeFile(filepath, JSON.stringify(auditEntry, null, 2), 'utf-8');
+            console.log(`Feedback added to audit log: ${filename}`);
+        } catch (error) {
+            console.error('Error adding feedback to audit log:', error);
+            throw new Error('Failed to save feedback');
+        }
+    }
+
+    /**
+     * Get feedback statistics across all audit logs
+     */
+    async getFeedbackStats(): Promise<{
+        totalFeedback: number;
+        averageRating: number;
+        ratingDistribution: Record<number, number>;
+    }> {
+        try {
+            const files = await fs.readdir(this.auditDir);
+            const auditFiles = files.filter(f => f.startsWith('chart-') && f.endsWith('.json'));
+
+            let totalFeedback = 0;
+            let ratingSum = 0;
+            const ratingDistribution: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+
+            for (const file of auditFiles) {
+                try {
+                    const data = await fs.readFile(path.join(this.auditDir, file), 'utf-8');
+                    const entry: AuditLogEntry = JSON.parse(data);
+
+                    if (entry.feedback) {
+                        totalFeedback++;
+                        ratingSum += entry.feedback.rating;
+                        ratingDistribution[entry.feedback.rating]++;
+                    }
+                } catch (error) {
+                    // Skip invalid files
+                    continue;
+                }
             }
 
-            // Add summary entry (without full data to keep file size manageable)
-            dailySummary.push({
-                timestamp: entry.timestamp,
-                requestId: entry.requestId,
-                userPrompt: entry.userPrompt,
-                chartType: entry.chartSpec.chartType,
-                metric: entry.chartSpec.metric,
-                dataSourceFile: entry.metadata.dataSourceFile,
-                responseTimeMs: entry.metadata.responseTimeMs
-            });
-
-            await fs.writeFile(summaryFile, JSON.stringify(dailySummary, null, 2), 'utf-8');
+            return {
+                totalFeedback,
+                averageRating: totalFeedback > 0 ? ratingSum / totalFeedback : 0,
+                ratingDistribution
+            };
         } catch (error) {
-            console.error('Error updating daily summary:', error);
+            console.error('Error calculating feedback stats:', error);
+            return { totalFeedback: 0, averageRating: 0, ratingDistribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } };
         }
     }
 
@@ -197,15 +249,15 @@ export class AuditService {
     }
 
     /**
- * Prepare dashboard audit data for PostgreSQL insertion
- * Call this after dashboard generation to get formatted data for your existing DB
- */
-    async prepareDashboardAuditForPostgres(
+     * Prepare dashboard audit data for database insertion
+     * Call this after dashboard generation to get formatted data for your existing DB
+     */
+    async prepareForDatabase(
         userPrompt: string,
         dashboardResult: any,
         dashboardType: 'standard' | 'enhanced',
         metadata: {
-            dataSourceFile: string;
+            dataSource: string;
             responseTimeMs: number;
             metricsCount: number;
             analysisType?: string;
@@ -239,7 +291,7 @@ export class AuditService {
             total_charts: chartSchemas.length,
             response_time_ms: metadata.responseTimeMs,
             metadata: {
-                dataSourceFile: metadata.dataSourceFile,
+                dataSource: metadata.dataSource,
                 metricsCount: metadata.metricsCount,
                 analysisType: metadata.analysisType,
                 context: metadata.context,

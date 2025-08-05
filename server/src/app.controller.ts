@@ -1,12 +1,9 @@
 import { Body, Controller, Post, Get, ValidationPipe } from '@nestjs/common';
-import { ChatDto, DashboardDto } from './chat.dto';
+import { ChatDto, DashboardDto, FeedbackDto } from './chat.dto';
 import { OpenAiService } from './openai.service';
 import { MetricsService } from './metrics.service';
 import { AuditService } from './audit.service';
 import { DashboardService } from './dashboard.service';
-
-// Name of primary data source JSON file
-export const DATA_SOURCE_FILE = 'sample-june-metrics.json';
 
 /**
  * Main application controller
@@ -33,16 +30,19 @@ export class AppController {
         const startTime = Date.now();
 
         try {
-            // Step 1: Get data analysis for context
-            const dataAnalysis = await this.metrics.getDataAnalysis();
+            // Step 1: Get data analysis for context (use provided dateRange or default)
+            const effectiveDateRange = body.dateRange || undefined;
+            const dataAnalysis = await this.metrics.getDataAnalysis(effectiveDateRange);
 
             // Step 2: Convert natural language prompt to structured chart spec with context
             const spec = await this.ai.prompt(body.prompt, dataAnalysis);
 
             // Step 3: Fetch the relevant data based on the chart spec
+            // Use the provided dateRange from frontend if available, otherwise use spec.dateRange
+            const finalDateRange = body.dateRange || spec.dateRange;
             const data = await this.metrics.slice(
                 spec.metric,
-                spec.dateRange,
+                finalDateRange,
                 spec.groupBy
             );
 
@@ -55,15 +55,13 @@ export class AppController {
                 data,
                 dataAnalysis,
                 {
-                    dataSourceFile: DATA_SOURCE_FILE,
+                    dataSource: 'Iris Finance API',
                     responseTimeMs: responseTime,
                     metricsCount: dataAnalysis.availableMetrics.length
                 }
             );
 
-            // Step 5: Return combined spec and data for the frontend
-            // This interface is where I am planning to "plug-in" the existing Iris Finance charting library/system
-            // For now, I'm just rendering using the 5 free charts that are available in ag-charts-react in ChartView.tsx
+            // Step 5: Return combined spec and data for the frontend from live Iris Finance API
             // 
             // DATA SHAPE SPECIFICATION:
             // {
@@ -86,25 +84,6 @@ export class AppController {
             //   dataAnalysis: {
             //     totalMetrics: number,            // Total number of discovered metrics
             //     suggestedChartTypes: string[]    // Array of suggested chart types
-            //   }
-            // }
-            //
-            // EXAMPLE RESPONSE:
-            // For prompt "Show me sales trends":
-            // {
-            //   "chartType": "line",
-            //   "metric": "sales", 
-            //   "dateRange": "2025-06",
-            //   "data": [
-            //     {"date": "2025-06-01", "value": 87589.85},
-            //     {"date": "2025-06-02", "value": 79724.74},
-            //     {"date": "2025-06-03", "value": 84655.08}
-            //   ],
-            //   "requestId": "1703123456789-abc123def",
-            //   "originalPrompt": "Show me sales trends",
-            //   "dataAnalysis": {
-            //     "totalMetrics": 99,
-            //     "suggestedChartTypes": ["line", "bar"]
             //   }
             // }
             return {
@@ -193,7 +172,7 @@ export class AppController {
                 result.charts,
                 await this.metrics.getDataAnalysis(),
                 {
-                    dataSourceFile: DATA_SOURCE_FILE,
+                    dataSource: 'Iris Finance API',
                     responseTimeMs: Date.now() - startTime,
                     metricsCount: result.charts.length
                 }
@@ -207,6 +186,47 @@ export class AppController {
         } catch (error) {
             console.error('Error generating dashboard:', error);
             throw new Error('Failed to generate dashboard');
+        }
+    }
+
+    /**
+     * POST /feedback endpoint
+     * Accepts user feedback for generated charts
+     * @param body - Feedback data containing requestId, rating, and optional comment
+     * @returns Promise<object> - Success response
+     */
+    @Post('feedback')
+    async submitFeedback(@Body(new ValidationPipe()) body: FeedbackDto) {
+        try {
+            await this.audit.addFeedback(
+                body.requestId,
+                body.rating,
+                body.comment,
+                body.chartId
+            );
+
+            return {
+                success: true,
+                message: 'Feedback submitted successfully'
+            };
+        } catch (error) {
+            console.error('Error submitting feedback:', error);
+            throw new Error('Failed to submit feedback');
+        }
+    }
+
+    /**
+     * GET /feedback/stats endpoint
+     * Returns aggregated feedback statistics for analytics
+     * @returns Promise<object> - Feedback statistics
+     */
+    @Get('feedback/stats')
+    async getFeedbackStats() {
+        try {
+            return await this.audit.getFeedbackStats();
+        } catch (error) {
+            console.error('Error getting feedback stats:', error);
+            throw new Error('Failed to get feedback statistics');
         }
     }
 } 

@@ -1,50 +1,53 @@
 import { Injectable } from '@nestjs/common';
-import fs from 'fs/promises';
-import path from 'path';
 import { DataAnalysisService, MetricInfo } from './data-analysis.service';
-import { DATA_SOURCE_FILE } from './app.controller';
+import { IrisApiService } from './iris-api.service';
 
 /**
  * Service for handling metrics data operations with caching
  */
 @Injectable()
 export class MetricsService {
-    private cache: any;
+    private cache: Map<string, any> = new Map();
     private dataAnalysis: any;
 
-    constructor(private dataAnalysisService: DataAnalysisService) { }
+    constructor(
+        private dataAnalysisService: DataAnalysisService,
+        private irisApiService: IrisApiService
+    ) { }
 
     /**
-     * Load metrics data from available JSON file with caching to improve performance
+     * Load metrics data from Iris Finance API with caching to improve performance
+     * @param dateRange Optional date range for API calls
      * @returns Promise<any> - The loaded metrics data
      */
-    async load() {
-        if (!this.cache) {
+    async load(dateRange?: string) {
+        // Create cache key based on date range
+        const cacheKey = dateRange || 'default';
+
+        if (!this.cache.has(cacheKey)) {
             try {
-                const raw = await fs.readFile(
-                    path.join(__dirname, '..', DATA_SOURCE_FILE),
-                    'utf-8'
-                );
+                console.log('🌐 Loading data from Iris Finance API...');
+                const data = await this.irisApiService.fetchMetrics(dateRange);
 
-                this.cache = JSON.parse(raw);
-
-                this.dataAnalysis = this.dataAnalysisService.analyzeData(this.cache);
-                console.log(`Detected ${this.dataAnalysis.availableMetrics.length} metrics in the dataset`);
+                this.cache.set(cacheKey, data);
+                this.dataAnalysis = this.dataAnalysisService.analyzeData(data);
+                console.log(`✅ Detected ${this.dataAnalysis.availableMetrics.length} metrics in the dataset`);
 
             } catch (error) {
-                console.error('Error loading metrics data:', error);
-                throw new Error('Failed to load metrics data');
+                console.error('❌ Error loading metrics data from API:', error);
+                throw new Error('Failed to load metrics data from Iris Finance API');
             }
         }
-        return this.cache;
+        return this.cache.get(cacheKey);
     }
 
     /**
      * Get data analysis results
+     * @param dateRange Optional date range for API calls
      * @returns Data analysis including available metrics and suggestions
      */
-    async getDataAnalysis() {
-        await this.load();
+    async getDataAnalysis(dateRange?: string) {
+        await this.load(dateRange);
         return this.dataAnalysis;
     }
 
@@ -57,7 +60,7 @@ export class MetricsService {
      */
     async slice(metric: string, dateRange: string, groupBy?: string) {
         try {
-            const data = await this.load();
+            const data = await this.load(dateRange);
             const analysis = this.dataAnalysis;
 
             // Validate inputs
@@ -69,9 +72,14 @@ export class MetricsService {
                 throw new Error('Date range is required');
             }
 
-            // Validate date range format
-            if (!/^\d{4}(-\d{2})?$/.test(dateRange)) {
-                throw new Error('Date range must be in YYYY or YYYY-MM format');
+            // Validate date range format - support YYYY, YYYY-MM, YYYY-MM-DD, and custom ranges
+            const isValidFormat =
+                /^\d{4}(-\d{2})?$/.test(dateRange) ||                          // YYYY or YYYY-MM
+                /^\d{4}-\d{2}-\d{2}$/.test(dateRange) ||                       // YYYY-MM-DD
+                /^\d{4}-\d{2}-\d{2}T.*,\d{4}-\d{2}-\d{2}T.*$/.test(dateRange); // Custom ISO range
+
+            if (!isValidFormat) {
+                throw new Error('Date range must be in YYYY, YYYY-MM, YYYY-MM-DD, or custom range format');
             }
 
             // Find the matching metric with flexible matching
@@ -142,8 +150,25 @@ export class MetricsService {
         let filteredData = rawData;
         if (dateRange) {
             filteredData = rawData.filter((item: any) => {
+                if (!item.date) return false;
+
+                // Handle custom ISO date ranges (e.g., "2025-05-06T00:00:00.000Z,2025-08-04T23:59:59.999Z")
+                if (dateRange.includes(',')) {
+                    const [startISO, endISO] = dateRange.split(',');
+                    const startDate = startISO.split('T')[0]; // Extract YYYY-MM-DD part
+                    const endDate = endISO.split('T')[0];     // Extract YYYY-MM-DD part
+                    const itemDate = item.date.split('T')[0]; // Extract YYYY-MM-DD part from item
+
+                    return itemDate >= startDate && itemDate <= endDate;
+                }
+
+                // Handle YYYY-MM-DD format
+                if (/^\d{4}-\d{2}-\d{2}$/.test(dateRange)) {
+                    return item.date.startsWith(dateRange);
+                }
+
+                // Handle month-specific filter (e.g., "2025-06")
                 if (dateRange.includes('-')) {
-                    // Month-specific filter (e.g., "2025-06")
                     return item.date && item.date.startsWith(dateRange);
                 } else {
                     // Year filter (e.g., "2025")
@@ -184,7 +209,25 @@ export class MetricsService {
         if (dateRange) {
             const filteredIndices: number[] = [];
             dates.forEach((date: string, index: number) => {
-                if (dateRange.includes('-')) {
+                // Handle custom ISO date ranges
+                if (dateRange.includes(',')) {
+                    const [startISO, endISO] = dateRange.split(',');
+                    const startDate = startISO.split('T')[0];
+                    const endDate = endISO.split('T')[0];
+                    const itemDate = date.split('T')[0];
+
+                    if (itemDate >= startDate && itemDate <= endDate) {
+                        filteredIndices.push(index);
+                    }
+                }
+                // Handle YYYY-MM-DD format
+                else if (/^\d{4}-\d{2}-\d{2}$/.test(dateRange)) {
+                    if (date.startsWith(dateRange)) {
+                        filteredIndices.push(index);
+                    }
+                }
+                // Handle month/year formats
+                else if (dateRange.includes('-')) {
                     if (date.startsWith(dateRange)) {
                         filteredIndices.push(index);
                     }
@@ -231,6 +274,24 @@ export class MetricsService {
             let filteredData = containerData;
             if (dateRange) {
                 filteredData = containerData.filter((item: any) => {
+                    if (!item.date) return false;
+
+                    // Handle custom ISO date ranges
+                    if (dateRange.includes(',')) {
+                        const [startISO, endISO] = dateRange.split(',');
+                        const startDate = startISO.split('T')[0];
+                        const endDate = endISO.split('T')[0];
+                        const itemDate = item.date.split('T')[0];
+
+                        return itemDate >= startDate && itemDate <= endDate;
+                    }
+
+                    // Handle YYYY-MM-DD format
+                    if (/^\d{4}-\d{2}-\d{2}$/.test(dateRange)) {
+                        return item.date.startsWith(dateRange);
+                    }
+
+                    // Handle month/year formats
                     if (dateRange.includes('-')) {
                         return item.date && item.date.startsWith(dateRange);
                     } else {
