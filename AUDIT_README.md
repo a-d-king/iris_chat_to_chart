@@ -10,7 +10,6 @@ This is implemented as a NestJS Injectable service that integrates with the char
 
 - **Complete Request Logging**: Every chart generation request is logged with full context
 - **Unique Request IDs**: Each request gets a unique identifier for tracking
-- **Daily Summaries**: Consolidated daily logs for easy review
 - **Audit Statistics**: Built-in analytics for monitoring usage patterns
 - **Data Privacy**: Audit logs are excluded from version control
 - **Performance Optimized**: Statistics calculations use sampling for large datasets
@@ -21,9 +20,7 @@ This is implemented as a NestJS Injectable service that integrates with the char
 server/
 ├── audit-logs/
 │   ├── chart-1703123456789-abc123def.json    # Individual request logs
-│   ├── chart-1703123456790-def456ghi.json
-│   ├── daily-summary-2023-12-21.json         # Daily summaries
-│   └── daily-summary-2023-12-22.json
+│   └── chart-1703123456790-def456ghi.json
 ```
 
 ## Audit Log Format
@@ -71,12 +68,10 @@ Returns audit statistics including:
 
 ## Implementation Details
 
-The audit service is implemented as a NestJS Injectable service with the following key methods:
-
-- `logChartGeneration()`: Creates individual audit log files and updates daily summaries
+- `logChartGeneration()`: Creates individual audit log files
 - `getAuditStats()`: Calculates statistics using sampling for performance (max 100 recent files)
 - `generateRequestId()`: Creates unique IDs using timestamp + random string
-- `appendToDailySummary()`: Maintains lightweight daily summary files
+- `prepareForDatabase()`: Formats dashboard audit data for database insertion
 
 ## Privacy and Security
 
@@ -97,7 +92,6 @@ The audit service is implemented as a NestJS Injectable service with the followi
 
 The audit system includes:
 
-- **Daily Summaries**: Lightweight summaries for quick review
 - **Error Handling**: Robust error handling ensures audit failures don't break chart generation
 - **Performance Sampling**: Statistics use recent sample to avoid performance issues
 
@@ -120,7 +114,6 @@ curl http://localhost:4000/audit/stats
 
 - Server console output for audit-related messages
 - Individual audit log files for request details
-- Daily summary files for patterns and trends
 
 ## Best Practices
 

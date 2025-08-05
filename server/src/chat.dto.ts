@@ -22,7 +22,7 @@ export class FeedbackDto {
     requestId: string;
 
     @IsEnum([1, 2, 3, 4, 5])
-    rating: 1 | 2 | 3 | 4 | 5; // 1=heavy dislike, 2=dislike, 3=neutral, 4=like, 5=heavy like
+    rating: 1 | 2 | 3 | 4 | 5; // 1 = heavy dislike, 2 = dislike, 3 = neutral, 4 = like, 5 = heavy like
 
     @IsOptional()
     @IsString()
@@ -30,7 +30,7 @@ export class FeedbackDto {
 
     @IsOptional()
     @IsString()
-    chartId?: string; // For dashboard charts
+    chartId?: string;
 }
 
 /**

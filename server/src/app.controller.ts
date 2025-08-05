@@ -61,8 +61,7 @@ export class AppController {
                 }
             );
 
-            // Step 5: Return combined spec and data for the frontend
-            // Data is now sourced from live Iris Finance API instead of mock JSON
+            // Step 5: Return combined spec and data for the frontend from live Iris Finance API
             // 
             // DATA SHAPE SPECIFICATION:
             // {

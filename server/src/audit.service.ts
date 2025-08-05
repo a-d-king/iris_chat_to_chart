@@ -9,7 +9,7 @@ export interface ChartFeedback {
     rating: 1 | 2 | 3 | 4 | 5;
     timestamp: string;
     comment?: string;
-    chartId?: string; // For dashboard charts
+    chartId?: string;
 }
 
 /**
@@ -27,7 +27,7 @@ export interface AuditLogEntry {
         responseTimeMs: number;
         metricsCount: number;
     };
-    feedback?: ChartFeedback; // Added feedback field
+    feedback?: ChartFeedback;
 }
 
 /**
@@ -38,10 +38,10 @@ export interface DashboardAuditData {
     timestamp: Date;
     user_prompt: string;
     request_type: string;
-    chart_schemas: any[]; // JSONB data
+    chart_schemas: any[]; // JSONB
     total_charts: number;
     response_time_ms: number;
-    metadata: any; // JSONB data
+    metadata: any; // JSONB
 }
 
 /**
@@ -108,46 +108,10 @@ export class AuditService {
             await fs.writeFile(filepath, JSON.stringify(auditEntry, null, 2), 'utf-8');
             console.log(`Audit log saved: ${filename}`);
 
-            await this.appendToDailySummary(auditEntry);
-
             return requestId;
         } catch (error) {
             console.error('Error saving audit log:', error);
             throw new Error('Failed to save audit log');
-        }
-    }
-
-    /**
-     * Append entry to daily summary log
-     */
-    private async appendToDailySummary(entry: AuditLogEntry): Promise<void> {
-        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-        const summaryFile = path.join(this.auditDir, `daily-summary-${today}.json`);
-
-        try {
-            let dailySummary: any[] = [];
-
-            try {
-                const existingData = await fs.readFile(summaryFile, 'utf-8');
-                dailySummary = JSON.parse(existingData);
-            } catch (error) {
-                dailySummary = [];
-            }
-
-            // Add summary entry (without full data to keep file size manageable)
-            dailySummary.push({
-                timestamp: entry.timestamp,
-                requestId: entry.requestId,
-                userPrompt: entry.userPrompt,
-                chartType: entry.chartSpec.chartType,
-                metric: entry.chartSpec.metric,
-                dataSource: entry.metadata.dataSource,
-                responseTimeMs: entry.metadata.responseTimeMs
-            });
-
-            await fs.writeFile(summaryFile, JSON.stringify(dailySummary, null, 2), 'utf-8');
-        } catch (error) {
-            console.error('Error updating daily summary:', error);
         }
     }
 
@@ -285,10 +249,10 @@ export class AuditService {
     }
 
     /**
- * Prepare dashboard audit data for PostgreSQL insertion
- * Call this after dashboard generation to get formatted data for your existing DB
- */
-    async prepareDashboardAuditForPostgres(
+     * Prepare dashboard audit data for database insertion
+     * Call this after dashboard generation to get formatted data for your existing DB
+     */
+    async prepareForDatabase(
         userPrompt: string,
         dashboardResult: any,
         dashboardType: 'standard' | 'enhanced',
