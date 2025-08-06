@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { DataAnalysis, MetricInfo } from './data-analysis.service';
+import { DataAnalysis } from './data-analysis.service';
 
 /**
  * Interface for reasoning step information
@@ -35,7 +35,7 @@ export interface ReasoningProcess {
 
 /**
  * Service for providing transparent reasoning about chart and data selection decisions
- * Can be enabled/disabled via ENABLE_REASONING_LOG environment variable
+ * Can be enabled/disabled via ENABLE_REASONING environment variable
  */
 @Injectable()
 export class ReasoningService {
@@ -310,7 +310,6 @@ export class ReasoningService {
         factors.push(...reasons);
         reasoning += reasons.join('. ') + '. ';
 
-        // Note: Legacy AI suggestions removed - now using true runtime reasoning
         factors.push('Chart type selected through runtime AI reasoning');
         reasoning += 'Decision made through explicit AI reasoning process. ';
 
