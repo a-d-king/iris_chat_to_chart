@@ -99,15 +99,22 @@ export class AppController {
             //   }
             // }
             return {
-                ...spec,
+                chartType: spec.chartType,
+                metric: spec.metric,
+                groupBy: spec.groupBy,
+                dateRange: spec.dateRange,
                 data,
                 requestId,
                 originalPrompt: body.prompt,
                 dataAnalysis: {
                     totalMetrics: dataAnalysis.availableMetrics.length,
-                    suggestedChartTypes: dataAnalysis.suggestedChartTypes.map((s: any) => s.chartType)
+                    suggestedChartTypes: dataAnalysis.suggestedChartTypes.map((s: any) => s.chartType),
+                    runtimeReasoning: true
                 },
-                reasoning: reasoningProcess
+                reasoning: {
+                    ...reasoningProcess,
+                    aiReasoning: spec._aiReasoning
+                }
             };
         } catch (error) {
             const responseTime = Date.now() - startTime;

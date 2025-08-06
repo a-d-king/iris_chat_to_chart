@@ -9,6 +9,13 @@ export interface DataAnalysis {
     dataContext: string;
 }
 
+export interface ChartSuggestion {
+    chartType: 'line' | 'bar' | 'stacked-bar' | 'heatmap' | 'waterfall';
+    confidence: number;
+    reason: string;
+    bestForMetrics: string[];
+}
+
 export interface MetricInfo {
     name: string;
     type: 'scalar' | 'timeSeries' | 'groupedSeries' | 'array' | 'dynamicKeyObject' | 'embeddedMetrics';
@@ -23,12 +30,7 @@ export interface MetricInfo {
     embeddedMetrics?: string[];
 }
 
-export interface ChartSuggestion {
-    chartType: 'line' | 'bar' | 'stacked-bar' | 'heatmap' | 'waterfall';
-    confidence: number;
-    reason: string;
-    bestForMetrics: string[];
-}
+
 
 /**
  * Service for analyzing data structure and providing intelligent chart recommendations
@@ -447,219 +449,102 @@ export class DataAnalysisService {
     }
 
     /**
-     * Generate chart type suggestions based on available metrics with data quality assessment
+     * Generate chart type suggestions based on available metrics to help GPT-4o make better decisions
      */
     private generateChartSuggestions(metrics: MetricInfo[]): ChartSuggestion[] {
         const suggestions: ChartSuggestion[] = [];
 
+        // Analyze metric characteristics and suggest appropriate chart types
         for (const metric of metrics) {
-            const quality = this.assessDataQuality(metric);
-
             // Line charts for temporal data
-            if (metric.hasTimeData && quality.hasTemporalData) {
+            if (metric.hasTimeData && metric.type === 'timeSeries') {
                 suggestions.push({
                     chartType: 'line',
                     confidence: 0.9,
-                    reason: 'Clear temporal pattern with meaningful time progression',
+                    reason: 'Time series data is ideal for showing trends and patterns over time',
                     bestForMetrics: [metric.name]
                 });
             }
 
-            // Only suggest stacked bar if it adds real value
-            if (metric.hasGrouping && this.shouldUseStackedBar(metric, quality)) {
+            // Stacked bar for grouped series with good categories
+            if (metric.hasGrouping && metric.type === 'groupedSeries' &&
+                (metric.groupingDimensions?.length || 0) > 1 && (metric.groupingDimensions?.length || 0) <= 8) {
                 suggestions.push({
                     chartType: 'stacked-bar',
-                    confidence: this.calculateStackedBarConfidence(metric, quality),
-                    reason: this.getStackedBarReason(metric, quality),
+                    confidence: 0.85,
+                    reason: 'Grouped data with multiple categories shows composition well in stacked bars',
                     bestForMetrics: [metric.name]
                 });
             }
 
-            // Suggest bar chart for clean categorical data or as fallback
-            if (this.shouldUseBar(metric, quality)) {
+            // Bar charts for categorical comparisons
+            if (metric.type === 'scalar' || metric.type === 'dynamicKeyObject' || metric.type === 'embeddedMetrics') {
                 suggestions.push({
                     chartType: 'bar',
-                    confidence: this.calculateBarConfidence(metric, quality),
-                    reason: this.getBarReason(metric, quality),
+                    confidence: 0.8,
+                    reason: 'Categorical or scalar data is excellent for side-by-side comparisons',
                     bestForMetrics: [metric.name]
                 });
             }
         }
 
-        // Legacy suggestions for backward compatibility
-        const timeSeriesMetrics = metrics.filter(m => m.hasTimeData && !m.hasGrouping);
-        const scalarMetrics = metrics.filter(m => m.type === 'scalar');
-
-        // Additional suggestions for scalar metrics
-        if (scalarMetrics.length > 1) {
+        // Add general suggestions based on data patterns
+        const timeSeriesMetrics = metrics.filter(m => m.hasTimeData);
+        if (timeSeriesMetrics.length > 0) {
             suggestions.push({
-                chartType: 'bar',
-                confidence: 0.75,
-                reason: 'Great for comparing different scalar metrics',
-                bestForMetrics: scalarMetrics.map(m => m.name)
+                chartType: 'line',
+                confidence: 0.85,
+                reason: 'Multiple time series metrics available for trend analysis',
+                bestForMetrics: timeSeriesMetrics.map(m => m.name).slice(0, 3)
             });
         }
 
-        // Waterfall charts for changes over time
-        const changeMetrics = metrics.filter(m => m.name.toLowerCase().includes('change') ||
-            m.name.toLowerCase().includes('delta'));
+        const categoricalMetrics = metrics.filter(m => m.hasGrouping);
+        if (categoricalMetrics.length > 0) {
+            suggestions.push({
+                chartType: 'bar',
+                confidence: 0.75,
+                reason: 'Categorical data available for comparison analysis',
+                bestForMetrics: categoricalMetrics.map(m => m.name).slice(0, 3)
+            });
+        }
+
+        // Waterfall for change/delta metrics
+        const changeMetrics = metrics.filter(m =>
+            m.name.toLowerCase().includes('change') ||
+            m.name.toLowerCase().includes('delta') ||
+            m.name.toLowerCase().includes('diff')
+        );
         if (changeMetrics.length > 0) {
             suggestions.push({
                 chartType: 'waterfall',
                 confidence: 0.7,
-                reason: 'Excellent for showing cumulative changes',
+                reason: 'Change/delta metrics are perfect for showing cumulative effects',
                 bestForMetrics: changeMetrics.map(m => m.name)
             });
         }
 
-        // Heatmap charts for correlation/pattern analysis (only for high-quality data)
-        const correlationMetrics = metrics.filter(m => {
-            const quality = this.assessDataQuality(m);
-            return (m.hasGrouping && m.hasTimeData && quality.dataSparsity < 0.3) ||
-                (m.type === 'embeddedMetrics' && m.groupingDimensions &&
-                    m.groupingDimensions.length > 3 && quality.dataSparsity < 0.3) ||
-                m.name.toLowerCase().includes('correlation') ||
-                m.name.toLowerCase().includes('pattern') ||
-                m.name.toLowerCase().includes('intensity') ||
-                m.name.toLowerCase().includes('density');
-        });
-        if (correlationMetrics.length > 0) {
+        // Heatmap for complex multi-dimensional data
+        const complexMetrics = metrics.filter(m =>
+            m.hasGrouping && m.hasTimeData && (m.groupingDimensions?.length || 0) > 3
+        );
+        if (complexMetrics.length > 0) {
             suggestions.push({
                 chartType: 'heatmap',
                 confidence: 0.65,
-                reason: 'Perfect for visualizing patterns and intensity across multiple dimensions',
-                bestForMetrics: correlationMetrics.map(m => m.name)
+                reason: 'Multi-dimensional data with many categories works well as heatmaps',
+                bestForMetrics: complexMetrics.map(m => m.name).slice(0, 2)
             });
         }
 
         return suggestions.sort((a, b) => b.confidence - a.confidence);
     }
 
-    /**
-     * Assess the quality of data for a given metric
-     */
-    private assessDataQuality(metric: MetricInfo): {
-        hasUnknownCategories: boolean;
-        categoriesCount: number;
-        hasTemporalData: boolean;
-        dataSparsity: number;
-    } {
-        const unknownCount = metric.groupingDimensions?.filter(dim =>
-            dim.toLowerCase().includes('unknown') ||
-            dim.toLowerCase().includes('untitled') ||
-            dim.trim() === '' ||
-            dim.toLowerCase() === 'undefined' ||
-            dim.toLowerCase() === 'null'
-        ).length || 0;
 
-        return {
-            hasUnknownCategories: unknownCount > 0,
-            categoriesCount: metric.groupingDimensions?.length || 0,
-            hasTemporalData: metric.hasTimeData,
-            dataSparsity: unknownCount / (metric.groupingDimensions?.length || 1)
-        };
-    }
 
-    /**
-     * Determine if stacked bar chart is appropriate for this metric
-     */
-    private shouldUseStackedBar(metric: MetricInfo, quality: any): boolean {
-        // Only use stacked bar if:
-        // 1. Has meaningful categories (>1 and <10 for readability)
-        // 2. Categories are properly labeled (low unknown ratio)
-        // 3. Multiple metrics that logically stack together
-        return metric.hasGrouping &&
-            quality.categoriesCount > 1 &&
-            quality.categoriesCount <= 8 &&
-            quality.dataSparsity < 0.4 && // Less than 40% unknown
-            (metric.embeddedMetrics?.length || 0) > 1;
-    }
 
-    /**
-     * Determine if bar chart is appropriate for this metric
-     */
-    private shouldUseBar(metric: MetricInfo, quality: any): boolean {
-        // Use bar chart for simple comparisons or when stacked bar isn't appropriate
-        return metric.type === 'scalar' ||
-            metric.type === 'embeddedMetrics' ||
-            metric.type === 'dynamicKeyObject' ||
-            !quality.hasUnknownCategories ||
-            quality.categoriesCount <= 1 ||
-            quality.dataSparsity >= 0.4;
-    }
 
-    /**
-     * Calculate confidence for stacked bar chart
-     */
-    private calculateStackedBarConfidence(metric: MetricInfo, quality: any): number {
-        let confidence = 0.5; // Start lower than original 0.85
 
-        // Boost confidence for good quality data
-        if (quality.dataSparsity < 0.1) confidence += 0.25;
-        else if (quality.dataSparsity < 0.2) confidence += 0.15;
-
-        if (quality.categoriesCount >= 2 && quality.categoriesCount <= 5) confidence += 0.15;
-        else if (quality.categoriesCount <= 8) confidence += 0.1;
-
-        if ((metric.embeddedMetrics?.length || 0) > 1) confidence += 0.1;
-        if ((metric.embeddedMetrics?.length || 0) > 2) confidence += 0.05;
-
-        return Math.min(confidence, 0.85);
-    }
-
-    /**
-     * Get reason for stacked bar chart selection
-     */
-    private getStackedBarReason(metric: MetricInfo, quality: any): string {
-        if (quality.dataSparsity < 0.1) {
-            return 'High-quality categorized data ideal for showing composition and comparison';
-        }
-        if (quality.categoriesCount >= 2 && quality.categoriesCount <= 5) {
-            return 'Optimal number of categories for stacked comparison with good data quality';
-        }
-        if ((metric.embeddedMetrics?.length || 0) > 2) {
-            return 'Multiple related metrics benefit from stacked visualization';
-        }
-        return 'Shows composition and trends for well-structured grouped data';
-    }
-
-    /**
-     * Calculate confidence for bar chart
-     */
-    private calculateBarConfidence(metric: MetricInfo, quality: any): number {
-        let confidence = 0.7; // Start with reasonable confidence
-
-        // Bar charts are robust to data quality issues
-        if (quality.hasUnknownCategories) confidence += 0.1;
-        if (quality.dataSparsity >= 0.4) confidence += 0.15;
-        if (quality.categoriesCount <= 1) confidence += 0.1;
-
-        // Bar charts work well for embedded metrics
-        if (metric.type === 'embeddedMetrics' || metric.type === 'dynamicKeyObject') {
-            confidence += 0.1;
-        }
-
-        return Math.min(confidence, 0.9);
-    }
-
-    /**
-     * Get reason for bar chart selection
-     */
-    private getBarReason(metric: MetricInfo, quality: any): string {
-        if (quality.hasUnknownCategories) {
-            return 'Bar chart handles unknown/unlabeled categories better than stacked charts';
-        }
-        if (quality.dataSparsity >= 0.4) {
-            return 'High data sparsity makes bar chart more appropriate than stacked visualization';
-        }
-        if (quality.categoriesCount <= 1) {
-            return 'Single or few categories make simple bar chart most effective';
-        }
-        if (metric.type === 'embeddedMetrics') {
-            return 'Clear comparison across different entities or accounts';
-        }
-        return 'Simple and effective visualization for categorical data comparison';
-    }
 
     /**
      * Generate contextual information about the data for the AI model
