@@ -95,8 +95,8 @@ class AuditService:
         self,
         user_prompt: str,
         chart_spec: Dict[str, Any],
-        data_used: Dict[str, Any],
-        data_analysis: Dict[str, Any],
+        data_used: Any,
+        data_analysis: Any,
         metadata: Dict[str, Any]
     ) -> str:
         """
@@ -117,13 +117,17 @@ class AuditService:
         request_id = self._generate_request_id()
         timestamp = datetime.now().isoformat()
         
+        # Convert objects to dictionaries if needed
+        data_used_dict = data_used.model_dump() if hasattr(data_used, 'model_dump') else data_used
+        data_analysis_dict = data_analysis.model_dump() if hasattr(data_analysis, 'model_dump') else data_analysis
+        
         audit_entry = AuditLogEntry(
             timestamp=timestamp,
             request_id=request_id,
             user_prompt=user_prompt,
             chart_spec=chart_spec,
-            data_used=data_used,
-            data_analysis=data_analysis,
+            data_used=data_used_dict,
+            data_analysis=data_analysis_dict,
             metadata=metadata
         )
         

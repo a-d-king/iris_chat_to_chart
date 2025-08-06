@@ -1,0 +1,2163 @@
+{
+  "timestamp": "2025-08-05T20:45:06.510446",
+  "request_id": "1754444706510-nk4kypkvt",
+  "user_prompt": "show sales trends",
+  "chart_spec": {
+    "chartType": "dashboard",
+    "metric": "multiple",
+    "dateRange": "2025-06"
+  },
+  "data_used": {
+    "charts": [
+      {
+        "chartType": "line",
+        "metric": "sales",
+        "dateRange": "2025",
+        "title": "Sales Trends",
+        "id": "chart_1",
+        "data": {
+          "dates": [
+            "2025-01-01",
+            "2025-01-02",
+            "2025-01-03",
+            "2025-01-04",
+            "2025-01-05",
+            "2025-01-06",
+            "2025-01-07",
+            "2025-01-08",
+            "2025-01-09",
+            "2025-01-10",
+            "2025-01-11",
+            "2025-01-12",
+            "2025-01-13",
+            "2025-01-14",
+            "2025-01-15",
+            "2025-01-16",
+            "2025-01-17",
+            "2025-01-18",
+            "2025-01-19",
+            "2025-01-20",
+            "2025-01-21",
+            "2025-01-22",
+            "2025-01-23",
+            "2025-01-24",
+            "2025-01-25",
+            "2025-01-26",
+            "2025-01-27",
+            "2025-01-28",
+            "2025-01-29",
+            "2025-01-30",
+            "2025-01-31",
+            "2025-02-01",
+            "2025-02-02",
+            "2025-02-03",
+            "2025-02-04",
+            "2025-02-05",
+            "2025-02-06",
+            "2025-02-07",
+            "2025-02-08",
+            "2025-02-09",
+            "2025-02-10",
+            "2025-02-11",
+            "2025-02-12",
+            "2025-02-13",
+            "2025-02-14",
+            "2025-02-15",
+            "2025-02-16",
+            "2025-02-17",
+            "2025-02-18",
+            "2025-02-19",
+            "2025-02-20",
+            "2025-02-21",
+            "2025-02-22",
+            "2025-02-23",
+            "2025-02-24",
+            "2025-02-25",
+            "2025-02-26",
+            "2025-02-27",
+            "2025-02-28",
+            "2025-03-01",
+            "2025-03-02",
+            "2025-03-03",
+            "2025-03-04",
+            "2025-03-05",
+            "2025-03-06",
+            "2025-03-07",
+            "2025-03-08",
+            "2025-03-09",
+            "2025-03-10",
+            "2025-03-11",
+            "2025-03-12",
+            "2025-03-13",
+            "2025-03-14",
+            "2025-03-15",
+            "2025-03-16",
+            "2025-03-17",
+            "2025-03-18",
+            "2025-03-19",
+            "2025-03-20",
+            "2025-03-21",
+            "2025-03-22",
+            "2025-03-23",
+            "2025-03-24",
+            "2025-03-25",
+            "2025-03-26",
+            "2025-03-27",
+            "2025-03-28",
+            "2025-03-29",
+            "2025-03-30",
+            "2025-03-31",
+            "2025-04-01",
+            "2025-04-02",
+            "2025-04-03",
+            "2025-04-04",
+            "2025-04-05",
+            "2025-04-06",
+            "2025-04-07",
+            "2025-04-08",
+            "2025-04-09",
+            "2025-04-10",
+            "2025-04-11",
+            "2025-04-12",
+            "2025-04-13",
+            "2025-04-14",
+            "2025-04-15",
+            "2025-04-16",
+            "2025-04-17",
+            "2025-04-18",
+            "2025-04-19",
+            "2025-04-20",
+            "2025-04-21",
+            "2025-04-22",
+            "2025-04-23",
+            "2025-04-24",
+            "2025-04-25",
+            "2025-04-26",
+            "2025-04-27",
+            "2025-04-28",
+            "2025-04-29",
+            "2025-04-30",
+            "2025-05-01",
+            "2025-05-02",
+            "2025-05-03",
+            "2025-05-04",
+            "2025-05-05",
+            "2025-05-06",
+            "2025-05-07",
+            "2025-05-08",
+            "2025-05-09",
+            "2025-05-10",
+            "2025-05-11",
+            "2025-05-12",
+            "2025-05-13",
+            "2025-05-14",
+            "2025-05-15",
+            "2025-05-16",
+            "2025-05-17",
+            "2025-05-18",
+            "2025-05-19",
+            "2025-05-20",
+            "2025-05-21",
+            "2025-05-22",
+            "2025-05-23",
+            "2025-05-24",
+            "2025-05-25",
+            "2025-05-26",
+            "2025-05-27",
+            "2025-05-28",
+            "2025-05-29",
+            "2025-05-30",
+            "2025-05-31",
+            "2025-06-01",
+            "2025-06-02",
+            "2025-06-03",
+            "2025-06-04",
+            "2025-06-05",
+            "2025-06-06",
+            "2025-06-07",
+            "2025-06-08",
+            "2025-06-09",
+            "2025-06-10",
+            "2025-06-11",
+            "2025-06-12",
+            "2025-06-13",
+            "2025-06-14",
+            "2025-06-15",
+            "2025-06-16",
+            "2025-06-17",
+            "2025-06-18",
+            "2025-06-19",
+            "2025-06-20",
+            "2025-06-21",
+            "2025-06-22",
+            "2025-06-23",
+            "2025-06-24",
+            "2025-06-25",
+            "2025-06-26",
+            "2025-06-27",
+            "2025-06-28",
+            "2025-06-29",
+            "2025-06-30",
+            "2025-07-01",
+            "2025-07-02",
+            "2025-07-03",
+            "2025-07-04",
+            "2025-07-05",
+            "2025-07-06",
+            "2025-07-07",
+            "2025-07-08",
+            "2025-07-09",
+            "2025-07-10",
+            "2025-07-11",
+            "2025-07-12",
+            "2025-07-13",
+            "2025-07-14",
+            "2025-07-15",
+            "2025-07-16",
+            "2025-07-17",
+            "2025-07-18",
+            "2025-07-19",
+            "2025-07-20",
+            "2025-07-21",
+            "2025-07-22",
+            "2025-07-23",
+            "2025-07-24",
+            "2025-07-25",
+            "2025-07-26",
+            "2025-07-27",
+            "2025-07-28",
+            "2025-07-29",
+            "2025-07-30",
+            "2025-07-31",
+            "2025-08-01",
+            "2025-08-02",
+            "2025-08-03",
+            "2025-08-04",
+            "2025-08-05",
+            "2025-08-06",
+            "2025-08-07",
+            "2025-08-08",
+            "2025-08-09",
+            "2025-08-10",
+            "2025-08-11",
+            "2025-08-12",
+            "2025-08-13",
+            "2025-08-14",
+            "2025-08-15",
+            "2025-08-16",
+            "2025-08-17",
+            "2025-08-18",
+            "2025-08-19",
+            "2025-08-20",
+            "2025-08-21",
+            "2025-08-22",
+            "2025-08-23",
+            "2025-08-24",
+            "2025-08-25",
+            "2025-08-26",
+            "2025-08-27",
+            "2025-08-28",
+            "2025-08-29",
+            "2025-08-30",
+            "2025-08-31",
+            "2025-09-01",
+            "2025-09-02",
+            "2025-09-03",
+            "2025-09-04",
+            "2025-09-05",
+            "2025-09-06",
+            "2025-09-07",
+            "2025-09-08",
+            "2025-09-09",
+            "2025-09-10",
+            "2025-09-11",
+            "2025-09-12",
+            "2025-09-13",
+            "2025-09-14",
+            "2025-09-15",
+            "2025-09-16",
+            "2025-09-17",
+            "2025-09-18",
+            "2025-09-19",
+            "2025-09-20",
+            "2025-09-21",
+            "2025-09-22",
+            "2025-09-23",
+            "2025-09-24",
+            "2025-09-25",
+            "2025-09-26",
+            "2025-09-27",
+            "2025-09-28",
+            "2025-09-29",
+            "2025-09-30",
+            "2025-10-01",
+            "2025-10-02",
+            "2025-10-03",
+            "2025-10-04",
+            "2025-10-05",
+            "2025-10-06",
+            "2025-10-07",
+            "2025-10-08",
+            "2025-10-09",
+            "2025-10-10",
+            "2025-10-11",
+            "2025-10-12",
+            "2025-10-13",
+            "2025-10-14",
+            "2025-10-15",
+            "2025-10-16",
+            "2025-10-17",
+            "2025-10-18",
+            "2025-10-19",
+            "2025-10-20",
+            "2025-10-21",
+            "2025-10-22",
+            "2025-10-23",
+            "2025-10-24",
+            "2025-10-25",
+            "2025-10-26",
+            "2025-10-27",
+            "2025-10-28",
+            "2025-10-29",
+            "2025-10-30",
+            "2025-10-31",
+            "2025-11-01",
+            "2025-11-02",
+            "2025-11-03",
+            "2025-11-04",
+            "2025-11-05",
+            "2025-11-06",
+            "2025-11-07",
+            "2025-11-08",
+            "2025-11-09",
+            "2025-11-10",
+            "2025-11-11",
+            "2025-11-12",
+            "2025-11-13",
+            "2025-11-14",
+            "2025-11-15",
+            "2025-11-16",
+            "2025-11-17",
+            "2025-11-18",
+            "2025-11-19",
+            "2025-11-20",
+            "2025-11-21",
+            "2025-11-22",
+            "2025-11-23",
+            "2025-11-24",
+            "2025-11-25",
+            "2025-11-26",
+            "2025-11-27",
+            "2025-11-28",
+            "2025-11-29",
+            "2025-11-30",
+            "2025-12-01",
+            "2025-12-02",
+            "2025-12-03",
+            "2025-12-04",
+            "2025-12-05",
+            "2025-12-06",
+            "2025-12-07",
+            "2025-12-08",
+            "2025-12-09",
+            "2025-12-10",
+            "2025-12-11",
+            "2025-12-12",
+            "2025-12-13",
+            "2025-12-14",
+            "2025-12-15",
+            "2025-12-16",
+            "2025-12-17",
+            "2025-12-18",
+            "2025-12-19",
+            "2025-12-20",
+            "2025-12-21",
+            "2025-12-22",
+            "2025-12-23",
+            "2025-12-24",
+            "2025-12-25",
+            "2025-12-26",
+            "2025-12-27",
+            "2025-12-28",
+            "2025-12-29",
+            "2025-12-30",
+            "2025-12-31"
+          ],
+          "values": [
+            {
+              "label": "sales over time",
+              "values": [
+                21873.3,
+                22274.77,
+                20680.489999999998,
+                20603.61,
+                21662.96,
+                20964.37,
+                17786.190000000002,
+                19778.9,
+                18389.43,
+                15731.27,
+                15955.87,
+                18714.920000000002,
+                16341.310000000001,
+                16313.119999999999,
+                14960.140000000001,
+                13673.380000000001,
+                13717.73,
+                13901.75,
+                14251.21,
+                15304.630000000001,
+                18147.18,
+                18171.55,
+                17998.690000000002,
+                13981.330000000002,
+                16271.52,
+                13795.490000000002,
+                14527.22,
+                15965.76,
+                16397.64,
+                13581.59,
+                13542.99,
+                12670.46,
+                21622.48,
+                13506.3,
+                14400.1,
+                12118.029999999999,
+                13174.400000000001,
+                13348.85,
+                17588.9,
+                16448.079999999998,
+                16963.73,
+                14708,
+                15680.869999999999,
+                15198.2,
+                16342.900000000001,
+                13580.2,
+                12389.09,
+                14592.73,
+                14012.92,
+                17428.95,
+                17061.25,
+                13852.26,
+                12924.509999999998,
+                15093.52,
+                14116.669999999998,
+                15012.829999999998,
+                14613.52,
+                17589.84,
+                14176.81,
+                14323,
+                17151.329999999998,
+                17880.53,
+                14789.82,
+                16168.900000000001,
+                17028.690000000002,
+                14710.23,
+                15033.279999999999,
+                16539.43,
+                16250.32,
+                24453.26,
+                17132.27,
+                21179.82,
+                15372.779999999999,
+                22087.4,
+                18252.82,
+                18552.93,
+                20267.14,
+                16676.1,
+                14949.65,
+                15714.009999999998,
+                13928.48,
+                13883.07,
+                17190.190000000002,
+                14043.23,
+                15864.29,
+                13915.09,
+                17091.77,
+                26371.58,
+                14917.71,
+                13805.95,
+                14118.04,
+                16976.36,
+                15718.15,
+                14831.68,
+                11898.82,
+                14167.06,
+                16159.34,
+                15897.03,
+                18827.84,
+                14563.52,
+                16029.650000000001,
+                14914.09,
+                15898.11,
+                19461.05,
+                34892.54,
+                27393.28,
+                28297.08,
+                20959.81,
+                14408.4,
+                14798.08,
+                17942.32,
+                18420.81,
+                20612.22,
+                22655.22,
+                23484.92,
+                18459.97,
+                19541.43,
+                18710.05,
+                30776.760000000002,
+                19602.42,
+                18540.739999999998,
+                19256.85,
+                19122.73,
+                22831.49,
+                21005.11,
+                22662.23,
+                23742.870000000003,
+                24915.65,
+                16590.64,
+                16273.939999999999,
+                16091.330000000002,
+                18319.95,
+                20146.98,
+                24325.190000000002,
+                18662.77,
+                16884.6,
+                15843.94,
+                18539.27,
+                16835.5,
+                19752.309999999998,
+                18652.52,
+                17912.15,
+                17563.260000000002,
+                16190.240000000002,
+                13708.57,
+                15555.84,
+                16376.14,
+                16262.36,
+                17950.6,
+                18887.96,
+                13760.29,
+                18088.03,
+                17254.51,
+                16411.86,
+                18438.39,
+                14436.07,
+                14902.16,
+                13729.720000000001,
+                15044.64,
+                14820.66,
+                17021.52,
+                18409.61,
+                15255.96,
+                17336.65,
+                13713.900000000001,
+                13050.02,
+                18672.239999999998,
+                14826.03,
+                17960.27,
+                15924.35,
+                16922.91,
+                13379.669999999998,
+                15679.21,
+                15471.04,
+                13992.75,
+                15691.15,
+                17073.57,
+                13249.72,
+                12251,
+                14276.170000000002,
+                15991.69,
+                14272.4,
+                15267.6,
+                13375.279999999999,
+                10865.92,
+                11879.740000000002,
+                12847.13,
+                15055.23,
+                77209.86955999999,
+                56447.69,
+                50699.41423454823,
+                60926.079999999994,
+                15995.109999999999,
+                12834.89,
+                16427.260000000002,
+                17338.02,
+                15322.22,
+                16859.68,
+                27089.460000000003,
+                13481.693333333335,
+                19591.35,
+                17476.57,
+                19354.22,
+                20649.519999999997,
+                25834.76,
+                18374.56313432836,
+                17185.7998630137,
+                22223.14,
+                22713.34111111111,
+                18971.260000000002,
+                19939.202222222222,
+                22048.89990566038,
+                19312.07,
+                18743.11,
+                22462.185881881884,
+                24820.803684210525,
+                1137.0684210526315,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        "row": 1,
+        "col": 1,
+        "span": 4
+      }
+    ],
+    "totalCharts": 1
+  },
+  "data_analysis": {
+    "availableMetrics": [
+      {
+        "name": "totalGrossSales",
+        "type": "scalar",
+        "description": "Total total gross sales",
+        "sampleValue": 129278.04011502764,
+        "valueType": "currency",
+        "isTimeGrouped": false,
+        "groupingFields": []
+      },
+      {
+        "name": "totalDiscounts",
+        "type": "scalar",
+        "description": "Total total discounts",
+        "sampleValue": 2059.755589540399,
+        "valueType": "generic",
+        "isTimeGrouped": false,
+        "groupingFields": []
+      },
+      {
+        "name": "totalRefunds",
+        "type": "scalar",
+        "description": "Total total refunds",
+        "sampleValue": 122,
+        "valueType": "count",
+        "isTimeGrouped": false,
+        "groupingFields": []
+      },
+      {
+        "name": "totalShippingIncome",
+        "type": "scalar",
+        "description": "Total total shipping income",
+        "sampleValue": 814.7,
+        "valueType": "currency",
+        "isTimeGrouped": false,
+        "groupingFields": []
+      },
+      {
+        "name": "sales",
+        "type": "timeSeries",
+        "description": "sales over time",
+        "sampleValue": [
+          19939.202222222222,
+          22048.89990566038,
+          19312.07
+        ],
+        "valueType": "currency",
+        "isTimeGrouped": true,
+        "groupingFields": []
+      },
+      {
+        "name": "sales",
+        "type": "embeddedMetrics",
+        "description": "sales with multiple metrics containing 1 metrics",
+        "sampleValue": [
+          "value"
+        ],
+        "valueType": "generic",
+        "isTimeGrouped": false,
+        "groupingFields": [
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown"
+        ]
+      },
+      {
+        "name": "sales.value",
+        "type": "groupedSeries",
+        "description": "value broken down by category over time from sales",
+        "sampleValue": [
+          19939.202222222222,
+          22048.89990566038,
+          19312.07
+        ],
+        "valueType": "generic",
+        "isTimeGrouped": false,
+        "groupingFields": [
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown"
+        ]
+      },
+      {
+        "name": "totalGrossSalesChangePercentage",
+        "type": "scalar",
+        "description": "Total total gross sales change percentage",
+        "sampleValue": -11.55,
+        "valueType": "currency",
+        "isTimeGrouped": false,
+        "groupingFields": []
+      },
+      {
+        "name": "totalNetSalesChangePercentage",
+        "type": "scalar",
+        "description": "Total total net sales change percentage",
+        "sampleValue": -10.57,
+        "valueType": "currency",
+        "isTimeGrouped": false,
+        "groupingFields": []
+      },
+      {
+        "name": "netSalesByConnector",
+        "type": "groupedSeries",
+        "description": "net sales by connector broken down by category over time",
+        "sampleValue": [
+          15194.384668250428,
+          17306.582721155602,
+          14485.48914893617
+        ],
+        "valueType": "currency",
+        "isTimeGrouped": true,
+        "groupingFields": [
+          "Amazon Seller Partner",
+          "Shopify"
+        ]
+      },
+      {
+        "name": "totalOrders",
+        "type": "scalar",
+        "description": "Total total orders",
+        "sampleValue": 3349,
+        "valueType": "count",
+        "isTimeGrouped": false,
+        "groupingFields": []
+      },
+      {
+        "name": "orders",
+        "type": "timeSeries",
+        "description": "orders over time",
+        "sampleValue": [
+          507,
+          544,
+          494
+        ],
+        "valueType": "count",
+        "isTimeGrouped": true,
+        "groupingFields": []
+      },
+      {
+        "name": "orders",
+        "type": "embeddedMetrics",
+        "description": "orders with multiple metrics containing 1 metrics",
+        "sampleValue": [
+          "value"
+        ],
+        "valueType": "generic",
+        "isTimeGrouped": false,
+        "groupingFields": [
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown"
+        ]
+      },
+      {
+        "name": "orders.value",
+        "type": "groupedSeries",
+        "description": "value broken down by category over time from orders",
+        "sampleValue": [
+          507,
+          544,
+          494
+        ],
+        "valueType": "generic",
+        "isTimeGrouped": false,
+        "groupingFields": [
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown"
+        ]
+      },
+      {
+        "name": "totalOrdersChangePercentage",
+        "type": "scalar",
+        "description": "Total total orders change percentage",
+        "sampleValue": -5.1,
+        "valueType": "percentage",
+        "isTimeGrouped": false,
+        "groupingFields": []
+      },
+      {
+        "name": "averageOrderValue",
+        "type": "scalar",
+        "description": "Total average order value",
+        "sampleValue": 37.95,
+        "valueType": "generic",
+        "isTimeGrouped": false,
+        "groupingFields": []
+      },
+      {
+        "name": "newCustomerAverageOrderValue",
+        "type": "scalar",
+        "description": "Total new customer average order value",
+        "sampleValue": 36.88,
+        "valueType": "generic",
+        "isTimeGrouped": false,
+        "groupingFields": []
+      },
+      {
+        "name": "newCustomerContributionMarginPerOrder",
+        "type": "scalar",
+        "description": "Total new customer contribution margin per order",
+        "sampleValue": 23.87282363385657,
+        "valueType": "generic",
+        "isTimeGrouped": false,
+        "groupingFields": []
+      },
+      {
+        "name": "cashOnHand",
+        "type": "scalar",
+        "description": "Total cash on hand",
+        "sampleValue": 4122204.0000000005,
+        "valueType": "currency",
+        "isTimeGrouped": false,
+        "groupingFields": []
+      },
+      {
+        "name": "cashOnHandChangePercentage",
+        "type": "scalar",
+        "description": "Total cash on hand change percentage",
+        "sampleValue": -3.97,
+        "valueType": "currency",
+        "isTimeGrouped": false,
+        "groupingFields": []
+      },
+      {
+        "name": "cashOnHandAmounts",
+        "type": "timeSeries",
+        "description": "cash on hand amounts over time",
+        "sampleValue": [
+          4292752.04,
+          4242329.13,
+          4147526.8300000005
+        ],
+        "valueType": "currency",
+        "isTimeGrouped": true,
+        "groupingFields": []
+      },
+      {
+        "name": "cashOnHandAmounts",
+        "type": "embeddedMetrics",
+        "description": "cash on hand amounts with multiple metrics containing 1 metrics",
+        "sampleValue": [
+          "value"
+        ],
+        "valueType": "generic",
+        "isTimeGrouped": false,
+        "groupingFields": [
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown"
+        ]
+      },
+      {
+        "name": "cashOnHandAmounts.value",
+        "type": "groupedSeries",
+        "description": "value broken down by category over time from cashOnHandAmounts",
+        "sampleValue": [
+          4292752.04,
+          4242329.13,
+          4147526.8300000005
+        ],
+        "valueType": "generic",
+        "isTimeGrouped": false,
+        "groupingFields": [
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown"
+        ]
+      },
+      {
+        "name": "cashDetails",
+        "type": "dynamicKeyObject",
+        "description": "cash details breakdown by account/entity with 3 accounts",
+        "sampleValue": [
+          "current",
+          "available",
+          "limit"
+        ],
+        "valueType": "generic",
+        "isTimeGrouped": false,
+        "groupingFields": [
+          "Cash (Checking)",
+          "PREM CMML MONEY MKT",
+          "COMMERCIAL CHECKING"
+        ]
+      },
+      {
+        "name": "cashDetails.current",
+        "type": "groupedSeries",
+        "description": "current broken down by category over time across cashDetails",
+        "sampleValue": [
+          39824.6,
+          4077743.99,
+          4635.41
+        ],
+        "valueType": "generic",
+        "isTimeGrouped": false,
+        "groupingFields": [
+          "Cash (Checking)",
+          "PREM CMML MONEY MKT",
+          "COMMERCIAL CHECKING"
+        ]
+      },
+      {
+        "name": "cashDetails.available",
+        "type": "groupedSeries",
+        "description": "available broken down by category over time across cashDetails",
+        "sampleValue": [
+          39824.6,
+          4077743.99,
+          4635.41
+        ],
+        "valueType": "generic",
+        "isTimeGrouped": false,
+        "groupingFields": [
+          "Cash (Checking)",
+          "PREM CMML MONEY MKT",
+          "COMMERCIAL CHECKING"
+        ]
+      },
+      {
+        "name": "cashDetails.limit",
+        "type": "groupedSeries",
+        "description": "limit broken down by category over time across cashDetails",
+        "sampleValue": [
+          0,
+          0,
+          0
+        ],
+        "valueType": "generic",
+        "isTimeGrouped": false,
+        "groupingFields": [
+          "Cash (Checking)",
+          "PREM CMML MONEY MKT",
+          "COMMERCIAL CHECKING"
+        ]
+      },
+      {
+        "name": "creditCardBalance",
+        "type": "scalar",
+        "description": "Total credit card balance",
+        "sampleValue": 0,
+        "valueType": "currency",
+        "isTimeGrouped": false,
+        "groupingFields": []
+      },
+      {
+        "name": "creditCardBalances",
+        "type": "timeSeries",
+        "description": "credit card balances over time",
+        "sampleValue": [
+          -348.13,
+          79.07,
+          2418.27
+        ],
+        "valueType": "currency",
+        "isTimeGrouped": true,
+        "groupingFields": []
+      },
+      {
+        "name": "creditCardBalances",
+        "type": "embeddedMetrics",
+        "description": "credit card balances with multiple metrics containing 1 metrics",
+        "sampleValue": [
+          "value"
+        ],
+        "valueType": "generic",
+        "isTimeGrouped": false,
+        "groupingFields": [
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown"
+        ]
+      },
+      {
+        "name": "creditCardBalances.value",
+        "type": "groupedSeries",
+        "description": "value broken down by category over time from creditCardBalances",
+        "sampleValue": [
+          -348.13,
+          79.07,
+          2418.27
+        ],
+        "valueType": "generic",
+        "isTimeGrouped": false,
+        "groupingFields": [
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown"
+        ]
+      },
+      {
+        "name": "creditCardDetails",
+        "type": "dynamicKeyObject",
+        "description": "credit card details breakdown by account/entity with 1 accounts",
+        "sampleValue": [
+          "current",
+          "available",
+          "limit"
+        ],
+        "valueType": "generic",
+        "isTimeGrouped": false,
+        "groupingFields": [
+          "Credit Account"
+        ]
+      },
+      {
+        "name": "creditCardDetails.current",
+        "type": "groupedSeries",
+        "description": "current broken down by category over time across creditCardDetails",
+        "sampleValue": [
+          0
+        ],
+        "valueType": "generic",
+        "isTimeGrouped": false,
+        "groupingFields": [
+          "Credit Account"
+        ]
+      },
+      {
+        "name": "creditCardDetails.available",
+        "type": "groupedSeries",
+        "description": "available broken down by category over time across creditCardDetails",
+        "sampleValue": [
+          39461.28
+        ],
+        "valueType": "generic",
+        "isTimeGrouped": false,
+        "groupingFields": [
+          "Credit Account"
+        ]
+      },
+      {
+        "name": "creditCardDetails.limit",
+        "type": "groupedSeries",
+        "description": "limit broken down by category over time across creditCardDetails",
+        "sampleValue": [
+          0
+        ],
+        "valueType": "generic",
+        "isTimeGrouped": false,
+        "groupingFields": [
+          "Credit Account"
+        ]
+      },
+      {
+        "name": "grossProfit",
+        "type": "scalar",
+        "description": "Total gross profit",
+        "sampleValue": 92851.7211059516,
+        "valueType": "currency",
+        "isTimeGrouped": false,
+        "groupingFields": []
+      },
+      {
+        "name": "grossProfitMargin",
+        "type": "scalar",
+        "description": "Total gross profit margin",
+        "sampleValue": 73.06,
+        "valueType": "currency",
+        "isTimeGrouped": false,
+        "groupingFields": []
+      },
+      {
+        "name": "grossProfits",
+        "type": "timeSeries",
+        "description": "gross profits over time",
+        "sampleValue": [
+          14110.407169459679,
+          15414.059918980118,
+          13838.671518026504
+        ],
+        "valueType": "currency",
+        "isTimeGrouped": true,
+        "groupingFields": []
+      },
+      {
+        "name": "grossProfits",
+        "type": "embeddedMetrics",
+        "description": "gross profits with multiple metrics containing 1 metrics",
+        "sampleValue": [
+          "value"
+        ],
+        "valueType": "generic",
+        "isTimeGrouped": false,
+        "groupingFields": [
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown"
+        ]
+      },
+      {
+        "name": "grossProfits.value",
+        "type": "groupedSeries",
+        "description": "value broken down by category over time from grossProfits",
+        "sampleValue": [
+          14110.407169459679,
+          15414.059918980118,
+          13838.671518026504
+        ],
+        "valueType": "generic",
+        "isTimeGrouped": false,
+        "groupingFields": [
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown"
+        ]
+      },
+      {
+        "name": "changeInCash",
+        "type": "scalar",
+        "description": "Total change in cash",
+        "sampleValue": -170548.03999999957,
+        "valueType": "currency",
+        "isTimeGrouped": false,
+        "groupingFields": []
+      },
+      {
+        "name": "changeInCashChangePercentage",
+        "type": "scalar",
+        "description": "Total change in cash change percentage",
+        "sampleValue": -3.9699999999999998,
+        "valueType": "currency",
+        "isTimeGrouped": false,
+        "groupingFields": []
+      },
+      {
+        "name": "changesInCash",
+        "type": "timeSeries",
+        "description": "changes in cash over time",
+        "sampleValue": [
+          -363162.44,
+          -50422.909999999996,
+          -94802.3
+        ],
+        "valueType": "currency",
+        "isTimeGrouped": true,
+        "groupingFields": []
+      },
+      {
+        "name": "changesInCash",
+        "type": "embeddedMetrics",
+        "description": "changes in cash with multiple metrics containing 1 metrics",
+        "sampleValue": [
+          "value"
+        ],
+        "valueType": "generic",
+        "isTimeGrouped": false,
+        "groupingFields": [
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown"
+        ]
+      },
+      {
+        "name": "changesInCash.value",
+        "type": "groupedSeries",
+        "description": "value broken down by category over time from changesInCash",
+        "sampleValue": [
+          -363162.44,
+          -50422.909999999996,
+          -94802.3
+        ],
+        "valueType": "generic",
+        "isTimeGrouped": false,
+        "groupingFields": [
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown"
+        ]
+      },
+      {
+        "name": "freeCashYield",
+        "type": "scalar",
+        "description": "Total free cash yield",
+        "sampleValue": -134.19,
+        "valueType": "currency",
+        "isTimeGrouped": false,
+        "groupingFields": []
+      },
+      {
+        "name": "aMer",
+        "type": "scalar",
+        "description": "Total a mer",
+        "sampleValue": 11.29,
+        "valueType": "generic",
+        "isTimeGrouped": false,
+        "groupingFields": []
+      },
+      {
+        "name": "contributionMargin",
+        "type": "scalar",
+        "description": "Total contribution margin",
+        "sampleValue": 83475.8711059516,
+        "valueType": "generic",
+        "isTimeGrouped": false,
+        "groupingFields": []
+      },
+      {
+        "name": "contributionMarginPercentage",
+        "type": "scalar",
+        "description": "Total contribution margin percentage",
+        "sampleValue": 65.68,
+        "valueType": "percentage",
+        "isTimeGrouped": false,
+        "groupingFields": []
+      },
+      {
+        "name": "contributionMargins",
+        "type": "timeSeries",
+        "description": "contribution margins over time",
+        "sampleValue": [
+          13004.92716945968,
+          14650.699918980117,
+          12743.011518026504
+        ],
+        "valueType": "generic",
+        "isTimeGrouped": true,
+        "groupingFields": []
+      },
+      {
+        "name": "contributionMargins",
+        "type": "embeddedMetrics",
+        "description": "contribution margins with multiple metrics containing 1 metrics",
+        "sampleValue": [
+          "value"
+        ],
+        "valueType": "generic",
+        "isTimeGrouped": false,
+        "groupingFields": [
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown"
+        ]
+      },
+      {
+        "name": "contributionMargins.value",
+        "type": "groupedSeries",
+        "description": "value broken down by category over time from contributionMargins",
+        "sampleValue": [
+          13004.92716945968,
+          14650.699918980117,
+          12743.011518026504
+        ],
+        "valueType": "generic",
+        "isTimeGrouped": false,
+        "groupingFields": [
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown"
+        ]
+      },
+      {
+        "name": "contributionMarginRatio",
+        "type": "scalar",
+        "description": "Total contribution margin ratio",
+        "sampleValue": 65.68,
+        "valueType": "percentage",
+        "isTimeGrouped": false,
+        "groupingFields": []
+      },
+      {
+        "name": "totalMarketingExpense",
+        "type": "scalar",
+        "description": "Total total marketing expense",
+        "sampleValue": 9375.849999999999,
+        "valueType": "generic",
+        "isTimeGrouped": false,
+        "groupingFields": []
+      },
+      {
+        "name": "marketingExpenses.metricNames",
+        "type": "array",
+        "description": "metric names data points",
+        "sampleValue": [
+          "Product Giveaway Marketing",
+          "Amazon Ads"
+        ],
+        "valueType": "generic",
+        "isTimeGrouped": false,
+        "groupingFields": []
+      },
+      {
+        "name": "marketingExpenses.values",
+        "type": "embeddedMetrics",
+        "description": "marketing expenses.values with multiple metrics containing 2 metrics",
+        "sampleValue": [
+          "Product Giveaway Marketing",
+          "Amazon Ads"
+        ],
+        "valueType": "generic",
+        "isTimeGrouped": false,
+        "groupingFields": [
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown"
+        ]
+      },
+      {
+        "name": "marketingExpenses.values.Product Giveaway Marketing",
+        "type": "groupedSeries",
+        "description": "product  giveaway  marketing broken down by category over time from marketingExpenses.values",
+        "sampleValue": [
+          33.29,
+          24.23,
+          0
+        ],
+        "valueType": "generic",
+        "isTimeGrouped": false,
+        "groupingFields": [
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown"
+        ]
+      },
+      {
+        "name": "marketingExpenses.values.Amazon Ads",
+        "type": "groupedSeries",
+        "description": "amazon  ads broken down by category over time from marketingExpenses.values",
+        "sampleValue": [
+          1072.19,
+          739.13,
+          1095.66
+        ],
+        "valueType": "generic",
+        "isTimeGrouped": false,
+        "groupingFields": [
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown"
+        ]
+      },
+      {
+        "name": "netMER",
+        "type": "scalar",
+        "description": "Total net m e r",
+        "sampleValue": 13.56,
+        "valueType": "generic",
+        "isTimeGrouped": false,
+        "groupingFields": []
+      },
+      {
+        "name": "netMERGrowthPercentage",
+        "type": "scalar",
+        "description": "Total net m e r growth percentage",
+        "sampleValue": 0,
+        "valueType": "percentage",
+        "isTimeGrouped": false,
+        "groupingFields": []
+      },
+      {
+        "name": "netSales",
+        "type": "timeSeries",
+        "description": "net sales over time",
+        "sampleValue": [
+          19598.82466825043,
+          21675.462721155604,
+          19265.969148936172
+        ],
+        "valueType": "currency",
+        "isTimeGrouped": true,
+        "groupingFields": []
+      },
+      {
+        "name": "netSales",
+        "type": "embeddedMetrics",
+        "description": "net sales with multiple metrics containing 1 metrics",
+        "sampleValue": [
+          "value"
+        ],
+        "valueType": "generic",
+        "isTimeGrouped": false,
+        "groupingFields": [
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown"
+        ]
+      },
+      {
+        "name": "netSales.value",
+        "type": "groupedSeries",
+        "description": "value broken down by category over time from netSales",
+        "sampleValue": [
+          19598.82466825043,
+          21675.462721155604,
+          19265.969148936172
+        ],
+        "valueType": "generic",
+        "isTimeGrouped": false,
+        "groupingFields": [
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown"
+        ]
+      },
+      {
+        "name": "totalNetSales",
+        "type": "scalar",
+        "description": "Total total net sales",
+        "sampleValue": 127096.28452548725,
+        "valueType": "currency",
+        "isTimeGrouped": false,
+        "groupingFields": []
+      },
+      {
+        "name": "totalNewCustomerTotalNetSales",
+        "type": "scalar",
+        "description": "Total total new customer total net sales",
+        "sampleValue": 105848.44452548726,
+        "valueType": "currency",
+        "isTimeGrouped": false,
+        "groupingFields": []
+      },
+      {
+        "name": "totalReturningCustomerTotalNetSales",
+        "type": "scalar",
+        "description": "Total total returning customer total net sales",
+        "sampleValue": 21247.839999999997,
+        "valueType": "currency",
+        "isTimeGrouped": false,
+        "groupingFields": []
+      },
+      {
+        "name": "totalNewCustomerOrders",
+        "type": "scalar",
+        "description": "Total total new customer orders",
+        "sampleValue": 2870,
+        "valueType": "count",
+        "isTimeGrouped": false,
+        "groupingFields": []
+      },
+      {
+        "name": "totalReturningCustomerOrders",
+        "type": "scalar",
+        "description": "Total total returning customer orders",
+        "sampleValue": 479,
+        "valueType": "count",
+        "isTimeGrouped": false,
+        "groupingFields": []
+      },
+      {
+        "name": "totalNewCustomersCount",
+        "type": "scalar",
+        "description": "Total total new customers count",
+        "sampleValue": 2870,
+        "valueType": "count",
+        "isTimeGrouped": false,
+        "groupingFields": []
+      },
+      {
+        "name": "burnRates",
+        "type": "timeSeries",
+        "description": "burn rates over time",
+        "sampleValue": [
+          6795.991685588711,
+          8441.764435109151,
+          6103.6715180265055
+        ],
+        "valueType": "percentage",
+        "isTimeGrouped": true,
+        "groupingFields": []
+      },
+      {
+        "name": "burnRates",
+        "type": "embeddedMetrics",
+        "description": "burn rates with multiple metrics containing 1 metrics",
+        "sampleValue": [
+          "value"
+        ],
+        "valueType": "generic",
+        "isTimeGrouped": false,
+        "groupingFields": [
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown"
+        ]
+      },
+      {
+        "name": "burnRates.value",
+        "type": "groupedSeries",
+        "description": "value broken down by category over time from burnRates",
+        "sampleValue": [
+          6795.991685588711,
+          8441.764435109151,
+          6103.6715180265055
+        ],
+        "valueType": "generic",
+        "isTimeGrouped": false,
+        "groupingFields": [
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown"
+        ]
+      },
+      {
+        "name": "contributionMarginPercentages",
+        "type": "timeSeries",
+        "description": "contribution margin percentages over time",
+        "sampleValue": [
+          66.36,
+          67.58999999999999,
+          66.14
+        ],
+        "valueType": "percentage",
+        "isTimeGrouped": true,
+        "groupingFields": []
+      },
+      {
+        "name": "contributionMarginPercentages",
+        "type": "embeddedMetrics",
+        "description": "contribution margin percentages with multiple metrics containing 1 metrics",
+        "sampleValue": [
+          "value"
+        ],
+        "valueType": "generic",
+        "isTimeGrouped": false,
+        "groupingFields": [
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown"
+        ]
+      },
+      {
+        "name": "contributionMarginPercentages.value",
+        "type": "groupedSeries",
+        "description": "value broken down by category over time from contributionMarginPercentages",
+        "sampleValue": [
+          66.36,
+          67.58999999999999,
+          66.14
+        ],
+        "valueType": "generic",
+        "isTimeGrouped": false,
+        "groupingFields": [
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown"
+        ]
+      },
+      {
+        "name": "aMers",
+        "type": "timeSeries",
+        "description": "a mers over time",
+        "sampleValue": [
+          13.73,
+          23.14,
+          13.73
+        ],
+        "valueType": "generic",
+        "isTimeGrouped": true,
+        "groupingFields": []
+      },
+      {
+        "name": "aMers",
+        "type": "embeddedMetrics",
+        "description": "a mers with multiple metrics containing 1 metrics",
+        "sampleValue": [
+          "value"
+        ],
+        "valueType": "generic",
+        "isTimeGrouped": false,
+        "groupingFields": [
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown"
+        ]
+      },
+      {
+        "name": "aMers.value",
+        "type": "groupedSeries",
+        "description": "value broken down by category over time from aMers",
+        "sampleValue": [
+          13.73,
+          23.14,
+          13.73
+        ],
+        "valueType": "generic",
+        "isTimeGrouped": false,
+        "groupingFields": [
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown",
+          "Unknown"
+        ]
+      },
+      {
+        "name": "aMerGrowthPercentage",
+        "type": "scalar",
+        "description": "Total a mer growth percentage",
+        "sampleValue": 0,
+        "valueType": "percentage",
+        "isTimeGrouped": false,
+        "groupingFields": []
+      },
+      {
+        "name": "customerAqCost",
+        "type": "scalar",
+        "description": "Total customer aq cost",
+        "sampleValue": 3.27,
+        "valueType": "currency",
+        "isTimeGrouped": false,
+        "groupingFields": []
+      },
+      {
+        "name": "amazonBalance",
+        "type": "scalar",
+        "description": "Total amazon balance",
+        "sampleValue": 0,
+        "valueType": "currency",
+        "isTimeGrouped": false,
+        "groupingFields": []
+      },
+      {
+        "name": "totalCogs",
+        "type": "scalar",
+        "description": "Total total cogs",
+        "sampleValue": 34244.563419535654,
+        "valueType": "generic",
+        "isTimeGrouped": false,
+        "groupingFields": []
+      },
+      {
+        "name": "productCogs",
+        "type": "scalar",
+        "description": "Total product cogs",
+        "sampleValue": 6672.78,
+        "valueType": "generic",
+        "isTimeGrouped": false,
+        "groupingFields": []
+      },
+      {
+        "name": "newCustomerProductCOGS",
+        "type": "scalar",
+        "description": "Total new customer product c o g s",
+        "sampleValue": 1.0004517421602788,
+        "valueType": "generic",
+        "isTimeGrouped": false,
+        "groupingFields": []
+      },
+      {
+        "name": "newCustomerTotalCOGS",
+        "type": "scalar",
+        "description": "Total new customer total c o g s",
+        "sampleValue": 9.737176366143434,
+        "valueType": "generic",
+        "isTimeGrouped": false,
+        "groupingFields": []
+      },
+      {
+        "name": "fixedOverheadAbsorption",
+        "type": "scalar",
+        "description": "Total fixed overhead absorption",
+        "sampleValue": 0,
+        "valueType": "generic",
+        "isTimeGrouped": false,
+        "groupingFields": []
+      },
+      {
+        "name": "totalLogistics",
+        "type": "scalar",
+        "description": "Total total logistics",
+        "sampleValue": 13517.002205467677,
+        "valueType": "generic",
+        "isTimeGrouped": false,
+        "groupingFields": []
+      },
+      {
+        "name": "totalFreight",
+        "type": "scalar",
+        "description": "Total total freight",
+        "sampleValue": 0,
+        "valueType": "count",
+        "isTimeGrouped": false,
+        "groupingFields": []
+      },
+      {
+        "name": "totalFees",
+        "type": "scalar",
+        "description": "Total total fees",
+        "sampleValue": 14054.781214067976,
+        "valueType": "generic",
+        "isTimeGrouped": false,
+        "groupingFields": []
+      },
+      {
+        "name": "dataBySalesConnectors",
+        "type": "embeddedMetrics",
+        "description": "data by sales connectors with multiple metrics containing 7 metrics",
+        "sampleValue": [
+          "grossSales",
+          "grossSalesPeriodAgo",
+          "grossSalesChangePercentage",
+          "netSales",
+          "netSalesPeriodAgo",
+          "netSalesChangePercentage",
+          "fees"
+        ],
+        "valueType": "generic",
+        "isTimeGrouped": false,
+        "groupingFields": [
+          "Amazon Seller Partner",
+          "Shopify"
+        ]
+      },
+      {
+        "name": "dataBySalesConnectors.grossSales",
+        "type": "groupedSeries",
+        "description": "gross sales broken down by category over time from dataBySalesConnectors",
+        "sampleValue": [
+          104523.67011502765,
+          24754.370000000003
+        ],
+        "valueType": "currency",
+        "isTimeGrouped": false,
+        "groupingFields": [
+          "Amazon Seller Partner",
+          "Shopify"
+        ]
+      },
+      {
+        "name": "dataBySalesConnectors.grossSalesPeriodAgo",
+        "type": "groupedSeries",
+        "description": "gross sales period ago broken down by category over time from dataBySalesConnectors",
+        "sampleValue": [
+          116258.55633067538,
+          28983.509999999995
+        ],
+        "valueType": "currency",
+        "isTimeGrouped": false,
+        "groupingFields": [
+          "Amazon Seller Partner",
+          "Shopify"
+        ]
+      },
+      {
+        "name": "dataBySalesConnectors.grossSalesChangePercentage",
+        "type": "groupedSeries",
+        "description": "gross sales change percentage broken down by category over time from dataBySalesConnectors",
+        "sampleValue": [
+          -10.24,
+          -16.8
+        ],
+        "valueType": "currency",
+        "isTimeGrouped": false,
+        "groupingFields": [
+          "Amazon Seller Partner",
+          "Shopify"
+        ]
+      },
+      {
+        "name": "dataBySalesConnectors.netSales",
+        "type": "groupedSeries",
+        "description": "net sales broken down by category over time from dataBySalesConnectors",
+        "sampleValue": [
+          104335.49452548726,
+          22760.789999999997
+        ],
+        "valueType": "currency",
+        "isTimeGrouped": false,
+        "groupingFields": [
+          "Amazon Seller Partner",
+          "Shopify"
+        ]
+      },
+      {
+        "name": "dataBySalesConnectors.netSalesPeriodAgo",
+        "type": "groupedSeries",
+        "description": "net sales period ago broken down by category over time from dataBySalesConnectors",
+        "sampleValue": [
+          115164.05197105891,
+          26949.67
+        ],
+        "valueType": "currency",
+        "isTimeGrouped": false,
+        "groupingFields": [
+          "Amazon Seller Partner",
+          "Shopify"
+        ]
+      },
+      {
+        "name": "dataBySalesConnectors.netSalesChangePercentage",
+        "type": "groupedSeries",
+        "description": "net sales change percentage broken down by category over time from dataBySalesConnectors",
+        "sampleValue": [
+          -9.4,
+          -15.540000000000001
+        ],
+        "valueType": "currency",
+        "isTimeGrouped": false,
+        "groupingFields": [
+          "Amazon Seller Partner",
+          "Shopify"
+        ]
+      },
+      {
+        "name": "dataBySalesConnectors.fees",
+        "type": "groupedSeries",
+        "description": "fees broken down by category over time from dataBySalesConnectors",
+        "sampleValue": [
+          13370.916214067976,
+          683.865
+        ],
+        "valueType": "generic",
+        "isTimeGrouped": false,
+        "groupingFields": [
+          "Amazon Seller Partner",
+          "Shopify"
+        ]
+      },
+      {
+        "name": "newCustomerAOVPercentageChange",
+        "type": "scalar",
+        "description": "Total new customer a o v percentage change",
+        "sampleValue": -6.819999999999999,
+        "valueType": "percentage",
+        "isTimeGrouped": false,
+        "groupingFields": []
+      },
+      {
+        "name": "customerAqCostPercentageChange",
+        "type": "scalar",
+        "description": "Total customer aq cost percentage change",
+        "sampleValue": 0,
+        "valueType": "currency",
+        "isTimeGrouped": false,
+        "groupingFields": []
+      },
+      {
+        "name": "burnRate",
+        "type": "scalar",
+        "description": "Total burn rate",
+        "sampleValue": 37861.300138209655,
+        "valueType": "percentage",
+        "isTimeGrouped": false,
+        "groupingFields": []
+      },
+      {
+        "name": "totalSalesGeneralAdministrativeExpenses",
+        "type": "scalar",
+        "description": "Total total sales general administrative expenses",
+        "sampleValue": 45614.570967741936,
+        "valueType": "currency",
+        "isTimeGrouped": false,
+        "groupingFields": []
+      },
+      {
+        "name": "totalSalesGeneralAdministrativeExpensesChangePercentage",
+        "type": "scalar",
+        "description": "Total total sales general administrative expenses change percentage",
+        "sampleValue": 4.95,
+        "valueType": "currency",
+        "isTimeGrouped": false,
+        "groupingFields": []
+      }
+    ],
+    "suggestedChartTypes": [
+      {
+        "chartType": "line",
+        "confidence": 0.9,
+        "reasoning": "Perfect for showing trends over time"
+      },
+      {
+        "chartType": "stacked-bar",
+        "confidence": 0.85,
+        "reasoning": "Shows composition and trends for grouped data"
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reasoning": "Great for comparing different metrics"
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.75,
+        "reasoning": "Ideal for comparing metrics across different accounts or entities"
+      },
+      {
+        "chartType": "waterfall",
+        "confidence": 0.7,
+        "reasoning": "Excellent for showing cumulative changes"
+      },
+      {
+        "chartType": "heatmap",
+        "confidence": 0.65,
+        "reasoning": "Perfect for visualizing patterns and intensity across multiple dimensions"
+      }
+    ],
+    "dataDescription": "This dataset contains 102 metrics. There are 12 time-series metrics that show trends over time. There are 42 grouped metrics that can be broken down by categories. There are 48 summary/total metrics. There are 15 complex metrics with embedded sub-metrics or account-level breakdowns. Currency metrics include: totalGrossSales, totalShippingIncome, sales, totalGrossSalesChangePercentage, totalNetSalesChangePercentage, netSalesByConnector, cashOnHand, cashOnHandChangePercentage, cashOnHandAmounts, creditCardBalance, creditCardBalances, grossProfit, grossProfitMargin, grossProfits, changeInCash, changeInCashChangePercentage, changesInCash, freeCashYield, netSales, totalNetSales, totalNewCustomerTotalNetSales, totalReturningCustomerTotalNetSales, customerAqCost, amazonBalance, dataBySalesConnectors.grossSales, dataBySalesConnectors.grossSalesPeriodAgo, dataBySalesConnectors.grossSalesChangePercentage, dataBySalesConnectors.netSales, dataBySalesConnectors.netSalesPeriodAgo, dataBySalesConnectors.netSalesChangePercentage, customerAqCostPercentageChange, totalSalesGeneralAdministrativeExpenses, totalSalesGeneralAdministrativeExpensesChangePercentage. Percentage metrics include: totalOrdersChangePercentage, contributionMarginPercentage, contributionMarginRatio, netMERGrowthPercentage, burnRates, contributionMarginPercentages, aMerGrowthPercentage, newCustomerAOVPercentageChange, burnRate. Count metrics include: totalRefunds, totalOrders, orders, totalNewCustomerOrders, totalReturningCustomerOrders, totalNewCustomersCount, totalFreight. Data appears to be from 2025. Use 2025 for date ranges unless user specifies otherwise. ",
+    "totalDataPoints": 102,
+    "dateRangeAvailable": "2025"
+  },
+  "metadata": {
+    "dataSource": "Iris Finance API",
+    "responseTimeMs": 5195,
+    "metricsCount": 1
+  },
+  "feedback": null
+}

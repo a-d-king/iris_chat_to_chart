@@ -132,12 +132,13 @@ USER INTENT KEYWORDS:
             tool_choice={"type": "function", "function": {"name": "create_chart"}}
         )
 
-        logger.info(f"OpenAI Response: {json.dumps(dict(response.choices[0].message), indent=2)}")
-
         # Parse the tool call arguments into a chart spec object
         tool_call = response.choices[0].message.tool_calls[0] if response.choices[0].message.tool_calls else None
         if tool_call and tool_call.function and tool_call.function.arguments:
             logger.info("Tool call successful, parsing arguments")
-            return json.loads(tool_call.function.arguments)
+            result = json.loads(tool_call.function.arguments)
+            logger.info(f"OpenAI parsed result: {result}")
+            return result
         else:
+            logger.error(f"OpenAI did not return a valid tool call response. Message: {response.choices[0].message}")
             raise Exception("OpenAI did not return a valid tool call response")

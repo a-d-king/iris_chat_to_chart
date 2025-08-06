@@ -87,7 +87,7 @@ class IrisApiService:
             
             logger.info(f"Fetching metrics from Iris API for date range: {start_date} to {end_date}")
             
-            async with httpx.AsyncClient() as client:
+            async with httpx.AsyncClient(timeout=30.0) as client:
                 response = await client.post(self.api_url, json=payload, headers=headers)
                 response.raise_for_status()
                 
@@ -99,8 +99,12 @@ class IrisApiService:
             logger.error(f"API Response Status: {e.response.status_code}")
             logger.error(f"API Response Data: {e.response.text}")
             raise Exception(f"Failed to fetch data from Iris Finance API: HTTP {e.response.status_code}")
+        except httpx.TimeoutException as e:
+            logger.error(f"Timeout error fetching data from Iris API: {e}")
+            raise Exception(f"Failed to fetch data from Iris Finance API: Request timeout")
         except Exception as e:
             logger.error(f"Error fetching data from Iris API: {e}")
+            logger.error(f"Error type: {type(e)}")
             raise Exception(f"Failed to fetch data from Iris Finance API: {str(e)}")
     
     def _parse_date_range(self, date_range: Optional[str] = None) -> Tuple[str, str]:

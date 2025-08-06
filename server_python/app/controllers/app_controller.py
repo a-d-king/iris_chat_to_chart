@@ -92,10 +92,11 @@ async def chat(
         response_time = int((time.time() - start_time) * 1000)
         error_message = str(error)
         
-        logger.error("Chat endpoint error", extra={
+        logger.error(f"Chat endpoint error: {error_message}", extra={
             "prompt": body.prompt,
             "error": error_message,
-            "responseTime": response_time
+            "responseTime": response_time,
+            "error_type": type(error).__name__
         })
         
         if "not found in dataset" in error_message:
@@ -162,12 +163,13 @@ async def generate_dashboard(
     
     try:
         result = await dashboard_service.generate_dashboard(body)
+        logger.info(f"Dashboard service result keys: {list(result.keys())}")
         
         # Audit the dashboard generation
         request_id = await audit_service.log_chart_generation(
             body.prompt,
             {"chartType": "dashboard", "metric": "multiple", "dateRange": body.dateRange or "2025-06"},
-            result["charts"],
+            {"charts": result["charts"], "totalCharts": len(result["charts"])},
             await metrics_service.get_data_analysis(),
             {
                 "dataSource": "Iris Finance API",
@@ -176,10 +178,16 @@ async def generate_dashboard(
             }
         )
         
+        # Ensure dashboardId is always present for frontend compatibility
+        dashboard_id = request_id  # Use request_id as dashboard_id for simplicity
+        
         return {
-            **result,
+            "charts": result["charts"],
+            "insights": result.get("insights"),
             "requestId": request_id,
-            "originalPrompt": body.prompt
+            "dashboardId": dashboard_id,
+            "originalPrompt": body.prompt,
+            "metadata": result.get("metadata", {})
         }
         
     except Exception as error:
@@ -227,3 +235,56 @@ async def get_feedback_stats(
     except Exception as error:
         logger.error(f"Error getting feedback stats: {error}")
         raise HTTPException(status_code=500, detail="Failed to get feedback statistics")
+
+
+@router.get("/test")
+async def test_services():
+    """Test endpoint to verify services are working without external API calls"""
+    try:
+        # Test data analysis service
+        from app.services.data_analysis_service import DataAnalysisService
+        analysis_service = DataAnalysisService()
+        
+        # Test with mock data
+        mock_data = {
+            "sales": 1000,
+            "revenue": [
+                {"date": "2025-01-01", "value": 500},
+                {"date": "2025-01-02", "value": 600}
+            ]
+        }
+        
+        analysis = analysis_service.analyze_data(mock_data)
+        
+        return {
+            "status": "success",
+            "message": "Services are working correctly",
+            "mock_analysis": {
+                "metrics_found": len(analysis.availableMetrics),
+                "chart_suggestions": len(analysis.suggestedChartTypes)
+            }
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": f"Service test failed: {str(e)}"
+        }
+
+@router.get("/debug/data")
+async def debug_data():
+    """Debug endpoint to test data loading"""
+    try:
+        metrics_service = MetricsService()
+        data_analysis = await metrics_service.get_data_analysis()
+        
+        return {
+            "status": "success",
+            "message": "Data loaded successfully",
+            "metrics_count": len(data_analysis.availableMetrics),
+            "sample_metrics": [m.name for m in data_analysis.availableMetrics[:5]]
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": f"Data loading failed: {str(e)}"
+        }

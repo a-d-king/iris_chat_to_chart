@@ -37,7 +37,7 @@ class DashboardService:
         self.metrics_service = MetricsService()
         self.data_analysis_service = DataAnalysisService()
     
-    async def generate_dashboard(self, request: DashboardDto) -> DashboardResponse:
+    async def generate_dashboard(self, request: DashboardDto) -> Dict[str, Any]:
         """
         Generate a complete dashboard with multiple charts based on the request
         
@@ -64,17 +64,16 @@ class DashboardService:
             if not related_metrics:
                 logger.warning("No suitable metrics found for dashboard generation")
                 # Return empty dashboard with explanation
-                return DashboardResponse(
-                    dashboard_id=dashboard_id,
-                    charts=[],
-                    metadata={
+                return {
+                    "charts": [],
+                    "insights": "No suitable metrics found for the requested dashboard",
+                    "dashboardId": dashboard_id,
+                    "metadata": {
                         "totalCharts": 0,
                         "responseTimeMs": int((time.time() - start_time) * 1000),
-                        "suggestedInsights": ["No suitable metrics found for the requested dashboard"],
                         "error": "No visualizable metrics found"
-                    },
-                    request_id=f"dash_{int(time.time())}_{self._generate_random_string()}"
-                )
+                    }
+                }
             
             # Generate chart specifications
             chart_specs = await self._generate_chart_specs(request, related_metrics, data_analysis)
@@ -100,31 +99,29 @@ class DashboardService:
             if request.includeInsights:
                 insights = await self._generate_insights(successful_charts, request.prompt)
             
-            return DashboardResponse(
-                dashboard_id=dashboard_id,
-                charts=successful_charts,
-                metadata={
+            return {
+                "charts": successful_charts,
+                "insights": insights[0] if insights else None,
+                "dashboardId": dashboard_id,
+                "metadata": {
                     "totalCharts": len(successful_charts),
-                    "responseTimeMs": response_time,
-                    "suggestedInsights": insights
-                },
-                request_id=f"dash_{int(time.time())}_{self._generate_random_string()}"
-            )
+                    "responseTimeMs": response_time
+                }
+            }
             
         except Exception as error:
             logger.error(f"Error generating dashboard: {error}")
             response_time = int((time.time() - start_time) * 1000)
-            return DashboardResponse(
-                dashboard_id=dashboard_id,
-                charts=[],
-                metadata={
+            return {
+                "charts": [],
+                "insights": None,
+                "dashboardId": dashboard_id,
+                "metadata": {
                     "totalCharts": 0,
                     "responseTimeMs": response_time,
-                    "suggestedInsights": [],
                     "error": str(error)
-                },
-                request_id=f"dash_{int(time.time())}_{self._generate_random_string()}"
-            )
+                }
+            }
     
     async def _identify_related_metrics(
         self, 
@@ -225,7 +222,7 @@ class DashboardService:
                     "dateRange": request.dateRange or spec.get("dateRange")
                 })
             except Exception as error:
-                logger.warning(f"Failed to generate spec for {metric.name}: {error}")
+                logger.warning(f"Failed to generate spec for {metric.name}: {str(error)}")
                 # Fallback to default chart spec
                 specs.append({
                     "chartType": "line" if metric.isTimeGrouped else "bar",
