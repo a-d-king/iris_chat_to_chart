@@ -408,7 +408,28 @@ export class MetricsService {
             return [];
         }
 
-        const categories = rawData.map(item => item.connector || item.label || item.name || 'Unknown');
+        // Improved category extraction with better fallbacks
+        const categories = rawData.map((item, index) => {
+            const label = item.connector || item.label || item.name;
+
+            // If we still don't have a good label, try to extract from other fields
+            if (!label || label.toLowerCase().includes('unknown')) {
+                // Look for other meaningful identifiers
+                const fallback = item.channel || item.type || item.id ||
+                    Object.keys(item).find(key =>
+                        key !== 'values' &&
+                        key !== 'date' &&
+                        typeof item[key] === 'string' &&
+                        item[key].length > 0 &&
+                        !item[key].toLowerCase().includes('unknown') &&
+                        !item[key].toLowerCase().includes('undefined') &&
+                        !item[key].toLowerCase().includes('null')
+                    );
+                return fallback ? item[fallback] : `Category ${index + 1}`;
+            }
+
+            return label;
+        });
 
         // Get all numeric keys from the first item
         const firstItem = rawData[0];
