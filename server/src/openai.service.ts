@@ -60,7 +60,7 @@ export class OpenAiService {
 
         return {
             ...chartSpec,
-            _aiReasoning: reasoningResponse
+            aiReasoning: reasoningResponse
         };
     }
 

@@ -113,7 +113,7 @@ export class AppController {
                 },
                 reasoning: {
                     ...reasoningProcess,
-                    aiReasoning: spec._aiReasoning
+                    aiReasoning: spec.aiReasoning
                 }
             };
         } catch (error) {
