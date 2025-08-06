@@ -84,6 +84,16 @@ USER INTENT KEYWORDS:
         if (dataAnalysis) {
             primaryPrompt += `\n\nAVAILABLE DATA CONTEXT:\n${dataAnalysis.dataContext}`;
 
+            // Add data quality warnings
+            const qualityIssues = this.identifyDataQualityIssues(dataAnalysis);
+            if (qualityIssues.length > 0) {
+                primaryPrompt += `\n\nDATA QUALITY CONCERNS:`;
+                qualityIssues.forEach(issue => {
+                    primaryPrompt += `\n- ${issue}`;
+                });
+                primaryPrompt += `\n\nChart Selection Impact: Prefer simpler chart types when data quality is poor.`;
+            }
+
             primaryPrompt += `\n\nAVAILABLE METRICS:`;
             dataAnalysis.availableMetrics.forEach(metric => {
                 primaryPrompt += `\n- **${metric.name}**: ${metric.description}`;
@@ -113,11 +123,23 @@ USER INTENT KEYWORDS:
 - "User growth over time" → line chart with user metrics, broad date range`;
         }
 
-        primaryPrompt += `\n\nIMPORTANT: 
+        primaryPrompt += `\n\nCHART SELECTION RULES:
+- **AVOID stacked-bar when**: Only 1 category, >40% "Unknown" categories, unclear category labels
+- **PREFER bar over stacked-bar when**: Categories don't logically stack together, data quality is poor
+- **USE line charts when**: Clear temporal progression, trend analysis is the goal
+- **FALLBACK to bar**: When other chart types have data quality issues
+
+MARKETING EXPENSES SPECIFIC:
+- If showing expenses by channel/type: Use bar chart for clear comparison
+- If showing expenses over time: Use line chart for trend analysis  
+- Only use stacked-bar if showing expense composition AND have clean category labels
+
+IMPORTANT: 
 - Choose the chart type that best matches the user's analytical intent
 - Select appropriate date ranges (specific months for snapshots, full year for trends)
 - If the request is ambiguous, default to the most informative visualization
-- Prioritize clarity and insight over complexity`;
+- Prioritize clarity and insight over complexity
+- When data quality is poor, prefer simpler chart types that remain readable`;
 
         const response = await openai.chat.completions.create({
             model: 'gpt-4o',
@@ -141,5 +163,36 @@ USER INTENT KEYWORDS:
         } else {
             throw new Error('OpenAI did not return a valid tool call response');
         }
+    }
+
+    /**
+     * Identify data quality issues that should influence chart selection
+     */
+    private identifyDataQualityIssues(dataAnalysis: DataAnalysis): string[] {
+        const issues: string[] = [];
+
+        dataAnalysis.availableMetrics.forEach(metric => {
+            const unknownRatio = (metric.groupingDimensions?.filter(d =>
+                d.toLowerCase().includes('unknown') ||
+                d.toLowerCase().includes('undefined') ||
+                d.toLowerCase().includes('null') ||
+                d.trim() === '' ||
+                d.toLowerCase().includes('category')
+            ).length || 0) / (metric.groupingDimensions?.length || 1);
+
+            if (unknownRatio > 0.3) {
+                issues.push(`${metric.name} has ${Math.round(unknownRatio * 100)}% unknown/unlabeled categories`);
+            }
+
+            if (metric.hasGrouping && (metric.groupingDimensions?.length || 0) === 1) {
+                issues.push(`${metric.name} has only one category - stacking not beneficial`);
+            }
+
+            if (metric.hasGrouping && (metric.groupingDimensions?.length || 0) > 8) {
+                issues.push(`${metric.name} has ${metric.groupingDimensions?.length} categories - too many for effective stacking`);
+            }
+        });
+
+        return issues;
     }
 } 

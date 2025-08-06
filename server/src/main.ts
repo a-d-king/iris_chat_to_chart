@@ -11,11 +11,12 @@ import { DataAnalysisService } from './data-analysis.service';
 import { AuditService } from './audit.service';
 import { DashboardService } from './dashboard.service';
 import { IrisApiService } from './iris-api.service';
+import { ReasoningService } from './reasoning.service';
 
 @Module({
     imports: [HttpModule],
     controllers: [AppController],
-    providers: [OpenAiService, MetricsService, DataAnalysisService, AuditService, DashboardService, IrisApiService]
+    providers: [OpenAiService, MetricsService, DataAnalysisService, AuditService, DashboardService, IrisApiService, ReasoningService]
 })
 class AppModule { }
 async function bootstrap() {

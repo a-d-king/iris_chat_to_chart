@@ -4,6 +4,7 @@ import { OpenAiService } from './openai.service';
 import { MetricsService } from './metrics.service';
 import { AuditService } from './audit.service';
 import { DashboardService } from './dashboard.service';
+import { ReasoningService } from './reasoning.service';
 
 /**
  * Main application controller
@@ -15,7 +16,8 @@ export class AppController {
         private ai: OpenAiService,
         private metrics: MetricsService,
         private audit: AuditService,
-        private dashboard: DashboardService
+        private dashboard: DashboardService,
+        private reasoning: ReasoningService
     ) { }
 
     /**
@@ -37,7 +39,17 @@ export class AppController {
             // Step 2: Convert natural language prompt to structured chart spec with context
             const spec = await this.ai.prompt(body.prompt, dataAnalysis);
 
-            // Step 3: Fetch the relevant data based on the chart spec
+            // Step 3: Generate reasoning for the decision (if enabled)
+            const reasoningProcess = this.reasoning.generateReasoning(
+                body.prompt,
+                dataAnalysis,
+                spec
+            );
+
+            // Log reasoning to console if enabled
+            this.reasoning.logReasoning(reasoningProcess);
+
+            // Step 4: Fetch the relevant data based on the chart spec
             // Use the provided dateRange from frontend if available, otherwise use spec.dateRange
             const finalDateRange = body.dateRange || spec.dateRange;
             const data = await this.metrics.slice(
@@ -48,7 +60,7 @@ export class AppController {
 
             const responseTime = Date.now() - startTime;
 
-            // Step 4: Audit the chart generation
+            // Step 5: Audit the chart generation
             const requestId = await this.audit.logChartGeneration(
                 body.prompt,
                 spec,
@@ -61,7 +73,7 @@ export class AppController {
                 }
             );
 
-            // Step 5: Return combined spec and data for the frontend from live Iris Finance API
+            // Step 6: Return combined spec and data for the frontend from live Iris Finance API
             // 
             // DATA SHAPE SPECIFICATION:
             // {
@@ -94,7 +106,8 @@ export class AppController {
                 dataAnalysis: {
                     totalMetrics: dataAnalysis.availableMetrics.length,
                     suggestedChartTypes: dataAnalysis.suggestedChartTypes.map((s: any) => s.chartType)
-                }
+                },
+                reasoning: reasoningProcess
             };
         } catch (error) {
             const responseTime = Date.now() - startTime;
@@ -227,6 +240,21 @@ export class AppController {
         } catch (error) {
             console.error('Error getting feedback stats:', error);
             throw new Error('Failed to get feedback statistics');
+        }
+    }
+
+    /**
+     * GET /reasoning/status endpoint
+     * Returns the current status of reasoning functionality
+     * @returns object - Reasoning configuration status
+     */
+    @Get('reasoning/status')
+    async getReasoningStatus() {
+        try {
+            return this.reasoning.getReasoningStatus();
+        } catch (error) {
+            console.error('Error getting reasoning status:', error);
+            throw new Error('Failed to get reasoning status');
         }
     }
 } 
