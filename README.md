@@ -1,76 +1,67 @@
-# 🎯 Iris Finance - Chat to Chart AI Platform
+## 🎯 Iris Finance — Chat → Chart AI Platform
 
-**Transform natural language into intelligent business charts using AI and automated data discovery.**
-
-An enterprise-grade Business Intelligence platform that converts conversational queries into dynamic, interactive visualizations powered by OpenAI GPT-4, featuring comprehensive audit trails and multi-chart dashboard generation.
+Transform natural language into business charts and dashboards with live Iris data, OpenAI-assisted chart specs, and a transparent reasoning engine.
 
 ---
 
 ## 📋 Table of Contents
 
-- [🌟 Overview](#-overview)
-- [✨ Key Features](#-key-features)
-- [🏗️ Architecture](#️-architecture)
-- [🛠️ Tech Stack](#️-tech-stack)
-- [📁 Project Structure](#-project-structure)
-- [🚀 Quick Start](#-quick-start)
-- [⚙️ Configuration](#️-configuration)
-- [📡 API Documentation](#-api-documentation)
-- [🎨 Frontend Components](#-frontend-components)
-- [🔍 Data Analysis Engine](#-data-analysis-engine)
-- [📊 Dashboard System](#-dashboard-system)
-- [🔒 Audit & Compliance](#-audit--compliance)
-- [💬 Usage Examples](#-usage-examples)
-- [🧪 Testing](#-testing)
-- [🚀 Deployment](#-deployment)
-- [🔧 Development Guidelines](#-development-guidelines)
-- [📈 Performance Considerations](#-performance-considerations)
-- [🛡️ Security](#️-security)
-- [🐛 Troubleshooting](#-troubleshooting)
-- [📚 Additional Resources](#-additional-resources)
+- **Overview**
+- **Key Features**
+- **Architecture**
+- **Tech Stack**
+- **Project Structure**
+- **Quick Start**
+- **Configuration**
+- **How It Works (Data & Reasoning Flows)**
+- **API Documentation**
+- **Frontend Components**
+- **Data Analysis Engine**
+- **Dashboard System**
+- **Reasoning System**
+- **Iris API Integration**
+- **Audit & Compliance**
+- **Testing**
+- **Deployment**
+- **Troubleshooting**
+- **Additional Resources**
 
 ---
 
 ## 🌟 Overview
 
-Iris Finance Chat to Chart AI is a sophisticated business intelligence platform that democratizes data visualization through natural language processing. Users can ask questions in plain English and receive intelligent, contextually appropriate charts powered by GPT-4's understanding of business data.
+This app converts plain-English questions into visual insights. Users ask questions, the backend discovers metrics from live Iris Finance data, the AI selects the best visualization and metric, and the frontend renders interactive charts and dashboards. The enhanced reasoning system explains why a chart and metric were chosen and can be toggled via environment variable.
 
-### 🎯 Core Capabilities
-
-- **Natural Language Processing**: Convert conversational queries into precise chart specifications
-- **Intelligent Data Discovery**: Automatically identify and analyze 99+ metrics from complex business data
-- **Dynamic Chart Generation**: Support for 5 chart types with smart type selection
-- **Multi-Chart Dashboards**: Generate comprehensive dashboards with related visualizations
-- **Enterprise Audit Trail**: Complete compliance logging for all chart generations
-- **Interactive Data Tables**: View and manipulate chart data with sorting, filtering, and pagination
+### Core capabilities
+- **Chat to Chart**: Natural language → structured chart spec
+- **Live Data**: Pulls from Iris Finance API with caching and flexible date ranges
+- **Metric Discovery**: Deep analysis over nested, embedded, and dynamic metrics
+- **Dashboards**: Generates multiple related charts, ranked by prompt relevance
+- **Transparent Reasoning**: Deterministic, explainable selection process
+- **Full Audit Trail**: Request, spec, data, and metadata saved to disk
 
 ---
 
 ## ✨ Key Features
 
-### 🧠 AI-Powered Intelligence
-- **GPT-4 Integration**: Advanced natural language understanding for business queries
-- **Context-Aware Analysis**: AI receives complete data structure analysis for optimal recommendations
-- **Smart Chart Selection**: Automatically chooses the best visualization type based on data characteristics
-- **Intelligent Grouping**: Automatic data grouping and aggregation based on query intent
+### AI and Reasoning
+- **OpenAI-assisted decisions** in `OpenAiService` with explicit step-by-step chain-of-thought output captured as `aiReasoning`.
+- **Deterministic reasoning** in `ReasoningService` for intent detection, top‑K chart ranking, metric scoring, and final decision synthesis.
+- **Toggle** with `ENABLE_REASONING=true` to emit reasoning steps and console logs.
 
-### 📊 Visualization Excellence
-- **5 Chart Types**: Line, bar, stacked-bar, heatmap, and waterfall charts
-- **Interactive Tables**: ag-grid-powered data tables with enterprise features
-- **Real-time Updates**: Dynamic chart updates based on user interactions
-- **Responsive Design**: Optimized for desktop and mobile experiences
+### Visualization
+- **Chart types**: `line`, `bar`, `stacked-bar`, `heatmap`, `waterfall`.
+- **Tables**: Interactive `ag-grid` data table for every chart.
+- **Formatting**: Automatic currency/percentage/count formatting.
 
-### 🏢 Enterprise Features
-- **Complete Audit Trail**: Every chart generation logged with full context
-- **Data Privacy**: Audit logs excluded from version control
-- **Performance Monitoring**: Response time tracking and optimization
-- **Scalable Architecture**: Built for enterprise-scale data processing
+### Data and Dashboards
+- **Data types**: `scalar`, `timeSeries`, `groupedSeries`, `embeddedMetrics`, `dynamicKeyObject`, `array`.
+- **Flexible date ranges**: Year, month, single day, ISO range, and custom range support.
+- **Dashboard ranking**: Prompt-driven, quality-aware metric selection.
 
-### 🔄 Data Processing
-- **Multiple Data Types**: Scalar, time series, grouped series, and dynamic objects
-- **Flexible Date Ranges**: Support for custom and preset date filtering
-- **Nested Metrics**: Handle complex, embedded business data structures
-- **Real-time Analysis**: Dynamic metric discovery and processing
+### Enterprise
+- **Audit logs** in `server/audit-logs/` with full context.
+- **Endpoints** for feedback, audit stats, and reasoning status.
 
 ---
 
@@ -80,44 +71,37 @@ Iris Finance Chat to Chart AI is a sophisticated business intelligence platform 
 graph TB
     subgraph "Frontend (Next.js)"
         UI[User Interface]
-        ChatBox[Chat Input Component]
-        ChartView[Chart Visualization]
-        DashboardView[Dashboard Component]
-        DateSelector[Date Range Selector]
+        ChatBox[ChatBox]
+        DateSelector[DateRangeSelector]
+        ChartView[ChartView]
+        DashboardView[DashboardView]
     end
-    
+
     subgraph "Backend (NestJS)"
-        API[API Controller]
-        OpenAI[OpenAI Service]
-        Metrics[Metrics Service]
-        DataAnalysis[Data Analysis Service]
-        Dashboard[Dashboard Service]
-        Audit[Audit Service]
-        IrisAPI[Iris API Service]
+        API[AppController]
+        OpenAI[OpenAiService]
+        Reasoning[ReasoningService]
+        Metrics[MetricsService]
+        DataAnalysis[DataAnalysisService]
+        Dashboard[DashboardService]
+        Audit[AuditService]
+        IrisAPI[IrisApiService]
     end
-    
-    subgraph "Data Layer"
-        BusinessData[Business Metrics JSON]
-        AuditLogs[Audit Log Files]
+
+    subgraph "External"
+        GPT4[OpenAI]
+        Iris[Iris Finance API]
     end
-    
-    subgraph "External Services"
-        GPT4[OpenAI GPT-4 API]
-    end
-    
-    UI --> ChatBox
+
     ChatBox --> API
-    API --> OpenAI
+    DateSelector --> ChatBox
     API --> Metrics
+    Metrics --> IrisAPI --> Iris
+    Metrics --> DataAnalysis
+    API --> OpenAI --> GPT4
+    API --> Reasoning
     API --> Dashboard
     API --> Audit
-    
-    OpenAI --> GPT4
-    Metrics --> DataAnalysis
-    DataAnalysis --> BusinessData
-    Dashboard --> Metrics
-    Audit --> AuditLogs
-    
     API --> ChartView
     API --> DashboardView
 ```
@@ -126,30 +110,14 @@ graph TB
 
 ## 🛠️ Tech Stack
 
-### Backend Technologies
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| **NestJS** | ^10.0.0 | Node.js framework with dependency injection |
-| **TypeScript** | ^5.0.0 | Type-safe development |
-| **OpenAI** | ^4.0.0 | GPT-4 API integration |
-| **Axios** | ^1.6.0 | HTTP client for external APIs |
-| **class-validator** | ^0.14.0 | DTO validation and sanitization |
-| **dotenv** | ^17.2.0 | Environment variable management |
+### Backend
+- **NestJS 10**, **TypeScript 5**, **OpenAI 4**, **@nestjs/axios**, **rxjs**
 
-### Frontend Technologies
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| **Next.js** | ^13.5.0 | React framework with SSR |
-| **React** | ^18.0.0 | Component-based UI library |
-| **ag-charts-react** | ^9.0.0 | Enterprise chart rendering |
-| **ag-grid-react** | ^34.0.2 | Advanced data grid component |
-| **ag-grid-community** | ^34.0.2 | Grid functionality (sorting, filtering, pagination) |
-| **TypeScript** | ^5.0.0 | Type-safe frontend development |
+### Frontend
+- **Next.js 13**, **React 18**, **ag-charts-react**, **ag-grid-react**, **ag-grid-community**
 
-### Development Tools
-- **ts-node** - Direct TypeScript execution
-- **nodemon** - Development server auto-restart
-- **ESLint** - Code quality and style enforcement
+### Tooling
+- **ts-node**, **nodemon**, **dotenv**
 
 ---
 
@@ -157,545 +125,287 @@ graph TB
 
 ```
 iris_chat_to_chart/
-├── 📂 server/                          # NestJS Backend Application
-│   ├── 📂 src/                         # Source code directory
-│   │   ├── 📄 main.ts                  # Application entry point & module configuration
-│   │   ├── 📄 app.controller.ts        # Main API endpoints (/chat, /dashboard, /feedback)
-│   │   ├── 📄 chat.dto.ts              # Data Transfer Objects & validation schemas
-│   │   ├── 📄 openai.service.ts        # GPT-4 integration & prompt engineering
-│   │   ├── 📄 metrics.service.ts       # Data processing, slicing & transformation
-│   │   ├── 📄 data-analysis.service.ts # Metric discovery & chart recommendations
-│   │   ├── 📄 dashboard.service.ts     # Multi-chart dashboard generation
-│   │   ├── 📄 audit.service.ts         # Compliance logging & audit trails
-│   │   └── 📄 iris-api.service.ts      # External API integration service
-│   ├── 📂 audit-logs/                  # Generated audit files (compliance)
-│   │   ├── 📄 chart-*.json             # Individual request audit logs
-│   │   └── ...                         # Timestamped audit files
-│   ├── 📄 package.json                 # Backend dependencies & scripts
-│   ├── 📄 tsconfig.json                # TypeScript configuration
-│   └── 📄 test-data-analysis-service.ts # Service testing utilities
-│
-├── 📂 web/                             # Next.js Frontend Application  
-│   ├── 📂 components/                  # React components directory
-│   │   ├── 📄 ChatBox.tsx              # User input & API communication
-│   │   ├── 📄 ChartView.tsx            # Single chart rendering & interaction
-│   │   ├── 📄 DashboardView.tsx        # Multi-chart dashboard display
-│   │   ├── 📄 DateRangeSelector.tsx    # Date filtering component
-│   │   └── 📄 FeedbackWidget.tsx       # User feedback collection
-│   ├── 📂 pages/                       # Next.js page routing
-│   │   └── 📄 index.tsx                # Main application page
-│   ├── 📄 package.json                 # Frontend dependencies & scripts
-│   ├── 📄 tsconfig.json                # TypeScript configuration
-│   ├── 📄 next.config.mjs              # Next.js configuration
-│   └── 📄 next-env.d.ts                # Next.js type definitions
-│
-├── 📄 README.md                        # Comprehensive project documentation
-└── 📄 AUDIT_README.md                  # Audit system documentation
+├─ server/
+│  ├─ src/
+│  │  ├─ main.ts
+│  │  ├─ app.controller.ts
+│  │  ├─ chat.dto.ts
+│  │  ├─ openai.service.ts
+│  │  ├─ reasoning.service.ts
+│  │  ├─ metrics.service.ts
+│  │  ├─ data-analysis.service.ts
+│  │  ├─ dashboard.service.ts
+│  │  ├─ audit.service.ts
+│  │  └─ iris-api.service.ts
+│  ├─ audit-logs/
+│  ├─ package.json
+│  └─ tsconfig.json
+├─ web/
+│  ├─ components/
+│  │  ├─ ChatBox.tsx
+│  │  ├─ DateRangeSelector.tsx
+│  │  ├─ ChartView.tsx
+│  │  ├─ DashboardView.tsx
+│  │  └─ FeedbackWidget.tsx
+│  ├─ pages/index.tsx
+│  ├─ package.json
+│  └─ tsconfig.json
+├─ README.md
+└─ AUDIT_README.md
 ```
-
-### 🔍 Key File Descriptions
-
-#### Backend Core Files
-- **`main.ts`**: Application bootstrap, CORS configuration, and service registration
-- **`app.controller.ts`**: REST API endpoints with validation and error handling
-- **`openai.service.ts`**: GPT-4 prompt engineering and response parsing
-- **`metrics.service.ts`**: Data transformation and chart data preparation
-- **`data-analysis.service.ts`**: Intelligent metric discovery and analysis engine
-
-#### Frontend Core Files
-- **`index.tsx`**: Main application layout with gradient design and component orchestration
-- **`ChatBox.tsx`**: User input handling, API communication, and mode switching
-- **`ChartView.tsx`**: ag-charts integration with interactive data tables
-- **`DashboardView.tsx`**: Multi-chart layout and dashboard management
-
-#### Configuration & Data
-- **`chat.dto.ts`**: TypeScript interfaces and validation rules for all API endpoints
-- **`audit-logs/`**: JSON files containing complete request/response audit trails
-- **`package.json`**: Dependencies, scripts, and project metadata for both frontend and backend
 
 ---
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- **Node.js** 18.0+ 
-- **npm** 8.0+
-- **OpenAI API Key** (GPT-4 access required)
+- Node.js 18+
+- npm 8+
+- OpenAI API key
+- Iris API token
 
-### 1. Repository Setup
+### 1) Install
 ```bash
-# Clone the repository
 git clone <your-repo-url>
 cd iris_chat_to_chart
 
-# Backend setup
-cd server
-npm install
-
-# Frontend setup  
-cd ../web
-npm install
+cd server && npm install
+cd ../web && npm install
 ```
 
-### 2. Environment Configuration
-
+### 2) Configure backend env
 Create `server/.env`:
 ```bash
-# OpenAI Configuration
-OPENAI_API_KEY=your_openai_api_key_here
-
-# Optional: Server Configuration
+OPENAI_API_KEY=sk-...
+IRIS_API_TOKEN=your_iris_api_token
+# Optional overrides
+IRIS_API_URL=https://api.irisfinance.co/metrics
+ENABLE_REASONING=true
 PORT=4000
 NODE_ENV=development
 ```
 
-### 3. Start Development Servers
-
-**Terminal 1 - Backend Server:**
+### 3) Run
 ```bash
-cd server
-npm run dev
-# Server starts at http://localhost:4000
+# Terminal A (backend)
+cd server && npm run dev
+
+# Terminal B (frontend)
+cd web && npm run dev
 ```
 
-**Terminal 2 - Frontend Application:**
-```bash
-cd web
-npm run dev
-# Application available at http://localhost:3000
-```
-
-### 4. Verify Installation
-
-1. Navigate to `http://localhost:3000`
-2. Try a sample query: "Show me sales trends"
-3. Verify chart generation and data display
+Open `http://localhost:3000`.
 
 ---
 
 ## ⚙️ Configuration
 
-### 🔧 Backend Configuration
+### Backend environment
+- **`OPENAI_API_KEY`**: required for OpenAI.
+- **`IRIS_API_TOKEN`**: required for Iris API calls.
+- **`IRIS_API_URL`**: Iris endpoint (defaults to production).
+- **`ENABLE_REASONING`**: `true|false` to emit reasoning steps and status.
+- **`PORT`**, **`NODE_ENV`**: standard server config.
 
-#### Environment Variables
-```bash
-# Required
-OPENAI_API_KEY=sk-...                    # OpenAI API key for GPT-4 access
+### Date ranges accepted
+- Year: `YYYY`
+- Month: `YYYY-MM`
+- Day: `YYYY-MM-DD`
+- Custom range: `startISO,endISO` or `YYYY-MM-DD,YYYY-MM-DD` (auto-ISO expanded)
 
-# Optional
-PORT=4000                               # Server port (default: 4000)
-NODE_ENV=development                    # Environment mode
-AUDIT_LOG_ENABLED=true                  # Enable/disable audit logging
-DATA_SOURCE_FILE=sample-june-metrics.json # Data source file name
-```
+---
 
-#### Data Source Configuration
-Located in `server/src/app.controller.ts`:
-```typescript
-// Configure your data source
-export const DATA_SOURCE_FILE = 'sample-june-metrics.json';
-```
+## 🔄 How It Works (Data & Reasoning Flows)
 
-### 🎨 Frontend Configuration
+### Single chart flow (`POST /chat`)
+1. `MetricsService.getDataAnalysis(dateRange)`
+   - `IrisApiService.fetchMetrics()` loads live data and caches by date range.
+   - `DataAnalysisService.analyzeData()` discovers metrics and suggests chart types.
+2. `OpenAiService.prompt()`
+   - Generates explicit reasoning text (`aiReasoning`).
+   - Performs a tool call to produce a structured chart spec.
+3. `ReasoningService.generateReasoning()`
+   - Creates a deterministic reasoning object with steps and confidence.
+4. `MetricsService.slice()`
+   - Slices the requested metric into a common chart data shape.
+5. `AuditService.logChartGeneration()`
+   - Persists request, spec, data, analysis, and metadata.
 
-#### Next.js Configuration (`next.config.mjs`)
-```javascript
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  reactStrictMode: true,
-  experimental: {
-    appDir: false
-  }
-}
-
-export default nextConfig
-```
-
-#### TypeScript Configuration
-Both frontend and backend use strict TypeScript configuration for type safety and better development experience.
+### Dashboard flow (`POST /dashboard`)
+1. `MetricsService.getDataAnalysis()` → metric catalog.
+2. `DashboardService.identifyRelatedMetrics()`
+   - Uses `ReasoningService.analyzeAndRankMetrics()` to score and rank metrics related to the prompt.
+   - Logs metric quality issues (e.g., too many unknown categories).
+3. `DashboardService.generateChartSpecs()`
+   - For each metric, uses `OpenAiService` to produce a chart spec; falls back to sane defaults.
+4. `MetricsService.slice()` per spec → `charts[]` array with layout metadata.
+5. Optional insights synthesized by `DashboardService`.
 
 ---
 
 ## 📡 API Documentation
 
-### 🔌 Core Endpoints
-
-#### 1. Generate Single Chart
-```http
-POST /chat
-Content-Type: application/json
-
-{
-  "prompt": "Show me revenue trends by sales channel",
-  "dateRange": "2025-06"  // Optional: YYYY or YYYY-MM format
-}
+### POST `/chat`
+Body (`ChatDto`):
+```json
+{ "prompt": "Compare revenue by sales channel", "dateRange": "2025-06" }
 ```
-
-**Response:**
+Response (abridged):
 ```json
 {
-  "chartType": "line",
+  "chartType": "bar",
   "metric": "dataBySalesConnectors.grossSales",
   "dateRange": "2025-06",
-  "data": [
-    {"date": "2025-06-01", "value": 87589.85},
-    {"date": "2025-06-02", "value": 79724.74}
-  ],
-  "requestId": "1703123456789-abc123def",
-  "originalPrompt": "Show me revenue trends by sales channel",
-  "dataAnalysis": {
-    "totalMetrics": 99,
-    "suggestedChartTypes": ["line", "bar"]
-  },
-  "metadata": {
-    "responseTimeMs": 1247,
-    "dataSourceFile": "sample-june-metrics.json"
-  }
+  "data": { "dates": [...], "values": [...] },
+  "requestId": "...",
+  "originalPrompt": "...",
+  "dataAnalysis": { "totalMetrics": 99, "suggestedChartTypes": ["bar","line"], "runtimeReasoning": true },
+  "reasoning": { "enabled": true, "steps": [...], "summary": {...}, "metadata": {...}, "aiReasoning": "..." }
 }
 ```
 
-#### 2. Generate Dashboard
-```http
-POST /dashboard
-Content-Type: application/json
-
-{
-  "prompt": "Show me complete sales performance overview",
-  "maxCharts": 5,           // Optional: 1-8 charts
-  "dateRange": "2025-06",   // Optional: Date filtering
-  "channels": ["online", "retail"], // Optional: Channel filtering
-  "generateInsights": true  // Optional: Include AI insights
-}
-```
-
-**Response:**
+### POST `/dashboard`
+Body (`DashboardDto`):
 ```json
-{
-  "dashboardId": "dashboard_1703123456789",
-  "charts": [
-    {
-      "id": "chart_1",
-      "title": "Revenue Trends",
-      "chartType": "line",
-      "metric": "grossSales",
-      "row": 0,
-      "col": 0,
-      "span": 2,
-      "data": [...],
-      "insights": ["Revenue shows 15% growth trend"]
-    }
-  ],
-  "metadata": {
-    "totalCharts": 5,
-    "responseTimeMs": 2847,
-    "suggestedInsights": ["Peak sales occur on weekends"]
-  }
-}
+{ "prompt": "Executive sales overview", "maxCharts": 5, "dateRange": "2025-06", "generateInsights": true }
 ```
+Response: `dashboardId`, `charts[]`, `metadata`, `requestId`, `originalPrompt`.
 
-#### 3. Submit Feedback
-```http
-POST /feedback
-Content-Type: application/json
+### POST `/feedback`
+Body (`FeedbackDto`): `{ requestId, rating (1..5), comment?, chartId? }` → OK.
 
-{
-  "requestId": "1703123456789-abc123def",
-  "rating": 5,              // 1-5 scale
-  "comment": "Perfect chart for the data",
-  "chartId": "chart_1"      // Optional: For dashboard charts
-}
-```
+### GET `/feedback/stats`
+Aggregated feedback statistics.
 
-#### 4. Audit Statistics
-```http
-GET /audit/stats
-```
+### GET `/audit/stats`
+Audit summary (totals, today, breakdowns, avg response time, top metrics).
 
-**Response:**
-```json
-{
-  "totalRequests": 1247,
-  "todayRequests": 23,
-  "chartTypeBreakdown": {
-    "line": 45,
-    "bar": 32,
-    "stacked-bar": 15,
-    "heatmap": 6,
-    "waterfall": 2
-  },
-  "averageResponseTime": 1456,
-  "topMetrics": ["grossSales", "netProfit", "customerCount"]
-}
-```
-
-### 📊 Supported Chart Types
-
-| Chart Type | Use Case | Data Requirements |
-|------------|----------|-------------------|
-| **line** | Time series trends | Date/value pairs |
-| **bar** | Category comparisons | Categorical data |
-| **stacked-bar** | Multi-category breakdowns | Grouped categorical data |
-| **heatmap** | Pattern visualization | Grid-based data |
-| **waterfall** | Sequential changes | Sequential numeric data |
-
-### 🔍 Data Types Supported
-
-| Type | Description | Example |
-|------|-------------|---------|
-| **Scalar** | Single values | `totalRevenue: 150000` |
-| **Time Series** | Date/value arrays | `sales: [{date: "2025-06-01", value: 1000}]` |
-| **Grouped Series** | Multi-category time data | `salesByChannel: {online: [...], retail: [...]}` |
-| **Dynamic Objects** | Account-level data | `accountData: {"acc_123": {...}}` |
-| **Embedded Metrics** | Nested structures | `performance: {metrics: {...}}` |
+### GET `/reasoning/status`
+Runtime toggle/health for the reasoning system.
 
 ---
 
-## 💬 Usage Examples
+## 🎨 Frontend Components
+- **`pages/index.tsx`**: Orchestrates `ChatBox`, `ChartView`, `DashboardView`.
+- **`components/ChatBox.tsx`**: Mode toggle (single/dashboard), date range picker, calls backend.
+- **`components/DateRangeSelector.tsx`**: Outputs `YYYY`, `YYYY-MM`, `YYYY-MM-DD`, or `start,end` strings.
+- **`components/ChartView.tsx`**: AG Charts config, tooltips, formatting, and `ag-grid` table.
+- **`components/DashboardView.tsx`**: Renders list of charts with titles/insights and `ChartView` instances.
+- **`components/FeedbackWidget.tsx`**: Sends user ratings back to `/feedback`.
 
-### 🔍 Natural Language Queries
+---
 
-| **Query** | **Generated Chart** | **Data Source** |
-|-----------|-------------------|-----------------|
-| "Show me sales trends over time" | Line chart | Time series sales data |
-| "Compare revenue by sales channel" | Bar chart | Channel-grouped revenue |
-| "June performance breakdown by region" | Stacked bar chart | Regional performance metrics |
-| "Account cash flow details" | Bar chart | Account-level cash data |
-| "Customer acquisition trends" | Line chart | Customer count over time |
-| "Product performance heatmap" | Heatmap | Product performance matrix |
-| "Monthly revenue waterfall" | Waterfall chart | Sequential revenue changes |
+## 🔍 Data Analysis Engine
+- File: `server/src/data-analysis.service.ts`
+- Discovers metrics across nested objects, arrays of objects (embedded metrics), and dynamic key objects.
+- Produces:
+  - `availableMetrics: MetricInfo[]`
+  - `suggestedChartTypes: ChartSuggestion[]` (guided hints for the AI)
+  - `dataContext: string` (compact data description for prompts)
 
-### 📊 Dashboard Examples
+Metric types detected:
+- `scalar`, `timeSeries`, `groupedSeries`, `embeddedMetrics`, `dynamicKeyObject`, `array`
 
-**Query**: "Give me a complete sales overview"
-**Generated Dashboard**:
-1. Revenue trends (line chart)
-2. Sales by channel (bar chart)
-3. Customer acquisition (line chart)
-4. Product performance (heatmap)
-5. Regional breakdown (stacked bar)
+---
 
-### 🎯 Advanced Use Cases
+## 📊 Dashboard System
+- File: `server/src/dashboard.service.ts`
+- Uses `ReasoningService.analyzeAndRankMetrics()` to select visualizable metrics (excludes scalars), logs quality issues, then generates specs per metric through `OpenAiService` with robust fallbacks and titles.
 
-#### Date Range Filtering
-```javascript
-// Specific month
-{ "prompt": "Show sales trends", "dateRange": "2025-06" }
+---
 
-// Specific year
-{ "prompt": "Annual performance", "dateRange": "2025" }
+## 🧠 Reasoning System
+- File: `server/src/reasoning.service.ts`
+- Toggle via `ENABLE_REASONING=true`.
+- Capabilities:
+  - Intent detection (temporal trend, comparison, breakdown, overview, correlation, anomaly, forecasting, drill-down)
+  - Top‑K chart ranking with weighted criteria: data compatibility, intent alignment, visual effectiveness, usability
+  - Metric scoring with semantic similarity, intent boosts, structure and quality checks
+  - Quality analysis: unknown categories, too many categories, generic value types, etc.
+  - Final decision synthesis with confidence and key factors
+- Exposes `getReasoningStatus()` and console logging for step-by-step traces.
 
-// Custom range
-{ "prompt": "Q1 analysis", "dateRange": "2025-01-01,2025-03-31" }
-```
+---
 
-#### Channel-Specific Analysis
-```javascript
-{
-  "prompt": "Show online sales performance",
-  "channels": ["online"],
-  "maxCharts": 3
-}
-```
+## 🌐 Iris API Integration
+- File: `server/src/iris-api.service.ts`
+- Requires `IRIS_API_TOKEN`. Optional `IRIS_API_URL`.
+- Builds filters payload, sets browser-like headers, posts via `@nestjs/axios`.
+- `parseDateRange()` supports: year, month, day, ISO strings, custom ranges.
+- Errors include status/data when available for easier debugging.
 
-#### Multi-Metric Dashboards
-```javascript
-{
-  "prompt": "Executive dashboard for Q2",
-  "maxCharts": 6,
-  "generateInsights": true,
-  "dateRange": "2025-04-01,2025-06-30"
-}
-```
+`MetricsService` caches responses by date range and converts raw data to a normalized chart shape via type-specific slicers:
+- `sliceTimeSeries`, `sliceGroupedSeries`, `sliceNestedGroupedSeries`, `sliceScalar`, `sliceDynamicKeyObject`, `sliceEmbeddedMetrics`, `sliceArray`.
 
 ---
 
 ## 🔒 Audit & Compliance
+- File: `server/src/audit.service.ts`
+- Logs each request to `server/audit-logs/` with: prompt, spec, data sample, analysis summary, metadata (response time, metrics count).
+- See `AUDIT_README.md` for format and operations.
 
-### 📋 Comprehensive Audit Trail
+Security notes:
+- Logs include sensitive business data; directory is `.gitignore`d.
+- Ensure proper file permissions and retention policies.
 
-**Location**: `server/src/audit.service.ts`
+---
 
-Every chart generation request is automatically logged for compliance, debugging, and analytics purposes.
+## 🧪 Testing
+Manual checks:
+```bash
+# Server health
+curl http://localhost:4000/audit/stats | cat
 
-#### 🔍 Audit Log Structure
+# Reasoning status
+curl http://localhost:4000/reasoning/status | cat
 
-Each audit log contains:
-```json
-{
-  "timestamp": "2023-12-21T10:30:00.000Z",
-  "requestId": "1703123456789-abc123def",
-  "userPrompt": "Show me sales data by region",
-  "chartSpec": {
-    "chartType": "bar",
-    "metric": "sales",
-    "dateRange": "2023",
-    "groupBy": "region"
-  },
-  "dataUsed": {
-    "dates": ["2023-01", "2023-02"],
-    "values": [/* actual chart data */]
-  },
-  "dataAnalysis": {
-    "availableMetrics": [/* discovered metrics */],
-    "suggestedChartTypes": [/* AI recommendations */]
-  },
-  "metadata": {
-    "dataSourceFile": "sample-june-metrics.json",
-    "responseTimeMs": 1247,
-    "metricsCount": 15
-  }
-}
+# Single chart
+curl -X POST http://localhost:4000/chat \
+  -H 'Content-Type: application/json' \
+  -d '{"prompt":"Show sales trends","dateRange":"2025-06"}' | cat
 ```
-
-#### 🛡️ Privacy & Security
-
-- **Data Sensitivity**: Audit logs contain actual business data
-- **Version Control**: Excluded from Git via `.gitignore`
-- **File Permissions**: Secure audit directory access
-- **No Auto-Cleanup**: Manual log management required
-
-#### 🎯 Use Cases
-
-1. **Compliance**: Track data access and usage
-2. **Debugging**: Reproduce issues with complete context
-3. **Analytics**: Understand usage patterns
-4. **Performance**: Monitor response times
-5. **Data Governance**: Audit sensitive metric access
 
 ---
 
 ## 🚀 Deployment
 
-### 🖥️ Production Deployment
-
-#### Backend Deployment
+### Backend
 ```bash
 cd server
-
-# Build TypeScript
 npm run build
-
-# Start production server
 NODE_ENV=production npm start
 ```
 
-#### Frontend Deployment
+### Frontend
 ```bash
 cd web
-
-# Build optimized frontend
 npm run build
-
-# Start production server
 npm start
 ```
 
-### 🌐 Environment Setup
-
-#### Production Environment Variables
+Recommended env (server):
 ```bash
-# server/.env.production
-OPENAI_API_KEY=prod_openai_key_here
+OPENAI_API_KEY=prod_openai
+IRIS_API_TOKEN=prod_iris
+IRIS_API_URL=https://api.irisfinance.co/metrics
+ENABLE_REASONING=false
 NODE_ENV=production
 PORT=4000
-AUDIT_LOG_ENABLED=true
 ```
-
-#### Deployment Checklist
-- [ ] Environment variables configured
-- [ ] Audit directory permissions set
-- [ ] File system permissions secured
-- [ ] Monitoring and logging configured
-- [ ] SSL certificates installed
-- [ ] Database connections verified (if applicable)
-- [ ] Performance monitoring enabled
 
 ---
 
 ## 🐛 Troubleshooting
-
-### 🔧 Common Issues
-
-#### Backend Issues
-
-**Issue**: OpenAI API Connection Errors
-```bash
-# Solution: Verify API key and network connectivity
-export OPENAI_API_KEY=your_valid_key
-curl -H "Authorization: Bearer $OPENAI_API_KEY" https://api.openai.com/v1/models
-```
-
-**Issue**: Audit Log Permission Errors
-```bash
-# Solution: Fix directory permissions
-chmod 755 server/audit-logs/
-chown $USER:$USER server/audit-logs/
-```
-
-#### Frontend Issues
-
-**Issue**: Chart Rendering Errors
-```javascript
-// Solution: Verify data format
-const isValidData = data && Array.isArray(data) && data.length > 0;
-if (!isValidData) {
-  console.error('Invalid chart data format');
-  return;
-}
-```
-
-### 🔍 Diagnostic Commands
-
-```bash
-# Check server health
-curl http://localhost:4000/audit/stats
-
-# Verify frontend build
-cd web && npm run build
-
-# Test API endpoints
-curl -X POST http://localhost:4000/chat -H "Content-Type: application/json" -d '{"prompt": "test"}'
-```
+- **OpenAI errors**: verify `OPENAI_API_KEY` and outbound network; test `curl https://api.openai.com/v1/models` with Bearer token.
+- **Iris API errors**: verify `IRIS_API_TOKEN`; inspect server logs for response status/data.
+- **Date range invalid**: follow accepted formats; custom ranges must be `startISO,endISO` or `YYYY-MM-DD,YYYY-MM-DD`.
+- **Metric not found**: check available metrics in error message; try a broader keyword.
 
 ---
 
 ## 📚 Additional Resources
-
-### 📖 Documentation
-
-- **[OpenAI API Documentation](https://platform.openai.com/docs)** - GPT-4 integration guide
-- **[NestJS Documentation](https://docs.nestjs.com/)** - Backend framework reference
-- **[Next.js Documentation](https://nextjs.org/docs)** - Frontend framework guide
-- **[ag-charts Documentation](https://charts.ag-grid.com/)** - Chart library reference
-- **[ag-grid Documentation](https://ag-grid.com/documentation/)** - Data grid component guide
-
-### 🛠️ Development Tools
-
-- **[TypeScript Handbook](https://www.typescriptlang.org/docs/)** - Type system reference
-- **[ESLint Rules](https://eslint.org/docs/rules/)** - Code quality guidelines
+- OpenAI API docs, NestJS docs, Next.js docs, ag‑charts, ag‑grid (see links in prior README if needed)
 
 ---
 
-## 📋 Summary
-
-Iris Finance Chat to Chart AI represents a comprehensive solution for democratizing business intelligence through natural language processing. The platform combines enterprise-grade architecture with intuitive user experience, providing powerful data visualization capabilities through simple conversational queries.
-
-### 🎯 Key Benefits
-
-- **Accessibility**: No technical expertise required for data visualization
-- **Intelligence**: AI-powered chart type selection and data analysis
-- **Compliance**: Complete audit trail for enterprise requirements
-- **Scalability**: Built for enterprise-scale data processing
-- **Flexibility**: Support for multiple chart types and data formats
-
-### 🚀 Future Roadmap
-
-- Enhanced chart types and visualization options
-- Real-time data integration capabilities
-- Advanced analytics and forecasting features
-- Mobile application development
-- Enterprise SSO integration
-
----
-
-*Built with ❤️ by the Iris Finance team using Next.js, NestJS, OpenAI GPT-4, ag-charts-react, ag-grid-react, and ag-grid-community.*
+Built with Next.js, NestJS, OpenAI, ag‑charts, and ag‑grid.

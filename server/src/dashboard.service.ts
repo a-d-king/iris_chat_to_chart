@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { OpenAiService } from './openai.service';
 import { MetricsService } from './metrics.service';
-import { DataAnalysisService, MetricInfo } from './data-analysis.service';
+import { MetricInfo } from './data-analysis.service';
+import { ReasoningService } from './reasoning.service';
 import { DashboardDto, DashboardChartDto } from './chat.dto';
 
 interface DashboardResponse {
@@ -20,7 +21,7 @@ export class DashboardService {
     constructor(
         private openAiService: OpenAiService,
         private metricsService: MetricsService,
-        private dataAnalysisService: DataAnalysisService
+        private reasoningService: ReasoningService
     ) { }
 
     async generateDashboard(request: DashboardDto): Promise<DashboardResponse> {
@@ -73,59 +74,25 @@ export class DashboardService {
     }
 
     private async identifyRelatedMetrics(prompt: string, dataAnalysis: any, maxCharts: number = 5): Promise<MetricInfo[]> {
-        const promptLower = prompt.toLowerCase();
-        const allMetrics = dataAnalysis.availableMetrics;
-
-        // TEMP FIX: Filter out scalar metrics for dashboards - they don't visualize well as charts
-        // TODO: In the future, implement metric-card type for scalar values
-        const visualizableMetrics = allMetrics.filter((m: MetricInfo) =>
+        // Filter out scalar metrics for dashboards - they don't visualize well as charts
+        const visualizableMetrics = dataAnalysis.availableMetrics.filter((m: MetricInfo) =>
             m.type !== 'scalar'
         );
 
-        // Find primary metric mentioned in prompt
-        const primaryMetric = this.dataAnalysisService.findBestMetricMatch(prompt, visualizableMetrics);
-        const relatedMetrics = [primaryMetric].filter(Boolean);
+        // Use centralized reasoning service for comprehensive analysis
+        const analysis = this.reasoningService.analyzeAndRankMetrics(prompt, visualizableMetrics, maxCharts);
 
-        // Add related metrics based on keywords and patterns
-        if (promptLower.includes('performance') || promptLower.includes('overview') || promptLower.includes('dashboard')) {
-            // Add key business metrics
-            relatedMetrics.push(
-                ...visualizableMetrics.filter((m: MetricInfo) =>
-                    m.name.toLowerCase().includes('sales') ||
-                    m.name.toLowerCase().includes('orders') ||
-                    m.name.toLowerCase().includes('revenue') ||
-                    m.name.toLowerCase().includes('profit')
-                ).slice(0, 3)
-            );
+        // Log quality issues if any
+        if (analysis.qualityIssues.length > 0) {
+            console.log('=== METRIC QUALITY ISSUES ===');
+            analysis.qualityIssues.forEach(issue => {
+                console.log(`Metric: ${issue.metric.name}`);
+                console.log(`Issues: ${issue.issues.join(', ')} (${issue.severity} severity)`);
+            });
+            console.log('=== END QUALITY ISSUES ===');
         }
 
-        if (promptLower.includes('sales') || promptLower.includes('revenue')) {
-            relatedMetrics.push(
-                ...visualizableMetrics.filter((m: MetricInfo) =>
-                    m.name.toLowerCase().includes('gross') ||
-                    m.name.toLowerCase().includes('net') ||
-                    m.name.toLowerCase().includes('connector') ||
-                    m.name.toLowerCase().includes('channel')
-                ).slice(0, 2)
-            );
-        }
-
-        if (promptLower.includes('financial') || promptLower.includes('cash')) {
-            relatedMetrics.push(
-                ...visualizableMetrics.filter((m: MetricInfo) =>
-                    m.name.toLowerCase().includes('cash') ||
-                    m.name.toLowerCase().includes('profit') ||
-                    m.name.toLowerCase().includes('margin')
-                ).slice(0, 2)
-            );
-        }
-
-        // Remove duplicates and limit to maxCharts
-        const uniqueMetrics = relatedMetrics.filter((metric, index, self) =>
-            metric && self.findIndex((m: MetricInfo | null) => m?.name === metric.name) === index
-        );
-
-        return uniqueMetrics.slice(0, maxCharts);
+        return analysis.rankedMetrics.map(ranked => ranked.metric);
     }
 
     private async generateChartSpecs(request: DashboardDto, metrics: MetricInfo[], dataAnalysis: any): Promise<any[]> {
