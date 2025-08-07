@@ -186,8 +186,45 @@ Select the chart type, metric, and date range that best implements your reasonin
         if (dataAnalysis) {
             decisionPrompt += `\n\nAVAILABLE METRICS:`;
             dataAnalysis.availableMetrics.forEach(metric => {
-                decisionPrompt += `\n- ${metric.name}: ${metric.description}`;
+                const qualityNote = this.getMetricQualityNote(metric, dataAnalysis.dataQuality);
+                decisionPrompt += `\n- ${metric.name}: ${metric.description}${qualityNote}`;
             });
+
+            // Add data quality context
+            if (dataAnalysis.dataQuality) {
+                decisionPrompt += `\n\nDATA QUALITY INSIGHTS:`;
+                decisionPrompt += `\n- Overall completeness: ${Math.round(dataAnalysis.dataQuality.completeness * 100)}%`;
+
+                if (dataAnalysis.dataQuality.issues.length > 0) {
+                    decisionPrompt += `\n- Issues to consider: ${dataAnalysis.dataQuality.issues.slice(0, 3).join(', ')}`;
+                }
+
+                if (dataAnalysis.dataQuality.recommendations.length > 0) {
+                    decisionPrompt += `\n- Recommendations: ${dataAnalysis.dataQuality.recommendations.slice(0, 2).join(', ')}`;
+                }
+            }
+
+            // Add metric relationships context
+            if (dataAnalysis.metricRelationships && dataAnalysis.metricRelationships.length > 0) {
+                decisionPrompt += `\n\nMETRIC RELATIONSHIPS:`;
+                dataAnalysis.metricRelationships.slice(0, 3).forEach(rel => {
+                    const strongRelations = rel.relatedMetrics.filter(r => r.strength > 0.7);
+                    if (strongRelations.length > 0) {
+                        decisionPrompt += `\n- ${rel.primaryMetric} is strongly related to: ${strongRelations.map(r => r.metric).join(', ')}`;
+                    }
+                });
+            }
+
+            // Enhanced chart suggestions with reasoning
+            if (dataAnalysis.suggestedChartTypes && dataAnalysis.suggestedChartTypes.length > 0) {
+                decisionPrompt += `\n\nINTELLIGENT CHART RECOMMENDATIONS:`;
+                dataAnalysis.suggestedChartTypes.slice(0, 3).forEach(suggestion => {
+                    decisionPrompt += `\n- ${suggestion.chartType} (confidence: ${Math.round(suggestion.confidence * 100)}%): ${suggestion.reason}`;
+                    if (suggestion.dataFitScore) {
+                        decisionPrompt += ` [Data fit: ${Math.round(suggestion.dataFitScore * 100)}%]`;
+                    }
+                });
+            }
         }
 
         const response = await openai.chat.completions.create({
@@ -210,6 +247,36 @@ Select the chart type, metric, and date range that best implements your reasonin
         } else {
             throw new Error('OpenAI did not return a valid tool call response');
         }
+    }
+
+    /**
+     * Get data quality note for a specific metric
+     */
+    private getMetricQualityNote(metric: any, dataQuality: any): string {
+        if (!dataQuality) return '';
+
+        const notes = [];
+
+        // Check for quality issues specific to this metric
+        const metricIssues = dataQuality.issues.filter((issue: string) =>
+            issue.includes(metric.name));
+        if (metricIssues.length > 0) {
+            notes.push('⚠️ Quality issues detected');
+        }
+
+        // Check for outliers
+        const hasOutliers = dataQuality.outliers.some((outlier: any) =>
+            outlier.metric === metric.name);
+        if (hasOutliers) {
+            notes.push('📊 Contains outliers');
+        }
+
+        // Note data volume
+        if (metric.sampleValues && metric.sampleValues.length < 3) {
+            notes.push('📉 Limited data');
+        }
+
+        return notes.length > 0 ? ` (${notes.join(', ')})` : '';
     }
 
     /**

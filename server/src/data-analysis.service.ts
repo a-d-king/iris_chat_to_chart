@@ -3,10 +3,22 @@ import { Injectable } from '@nestjs/common';
 /**
  * Interface for data analysis results
  */
+export interface DataQualityReport {
+    completeness: number; // % of non-null values
+    consistency: boolean; // uniform data types
+    outliers: any[]; // detected anomalies
+    recommendations: string[];
+    issues: string[];
+    dataVolume: number;
+    timeRange?: { start: string; end: string; gaps: string[] };
+}
+
 export interface DataAnalysis {
     availableMetrics: MetricInfo[];
     suggestedChartTypes: ChartSuggestion[];
     dataContext: string;
+    dataQuality: DataQualityReport;
+    metricRelationships: MetricRelationship[];
 }
 
 export interface ChartSuggestion {
@@ -14,6 +26,19 @@ export interface ChartSuggestion {
     confidence: number;
     reason: string;
     bestForMetrics: string[];
+    dataFitScore: number;
+    visualEffectiveness: number;
+    alternatives: ChartSuggestion[];
+}
+
+export interface MetricRelationship {
+    primaryMetric: string;
+    relatedMetrics: {
+        metric: string;
+        correlationType: 'causal' | 'complementary' | 'inverse' | 'temporal';
+        strength: number; // 0-1
+        businessContext: string;
+    }[];
 }
 
 export interface MetricInfo {
@@ -43,13 +68,17 @@ export class DataAnalysisService {
      */
     analyzeData(data: any): DataAnalysis {
         const metrics = this.extractMetricsRecursively(data);
-        const suggestions = this.generateChartSuggestions(metrics);
+        const dataQuality = this.assessDataQuality(data, metrics);
+        const metricRelationships = this.analyzeMetricRelationships(metrics);
+        const suggestions = this.generateAdvancedChartSuggestions(metrics, dataQuality);
         const context = this.generateDataContext(metrics, data);
 
         return {
             availableMetrics: metrics,
             suggestedChartTypes: suggestions,
-            dataContext: context
+            dataContext: context,
+            dataQuality,
+            metricRelationships
         };
     }
 
@@ -448,97 +477,7 @@ export class DataAnalysisService {
         }
     }
 
-    /**
-     * Generate chart type suggestions based on available metrics to help GPT-4o make better decisions
-     */
-    private generateChartSuggestions(metrics: MetricInfo[]): ChartSuggestion[] {
-        const suggestions: ChartSuggestion[] = [];
 
-        // Analyze metric characteristics and suggest appropriate chart types
-        for (const metric of metrics) {
-            // Line charts for temporal data
-            if (metric.hasTimeData && metric.type === 'timeSeries') {
-                suggestions.push({
-                    chartType: 'line',
-                    confidence: 0.9,
-                    reason: 'Time series data is ideal for showing trends and patterns over time',
-                    bestForMetrics: [metric.name]
-                });
-            }
-
-            // Stacked bar for grouped series with good categories
-            if (metric.hasGrouping && metric.type === 'groupedSeries' &&
-                (metric.groupingDimensions?.length || 0) > 1 && (metric.groupingDimensions?.length || 0) <= 8) {
-                suggestions.push({
-                    chartType: 'stacked-bar',
-                    confidence: 0.85,
-                    reason: 'Grouped data with multiple categories shows composition well in stacked bars',
-                    bestForMetrics: [metric.name]
-                });
-            }
-
-            // Bar charts for categorical comparisons
-            if (metric.type === 'scalar' || metric.type === 'dynamicKeyObject' || metric.type === 'embeddedMetrics') {
-                suggestions.push({
-                    chartType: 'bar',
-                    confidence: 0.8,
-                    reason: 'Categorical or scalar data is excellent for side-by-side comparisons',
-                    bestForMetrics: [metric.name]
-                });
-            }
-        }
-
-        // Add general suggestions based on data patterns
-        const timeSeriesMetrics = metrics.filter(m => m.hasTimeData);
-        if (timeSeriesMetrics.length > 0) {
-            suggestions.push({
-                chartType: 'line',
-                confidence: 0.85,
-                reason: 'Multiple time series metrics available for trend analysis',
-                bestForMetrics: timeSeriesMetrics.map(m => m.name).slice(0, 3)
-            });
-        }
-
-        const categoricalMetrics = metrics.filter(m => m.hasGrouping);
-        if (categoricalMetrics.length > 0) {
-            suggestions.push({
-                chartType: 'bar',
-                confidence: 0.75,
-                reason: 'Categorical data available for comparison analysis',
-                bestForMetrics: categoricalMetrics.map(m => m.name).slice(0, 3)
-            });
-        }
-
-        // Waterfall for change/delta metrics
-        const changeMetrics = metrics.filter(m =>
-            m.name.toLowerCase().includes('change') ||
-            m.name.toLowerCase().includes('delta') ||
-            m.name.toLowerCase().includes('diff')
-        );
-        if (changeMetrics.length > 0) {
-            suggestions.push({
-                chartType: 'waterfall',
-                confidence: 0.7,
-                reason: 'Change/delta metrics are perfect for showing cumulative effects',
-                bestForMetrics: changeMetrics.map(m => m.name)
-            });
-        }
-
-        // Heatmap for complex multi-dimensional data
-        const complexMetrics = metrics.filter(m =>
-            m.hasGrouping && m.hasTimeData && (m.groupingDimensions?.length || 0) > 3
-        );
-        if (complexMetrics.length > 0) {
-            suggestions.push({
-                chartType: 'heatmap',
-                confidence: 0.65,
-                reason: 'Multi-dimensional data with many categories works well as heatmaps',
-                bestForMetrics: complexMetrics.map(m => m.name).slice(0, 2)
-            });
-        }
-
-        return suggestions.sort((a, b) => b.confidence - a.confidence);
-    }
 
 
 
@@ -631,7 +570,7 @@ export class DataAnalysisService {
     }
 
     /**
-     * Find the best metric match for a given prompt
+     * Find the best metric match for a given prompt with enhanced business context awareness
      */
     findBestMetricMatch(prompt: string, metrics: MetricInfo[]): MetricInfo | null {
         const promptLower = prompt.toLowerCase();
@@ -650,7 +589,7 @@ export class DataAnalysisService {
             }
         }
 
-        // Keyword matching
+        // Enhanced business-context keyword matching
         const keywords = promptLower.split(' ');
         let bestMatch: MetricInfo | null = null;
         let bestScore = 0;
@@ -659,11 +598,15 @@ export class DataAnalysisService {
             const metricKeywords = metric.name.toLowerCase().split(/(?=[A-Z])|[\s_.-]+/);
             let score = 0;
 
+            // Standard keyword matching
             for (const keyword of keywords) {
                 if (metricKeywords.some(mk => mk.includes(keyword) || keyword.includes(mk))) {
                     score++;
                 }
             }
+
+            // Business context boost
+            score += this.calculateBusinessContextBoost(promptLower, metric);
 
             // Handle embedded metrics
             if (metric.embeddedMetrics && metric.embeddedMetrics.some(em =>
@@ -679,5 +622,436 @@ export class DataAnalysisService {
         }
 
         return bestMatch;
+    }
+
+        /**
+     * Calculate business context boost for better metric matching
+     */
+    private calculateBusinessContextBoost(promptLower: string, metric: MetricInfo): number {
+        const metricNameLower = metric.name.toLowerCase();
+        let boost = 0;
+
+        // Enhanced business domain mapping with relationship awareness
+        const domainMappings = {
+            sales: {
+                keywords: ['sales', 'revenue', 'gross', 'net', 'income'],
+                related: ['orders', 'customer', 'growth'],
+                boost: 5
+            },
+            orders: {
+                keywords: ['orders', 'order', 'count', 'volume', 'quantity'],
+                related: ['sales', 'customer', 'fulfillment'],
+                boost: 5
+            },
+            customers: {
+                keywords: ['customer', 'user', 'client', 'acquisition'],
+                related: ['sales', 'orders', 'retention'],
+                boost: 4
+            },
+            financial: {
+                keywords: ['profit', 'margin', 'income', 'expense', 'cost'],
+                related: ['sales', 'cash', 'balance'],
+                boost: 4
+            },
+            cash: {
+                keywords: ['cash', 'balance', 'flow', 'liquidity'],
+                related: ['financial', 'profit', 'expense'],
+                boost: 3
+            },
+            performance: {
+                keywords: ['growth', 'rate', 'performance', 'kpi', 'trend'],
+                related: ['sales', 'orders', 'customer'],
+                boost: 4
+            },
+            inventory: {
+                keywords: ['inventory', 'stock', 'product', 'supply'],
+                related: ['orders', 'sales', 'fulfillment'],
+                boost: 3
+            }
+        };
+
+        // Calculate domain-specific boosts
+        for (const [domain, config] of Object.entries(domainMappings)) {
+            const promptHasDomain = config.keywords.some(keyword => promptLower.includes(keyword));
+            const promptHasRelated = config.related.some(related => promptLower.includes(related));
+            const metricHasDomain = config.keywords.some(keyword => metricNameLower.includes(keyword));
+            const metricHasRelated = config.related.some(related => metricNameLower.includes(related));
+
+            if (promptHasDomain && metricHasDomain) {
+                // Direct domain match - highest boost
+                boost += config.boost;
+            } else if (promptHasDomain && metricHasRelated) {
+                // Related domain match - good boost
+                boost += config.boost * 0.7;
+            } else if (promptHasRelated && metricHasDomain) {
+                // Cross-domain relationship - moderate boost
+                boost += config.boost * 0.5;
+            } else if (metricHasDomain && !promptHasDomain && !promptHasRelated) {
+                // Metric in domain but not mentioned in prompt - lower boost
+                boost += config.boost * 0.2;
+            }
+        }
+
+        // Context-specific boosts
+        if ((promptLower.includes('trend') || promptLower.includes('analysis') || promptLower.includes('over time'))
+            && metric.hasTimeData) {
+            boost += 2;
+        }
+
+        if ((promptLower.includes('comparison') || promptLower.includes('vs') || promptLower.includes('versus'))
+            && metric.hasGrouping) {
+            boost += 1;
+        }
+
+        return boost;
+    }
+
+    /**
+     * Assess data quality and identify potential issues
+     */
+    private assessDataQuality(data: any, metrics: MetricInfo[]): DataQualityReport {
+        const issues: string[] = [];
+        const recommendations: string[] = [];
+        let totalValues = 0;
+        let nullValues = 0;
+        const outliers: any[] = [];
+        const timeRange = this.detectTimeRange(data);
+
+        // Analyze each metric for quality issues
+        for (const metric of metrics) {
+            const values = this.extractMetricValues(data, metric);
+
+            if (!values || values.length === 0) {
+                issues.push(`Metric '${metric.name}' has no data`);
+                continue;
+            }
+
+            totalValues += values.length;
+
+            // Check for null/undefined values
+            const nullCount = values.filter(v => v == null || v === undefined).length;
+            nullValues += nullCount;
+
+            if (nullCount > values.length * 0.3) {
+                issues.push(`Metric '${metric.name}' has ${Math.round(nullCount / values.length * 100)}% missing data`);
+                recommendations.push(`Consider filtering or imputing missing values for ${metric.name}`);
+            }
+
+            // Detect outliers for numeric data
+            if (metric.valueType !== 'generic') {
+                const numericValues = values.filter(v => typeof v === 'number' && !isNaN(v));
+                if (numericValues.length > 0) {
+                    const detectedOutliers = this.detectOutliers(numericValues);
+                    if (detectedOutliers.length > 0) {
+                        outliers.push(...detectedOutliers.map(val => ({ metric: metric.name, value: val })));
+                    }
+                }
+            }
+
+            // Check data volume
+            if (values.length < 3) {
+                issues.push(`Metric '${metric.name}' has insufficient data points (${values.length})`);
+                recommendations.push(`Consider using different date range for ${metric.name}`);
+            }
+        }
+
+        const completeness = totalValues > 0 ? (totalValues - nullValues) / totalValues : 0;
+        const consistency = issues.filter(i => i.includes('missing data')).length === 0;
+
+        // Generate recommendations based on data quality
+        if (completeness < 0.8) {
+            recommendations.push('Data completeness is low - consider data cleaning');
+        }
+        if (outliers.length > 0) {
+            recommendations.push('Outliers detected - may affect chart readability');
+        }
+        if (timeRange?.gaps && timeRange.gaps.length > 0) {
+            recommendations.push('Time series has gaps - consider interpolation');
+        }
+
+        return {
+            completeness: Math.round(completeness * 100) / 100,
+            consistency,
+            outliers,
+            recommendations,
+            issues,
+            dataVolume: totalValues,
+            timeRange
+        };
+    }
+
+    /**
+     * Analyze relationships between metrics
+     */
+    private analyzeMetricRelationships(metrics: MetricInfo[]): MetricRelationship[] {
+        const relationships: MetricRelationship[] = [];
+
+        for (const metric of metrics) {
+            const relatedMetrics = [];
+
+            // Find business logic relationships
+            const metricName = metric.name.toLowerCase();
+
+            for (const otherMetric of metrics) {
+                if (otherMetric.name === metric.name) continue;
+
+                const otherName = otherMetric.name.toLowerCase();
+                let relationship = null;
+
+                // Causal relationships (business logic)
+                if (metricName.includes('gross') && otherName.includes('net')) {
+                    relationship = {
+                        metric: otherMetric.name,
+                        correlationType: 'causal' as const,
+                        strength: 0.9,
+                        businessContext: 'Net values derived from gross values'
+                    };
+                } else if (metricName.includes('sales') && otherName.includes('profit')) {
+                    relationship = {
+                        metric: otherMetric.name,
+                        correlationType: 'causal' as const,
+                        strength: 0.8,
+                        businessContext: 'Profit typically correlates with sales volume'
+                    };
+                } else if (metricName.includes('customer') && otherName.includes('sales')) {
+                    relationship = {
+                        metric: otherMetric.name,
+                        correlationType: 'causal' as const,
+                        strength: 0.7,
+                        businessContext: 'Customer metrics often drive sales performance'
+                    };
+                }
+
+                // Complementary relationships (same domain)
+                else if ((metricName.includes('sales') && otherName.includes('revenue')) ||
+                    (metricName.includes('cash') && otherName.includes('balance'))) {
+                    relationship = {
+                        metric: otherMetric.name,
+                        correlationType: 'complementary' as const,
+                        strength: 0.8,
+                        businessContext: 'Related financial metrics'
+                    };
+                }
+
+                // Temporal relationships (same time patterns)
+                else if (metric.hasTimeData && otherMetric.hasTimeData &&
+                    metric.type === otherMetric.type) {
+                    relationship = {
+                        metric: otherMetric.name,
+                        correlationType: 'temporal' as const,
+                        strength: 0.6,
+                        businessContext: 'Similar temporal patterns and data structure'
+                    };
+                }
+
+                if (relationship) {
+                    relatedMetrics.push(relationship);
+                }
+            }
+
+            if (relatedMetrics.length > 0) {
+                relationships.push({
+                    primaryMetric: metric.name,
+                    relatedMetrics: relatedMetrics.slice(0, 5) // Limit to top 5 relationships
+                });
+            }
+        }
+
+        return relationships;
+    }
+
+    /**
+     * Generate advanced chart suggestions with enhanced intelligence
+     */
+    private generateAdvancedChartSuggestions(metrics: MetricInfo[], dataQuality: DataQualityReport): ChartSuggestion[] {
+        const suggestions: ChartSuggestion[] = [];
+
+        for (const metric of metrics) {
+            const baseScore = this.calculateDataFitScore(metric, dataQuality);
+            const visualScore = this.calculateVisualEffectiveness(metric);
+
+            // Line charts for temporal data
+            if (metric.hasTimeData && metric.type === 'timeSeries') {
+                const confidence = dataQuality.completeness > 0.8 ? 0.9 : 0.7;
+                suggestions.push({
+                    chartType: 'line',
+                    confidence,
+                    reason: `Time series data ideal for trend analysis. ${dataQuality.completeness < 0.8 ? 'Some data gaps present.' : ''}`,
+                    bestForMetrics: [metric.name],
+                    dataFitScore: baseScore * 0.9,
+                    visualEffectiveness: visualScore * 0.9,
+                    alternatives: this.generateAlternatives(metric, ['bar', 'stacked-bar'])
+                });
+            }
+
+            // Enhanced bar chart logic
+            if (metric.type === 'scalar' || metric.type === 'dynamicKeyObject' || metric.type === 'embeddedMetrics') {
+                const hasOutliers = dataQuality.outliers.some(o => o.metric === metric.name);
+                const confidence = hasOutliers ? 0.7 : 0.8;
+
+                suggestions.push({
+                    chartType: 'bar',
+                    confidence,
+                    reason: `Categorical data excellent for comparisons. ${hasOutliers ? 'Outliers present - may need attention.' : ''}`,
+                    bestForMetrics: [metric.name],
+                    dataFitScore: baseScore * (hasOutliers ? 0.7 : 0.8),
+                    visualEffectiveness: visualScore * 0.8,
+                    alternatives: this.generateAlternatives(metric, ['stacked-bar', 'heatmap'])
+                });
+            }
+
+            // Enhanced stacked bar logic
+            if (metric.hasGrouping && metric.type === 'groupedSeries' &&
+                (metric.groupingDimensions?.length || 0) > 1 && (metric.groupingDimensions?.length || 0) <= 8) {
+
+                const dataVolumeFactor = dataQuality.dataVolume > 100 ? 0.9 : 0.7;
+                suggestions.push({
+                    chartType: 'stacked-bar',
+                    confidence: 0.85 * dataVolumeFactor,
+                    reason: `Grouped data shows composition well. ${dataQuality.dataVolume <= 100 ? 'Limited data volume.' : ''}`,
+                    bestForMetrics: [metric.name],
+                    dataFitScore: baseScore * dataVolumeFactor,
+                    visualEffectiveness: visualScore * 0.85,
+                    alternatives: this.generateAlternatives(metric, ['bar', 'heatmap'])
+                });
+            }
+        }
+
+        // Sort by confidence and data fit score
+        return suggestions
+            .sort((a, b) => (b.confidence * b.dataFitScore) - (a.confidence * a.dataFitScore))
+            .slice(0, 10); // Limit to top 10 suggestions
+    }
+
+    /**
+     * Helper methods for advanced chart suggestions
+     */
+    private calculateDataFitScore(metric: MetricInfo, dataQuality: DataQualityReport): number {
+        let score = dataQuality.completeness;
+
+        // Penalize for outliers
+        const hasOutliers = dataQuality.outliers.some(o => o.metric === metric.name);
+        if (hasOutliers) score *= 0.8;
+
+        // Boost for sufficient data volume
+        if (dataQuality.dataVolume > 50) score *= 1.1;
+
+        // Penalize for data quality issues
+        const hasIssues = dataQuality.issues.some(issue => issue.includes(metric.name));
+        if (hasIssues) score *= 0.7;
+
+        return Math.min(score, 1.0);
+    }
+
+    private calculateVisualEffectiveness(metric: MetricInfo): number {
+        let score = 0.7; // Base score
+
+        // Boost for time data (trends are compelling)
+        if (metric.hasTimeData) score += 0.2;
+
+        // Boost for grouping (comparisons are valuable)
+        if (metric.hasGrouping) score += 0.15;
+
+        // Boost for currency data (business relevant)
+        if (metric.valueType === 'currency') score += 0.1;
+
+        return Math.min(score, 1.0);
+    }
+
+    private generateAlternatives(metric: MetricInfo, chartTypes: string[]): ChartSuggestion[] {
+        return chartTypes.map(type => ({
+            chartType: type as 'line' | 'bar' | 'stacked-bar' | 'heatmap' | 'waterfall',
+            confidence: 0.6,
+            reason: `Alternative visualization for ${metric.name}`,
+            bestForMetrics: [metric.name],
+            dataFitScore: 0.6,
+            visualEffectiveness: 0.6,
+            alternatives: [] as ChartSuggestion[]
+        }));
+    }
+
+    private extractMetricValues(data: any, metric: MetricInfo): any[] {
+        try {
+            const rawData = this.getNestedValue(data, metric.name);
+
+            if (Array.isArray(rawData)) {
+                if (rawData[0] && typeof rawData[0] === 'object' && 'value' in rawData[0]) {
+                    return rawData.map(item => item.value);
+                }
+                return rawData;
+            }
+
+            if (typeof rawData === 'object' && rawData?.values) {
+                if (Array.isArray(rawData.values) && rawData.values[0]?.values) {
+                    return rawData.values.flatMap((series: any) => series.values || []);
+                }
+            }
+
+            return rawData !== null && rawData !== undefined ? [rawData] : [];
+        } catch (error) {
+            return [];
+        }
+    }
+
+    private detectOutliers(values: number[]): number[] {
+        if (values.length < 4) return [];
+
+        const sorted = [...values].sort((a, b) => a - b);
+        const q1 = sorted[Math.floor(sorted.length * 0.25)];
+        const q3 = sorted[Math.floor(sorted.length * 0.75)];
+        const iqr = q3 - q1;
+        const lowerBound = q1 - 1.5 * iqr;
+        const upperBound = q3 + 1.5 * iqr;
+
+        return values.filter(value => value < lowerBound || value > upperBound);
+    }
+
+    private detectTimeRange(data: any): { start: string; end: string; gaps: string[] } | undefined {
+        const dates: string[] = [];
+
+        const extractDates = (obj: any) => {
+            if (Array.isArray(obj)) {
+                obj.forEach(item => {
+                    if (item && typeof item === 'object' && item.date) {
+                        dates.push(item.date);
+                    }
+                });
+            } else if (obj && typeof obj === 'object') {
+                if (obj.dates && Array.isArray(obj.dates)) {
+                    dates.push(...obj.dates);
+                }
+                Object.values(obj).forEach(value => extractDates(value));
+            }
+        };
+
+        extractDates(data);
+
+        if (dates.length === 0) return undefined;
+
+        const sortedDates = dates.sort();
+        const gaps: string[] = [];
+
+        // Simple gap detection (this could be more sophisticated)
+        for (let i = 1; i < sortedDates.length; i++) {
+            const current = new Date(sortedDates[i]);
+            const previous = new Date(sortedDates[i - 1]);
+            const diffDays = (current.getTime() - previous.getTime()) / (1000 * 60 * 60 * 24);
+
+            if (diffDays > 7) { // More than a week gap
+                gaps.push(`Gap between ${sortedDates[i - 1]} and ${sortedDates[i]}`);
+            }
+        }
+
+        return {
+            start: sortedDates[0],
+            end: sortedDates[sortedDates.length - 1],
+            gaps
+        };
+    }
+
+    private getNestedValue(obj: any, path: string): any {
+        return path.split('.').reduce((current, key) => {
+            return current && current[key] !== undefined ? current[key] : undefined;
+        }, obj);
     }
 } 
