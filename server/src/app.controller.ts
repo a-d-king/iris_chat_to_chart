@@ -5,6 +5,7 @@ import { MetricsService } from './metrics.service';
 import { AuditService } from './audit.service';
 import { DashboardService } from './dashboard.service';
 import { ReasoningService } from './reasoning.service';
+import { MetricInfo } from './data-analysis.service';
 
 /**
  * Main application controller
@@ -32,14 +33,25 @@ export class AppController {
         const startTime = Date.now();
 
         try {
-            // Step 1: Get data analysis for context (use provided dateRange or default)
+            // Step 1: Get enhanced data analysis for context (use provided dateRange or default)
             const effectiveDateRange = body.dateRange || undefined;
             const dataAnalysis = await this.metrics.getDataAnalysis(effectiveDateRange);
 
-            // Step 2: Convert natural language prompt to structured chart spec with context
+            // Step 2: Validate data quality if metric mentioned in prompt
+            const mentionedMetric = dataAnalysis.availableMetrics.find((m: any) =>
+                body.prompt.toLowerCase().includes(m.name.toLowerCase()));
+
+            if (mentionedMetric) {
+                const validation = await this.metrics.validateDataQuality(mentionedMetric.name, effectiveDateRange || '2025-06');
+                if (!validation.isValid) {
+                    console.warn(`Data quality issues for ${mentionedMetric.name}:`, validation.issues);
+                }
+            }
+
+            // Step 3: Convert natural language prompt to structured chart spec with enhanced context
             const spec = await this.ai.prompt(body.prompt, dataAnalysis);
 
-            // Step 3: Generate reasoning for the decision (if enabled)
+            // Step 4: Generate reasoning for the decision (if enabled)
             const reasoningProcess = this.reasoning.generateReasoning(
                 body.prompt,
                 dataAnalysis,
@@ -49,18 +61,24 @@ export class AppController {
             // Log reasoning to console if enabled
             this.reasoning.logReasoning(reasoningProcess);
 
-            // Step 4: Fetch the relevant data based on the chart spec
+            // Step 5: Fetch the relevant data based on the chart spec with enhanced processing
             // Use the provided dateRange from frontend if available, otherwise use spec.dateRange
             const finalDateRange = body.dateRange || spec.dateRange;
-            const data = await this.metrics.slice(
+
+            // Use enhanced slicing with aggregation for better data processing
+            const data = await this.metrics.sliceWithAggregation(
                 spec.metric,
                 finalDateRange,
-                spec.groupBy
+                {
+                    groupBy: spec.groupBy ? [spec.groupBy] : undefined,
+                    includeComparisons: false, // Can be enabled based on user preferences
+                    includeMovingAverage: false // Can be enabled for time series data
+                }
             );
 
             const responseTime = Date.now() - startTime;
 
-            // Step 5: Audit the chart generation
+            // Step 6: Audit the chart generation
             const requestId = await this.audit.logChartGeneration(
                 body.prompt,
                 spec,
@@ -188,7 +206,7 @@ export class AppController {
             // Audit the dashboard generation
             const requestId = await this.audit.logChartGeneration(
                 body.prompt,
-                { chartType: 'dashboard', metric: 'multiple', dateRange: body.dateRange || '2025-06' },
+                { chartType: 'dashboard', metric: 'multiple', dateRange: body.dateRange },
                 result.charts,
                 await this.metrics.getDataAnalysis(),
                 {

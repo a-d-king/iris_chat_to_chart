@@ -2,6 +2,16 @@ import { Injectable } from '@nestjs/common';
 import { DataAnalysisService, MetricInfo } from './data-analysis.service';
 import { IrisApiService } from './iris-api.service';
 
+export interface DataAggregationOptions {
+    groupBy?: string[];
+    timeGranularity?: 'daily' | 'weekly' | 'monthly' | 'quarterly';
+    aggregationType?: 'sum' | 'average' | 'median' | 'min' | 'max';
+    includeComparisons?: boolean; // vs previous period
+    includePercentages?: boolean; // % of total
+    includeMovingAverage?: boolean;
+    movingAveragePeriods?: number;
+}
+
 /**
  * Service for handling metrics data operations with caching
  */
@@ -49,6 +59,82 @@ export class MetricsService {
     async getDataAnalysis(dateRange?: string) {
         await this.load(dateRange);
         return this.dataAnalysis;
+    }
+
+    /**
+     * Enhanced slice with aggregation and advanced transformations
+     * @param metric - The metric name to retrieve
+     * @param dateRange - Date range filter (YYYY or YYYY-MM)
+     * @param options - Advanced aggregation and transformation options
+     * @returns Promise<any> - The processed data ready for charting
+     */
+    async sliceWithAggregation(metric: string, dateRange: string, options: DataAggregationOptions = {}) {
+        const baseData = await this.slice(metric, dateRange, options.groupBy?.[0]);
+
+        if (!baseData || !baseData.values) {
+            return baseData;
+        }
+
+        // Apply time granularity aggregation
+        if (options.timeGranularity && baseData.dates) {
+            return this.applyTimeAggregation(baseData, options);
+        }
+
+        // Apply statistical aggregations
+        if (options.aggregationType && options.aggregationType !== 'sum') {
+            return this.applyStatisticalAggregation(baseData, options);
+        }
+
+        // Add comparisons and percentages
+        let result = baseData;
+        if (options.includeComparisons) {
+            result = await this.addPeriodComparisons(result, metric, dateRange);
+        }
+
+        if (options.includePercentages) {
+            result = this.addPercentageCalculations(result);
+        }
+
+        if (options.includeMovingAverage) {
+            result = this.addMovingAverage(result, options.movingAveragePeriods || 3);
+        }
+
+        return result;
+    }
+
+    /**
+     * Validate data quality before processing
+     * @param metric - The metric name
+     * @param dateRange - Date range filter
+     * @returns Promise<{isValid: boolean, issues: string[]}> - Validation result
+     */
+    async validateDataQuality(metric: string, dateRange: string): Promise<{ isValid: boolean, issues: string[] }> {
+        const analysis = await this.getDataAnalysis(dateRange);
+        const metricInfo = analysis.availableMetrics.find((m: MetricInfo) =>
+            m.name.toLowerCase() === metric.toLowerCase());
+
+        if (!metricInfo) {
+            return { isValid: false, issues: [`Metric '${metric}' not found`] };
+        }
+
+        const issues = analysis.dataQuality.issues.filter((issue: string) =>
+            issue.includes(metricInfo.name));
+
+        const metricOutliers = analysis.dataQuality.outliers.filter((outlier: any) =>
+            outlier.metric === metricInfo.name);
+
+        if (metricOutliers.length > 0) {
+            issues.push(`${metricOutliers.length} outliers detected in ${metricInfo.name}`);
+        }
+
+        if (analysis.dataQuality.completeness < 0.7) {
+            issues.push(`Low data completeness (${Math.round(analysis.dataQuality.completeness * 100)}%)`);
+        }
+
+        return {
+            isValid: issues.length === 0,
+            issues
+        };
     }
 
     /**
@@ -482,5 +568,217 @@ export class MetricsService {
         return path.split('.').reduce((current, key) => {
             return current && current[key] !== undefined ? current[key] : undefined;
         }, obj);
+    }
+
+    /**
+     * Apply time-based aggregation (weekly, monthly, quarterly)
+     */
+    private applyTimeAggregation(data: any, options: DataAggregationOptions): any {
+        if (!data.dates || !data.values) return data;
+
+        const { timeGranularity, aggregationType = 'sum' } = options;
+        const aggregatedData: { [key: string]: { values: number[][], count: number } } = {};
+
+        // Group dates by time period
+        data.dates.forEach((date: string, index: number) => {
+            const key = this.getTimePeriodKey(date, timeGranularity!);
+
+            if (!aggregatedData[key]) {
+                aggregatedData[key] = { values: [], count: 0 };
+            }
+
+            data.values.forEach((series: any, seriesIndex: number) => {
+                if (!aggregatedData[key].values[seriesIndex]) {
+                    aggregatedData[key].values[seriesIndex] = [];
+                }
+                if (Array.isArray(aggregatedData[key].values[seriesIndex])) {
+                    (aggregatedData[key].values[seriesIndex] as number[]).push(series.values[index]);
+                }
+            });
+            aggregatedData[key].count++;
+        });
+
+        // Apply aggregation function
+        const aggregatedDates = Object.keys(aggregatedData).sort();
+        const aggregatedValues = data.values.map((series: any, seriesIndex: number) => ({
+            label: series.label,
+            values: aggregatedDates.map(key => {
+                const values = aggregatedData[key].values[seriesIndex] as number[] || [];
+                return this.applyAggregationFunction(values, aggregationType);
+            })
+        }));
+
+        return {
+            dates: aggregatedDates,
+            values: aggregatedValues
+        };
+    }
+
+    /**
+     * Apply statistical aggregation functions
+     */
+    private applyStatisticalAggregation(data: any, options: DataAggregationOptions): any {
+        if (!data.values || options.aggregationType === 'sum') return data;
+
+        const { aggregationType } = options;
+        const processedValues = data.values.map((series: any) => ({
+            label: series.label,
+            values: series.values.map((value: number) =>
+                this.applyAggregationFunction([value], aggregationType!))
+        }));
+
+        return { ...data, values: processedValues };
+    }
+
+    /**
+     * Add period-over-period comparisons
+     */
+    private async addPeriodComparisons(data: any, metric: string, dateRange: string): Promise<any> {
+        try {
+            // Calculate previous period
+            const previousPeriod = this.calculatePreviousPeriod(dateRange);
+            const previousData = await this.slice(metric, previousPeriod);
+
+            if (!previousData || !previousData.values) {
+                return data; // Return original if no comparison data
+            }
+
+            // Add comparison series
+            const comparisonValues = data.values.map((series: any, index: number) => {
+                const previousSeries = previousData.values[index];
+                if (!previousSeries) return series;
+
+                const changes = series.values.map((current: number, i: number) => {
+                    const previous = previousSeries.values[i];
+                    if (!previous || previous === 0) return 0;
+                    return ((current - previous) / previous) * 100;
+                });
+
+                return {
+                    label: `${series.label} (vs Previous Period)`,
+                    values: changes
+                };
+            });
+
+            return {
+                ...data,
+                values: [...data.values, ...comparisonValues]
+            };
+        } catch (error) {
+            console.warn('Failed to add period comparisons:', error);
+            return data;
+        }
+    }
+
+    /**
+     * Add percentage calculations (% of total)
+     */
+    private addPercentageCalculations(data: any): any {
+        if (!data.values || data.values.length === 0) return data;
+
+        const percentageValues = data.values.map((series: any) => {
+            const total = series.values.reduce((sum: number, val: number) => sum + (val || 0), 0);
+
+            if (total === 0) return series;
+
+            return {
+                label: `${series.label} (%)`,
+                values: series.values.map((val: number) =>
+                    total > 0 ? Math.round((val / total) * 100 * 100) / 100 : 0)
+            };
+        });
+
+        return {
+            ...data,
+            values: [...data.values, ...percentageValues]
+        };
+    }
+
+    /**
+     * Add moving average calculations
+     */
+    private addMovingAverage(data: any, periods: number): any {
+        if (!data.values || periods <= 1) return data;
+
+        const movingAverageValues = data.values.map((series: any) => ({
+            label: `${series.label} (${periods}-period MA)`,
+            values: series.values.map((_: any, index: number) => {
+                const start = Math.max(0, index - periods + 1);
+                const subset = series.values.slice(start, index + 1);
+                return subset.reduce((sum: number, val: number) => sum + (val || 0), 0) / subset.length;
+            })
+        }));
+
+        return {
+            ...data,
+            values: [...data.values, ...movingAverageValues]
+        };
+    }
+
+    /**
+     * Helper methods for aggregation
+     */
+    private getTimePeriodKey(date: string, granularity: string): string {
+        const d = new Date(date);
+
+        switch (granularity) {
+            case 'weekly':
+                const weekStart = new Date(d);
+                weekStart.setDate(d.getDate() - d.getDay());
+                return weekStart.toISOString().split('T')[0];
+
+            case 'monthly':
+                return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+
+            case 'quarterly':
+                const quarter = Math.floor(d.getMonth() / 3) + 1;
+                return `${d.getFullYear()}-Q${quarter}`;
+
+            default:
+                return date;
+        }
+    }
+
+    private applyAggregationFunction(values: number[], type: string): number {
+        const validValues = values.filter(v => v != null && !isNaN(v));
+        if (validValues.length === 0) return 0;
+
+        switch (type) {
+            case 'sum':
+                return validValues.reduce((sum, val) => sum + val, 0);
+            case 'average':
+                return validValues.reduce((sum, val) => sum + val, 0) / validValues.length;
+            case 'median':
+                const sorted = [...validValues].sort((a, b) => a - b);
+                const mid = Math.floor(sorted.length / 2);
+                return sorted.length % 2 === 0
+                    ? (sorted[mid - 1] + sorted[mid]) / 2
+                    : sorted[mid];
+            case 'min':
+                return Math.min(...validValues);
+            case 'max':
+                return Math.max(...validValues);
+            default:
+                return validValues[0] || 0;
+        }
+    }
+
+    private calculatePreviousPeriod(dateRange: string): string {
+        // Simple implementation - can be enhanced for more complex periods
+        if (dateRange.includes('-')) {
+            const parts = dateRange.split('-');
+            if (parts.length === 2) {
+                // Monthly: 2025-06 -> 2025-05
+                const year = parseInt(parts[0]);
+                const month = parseInt(parts[1]);
+                const prevMonth = month === 1 ? 12 : month - 1;
+                const prevYear = month === 1 ? year - 1 : year;
+                return `${prevYear}-${String(prevMonth).padStart(2, '0')}`;
+            }
+        } else {
+            // Yearly: 2025 -> 2024
+            return String(parseInt(dateRange) - 1);
+        }
+        return dateRange;
     }
 } 
