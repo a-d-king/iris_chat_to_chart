@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { OpenAiService } from './openai.service';
 import { MetricsService } from './metrics.service';
-import { DataAnalysisService, MetricInfo } from './data-analysis.service';
+import { MetricInfo } from './data-analysis.service';
 import { ReasoningService } from './reasoning.service';
 import { DashboardDto, DashboardChartDto } from './chat.dto';
 
@@ -21,7 +21,6 @@ export class DashboardService {
     constructor(
         private openAiService: OpenAiService,
         private metricsService: MetricsService,
-        private dataAnalysisService: DataAnalysisService,
         private reasoningService: ReasoningService
     ) { }
 
@@ -82,7 +81,7 @@ export class DashboardService {
 
         // Use centralized reasoning service for comprehensive analysis
         const analysis = this.reasoningService.analyzeAndRankMetrics(prompt, visualizableMetrics, maxCharts);
-        
+
         // Log quality issues if any
         if (analysis.qualityIssues.length > 0) {
             console.log('=== METRIC QUALITY ISSUES ===');
@@ -92,12 +91,9 @@ export class DashboardService {
             });
             console.log('=== END QUALITY ISSUES ===');
         }
-        
+
         return analysis.rankedMetrics.map(ranked => ranked.metric);
     }
-
-
-
 
     private async generateChartSpecs(request: DashboardDto, metrics: MetricInfo[], dataAnalysis: any): Promise<any[]> {
         const specs = [];
