@@ -624,9 +624,9 @@ export class DataAnalysisService {
         return bestMatch;
     }
 
-        /**
-     * Calculate business context boost for better metric matching
-     */
+    /**
+ * Calculate business context boost for better metric matching
+ */
     private calculateBusinessContextBoost(promptLower: string, metric: MetricInfo): number {
         const metricNameLower = metric.name.toLowerCase();
         let boost = 0;

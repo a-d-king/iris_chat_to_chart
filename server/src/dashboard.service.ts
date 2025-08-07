@@ -166,18 +166,18 @@ export class DashboardService {
             keywords.some(keyword => m.name.toLowerCase().includes(keyword))
         );
 
-                // For each context metric, find its strongest relationships
+        // For each context metric, find its strongest relationships
         for (const metric of contextMetrics) {
             const relationship = relationships.find((r: any) => r.primaryMetric === metric.name);
             if (relationship) {
                 // Add the primary metric
                 clusters.push(metric);
-                
+
                 // Add strongly related metrics (strength > 0.7)
                 const strongRelations = relationship.relatedMetrics
                     .filter((r: any) => r.strength > 0.7)
                     .slice(0, 2);
-                
+
                 for (const related of strongRelations) {
                     const relatedMetric = metrics.find((m: MetricInfo) => m.name === related.metric);
                     if (relatedMetric && !clusters.find(c => c.name === relatedMetric.name)) {
@@ -223,16 +223,16 @@ export class DashboardService {
             });
     }
 
-        /**
-     * Calculate business relevance score for a metric based on prompt context
-     */
+    /**
+ * Calculate business relevance score for a metric based on prompt context
+ */
     private calculateBusinessRelevance(metric: MetricInfo, prompt?: string): number {
         if (!prompt) return 0;
-        
+
         const promptLower = prompt.toLowerCase();
         const metricNameLower = metric.name.toLowerCase();
         let score = 0;
-        
+
         // Enhanced business domain mapping with context awareness
         const businessDomains = {
             'sales': {
@@ -271,21 +271,21 @@ export class DashboardService {
                 score: 3
             }
         };
-        
+
         // Calculate domain relevance scores
         const domainScores: { [domain: string]: number } = {};
-        
+
         for (const [domain, config] of Object.entries(businessDomains)) {
             let domainScore = 0;
-            
+
             // Check if prompt mentions this domain
             const promptHasDomain = config.keywords.some(keyword => promptLower.includes(keyword));
             const promptHasRelated = config.related.some(related => promptLower.includes(related));
-            
+
             // Check if metric belongs to this domain
             const metricHasDomain = config.keywords.some(keyword => metricNameLower.includes(keyword));
             const metricHasRelated = config.related.some(related => metricNameLower.includes(related));
-            
+
             if (promptHasDomain && metricHasDomain) {
                 // Direct domain match - highest score
                 domainScore = config.score;
@@ -299,13 +299,13 @@ export class DashboardService {
                 // Metric in domain but not mentioned in prompt - lower score
                 domainScore = config.score * 0.2;
             }
-            
+
             domainScores[domain] = domainScore;
         }
-        
+
         // Take the highest domain score
         score = Math.max(...Object.values(domainScores));
-        
+
         // Context-specific adjustments
         if (promptLower.includes('trend') || promptLower.includes('analysis') || promptLower.includes('over time')) {
             // Boost time series metrics for trend analysis
@@ -313,20 +313,20 @@ export class DashboardService {
                 score += 1;
             }
         }
-        
+
         if (promptLower.includes('comparison') || promptLower.includes('vs') || promptLower.includes('versus')) {
             // Boost categorical metrics for comparisons
             if (metric.hasGrouping) {
                 score += 1;
             }
         }
-        
+
         // Debug logging for troubleshooting
         if (score > 0 || metricNameLower.includes('cash')) {
-            console.log(`🔍 Business Relevance Debug - Metric: ${metric.name}, Prompt: "${prompt}", Score: ${score}, Domains:`, 
+            console.log(`🔍 Business Relevance Debug - Metric: ${metric.name}, Prompt: "${prompt}", Score: ${score}, Domains:`,
                 Object.entries(domainScores).filter(([_, s]) => s > 0).map(([d, s]) => `${d}:${s}`).join(', '));
         }
-        
+
         return Math.max(0, score);
     }
 
