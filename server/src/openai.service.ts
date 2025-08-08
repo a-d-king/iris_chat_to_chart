@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import OpenAI from 'openai';
 import { DataAnalysis } from './data-analysis.service';
+import { startTrace } from './observability/langfuse';
 
 const openai = new OpenAI();
 
@@ -68,6 +69,11 @@ export class OpenAiService {
      * Generate explicit step-by-step reasoning for chart selection
      */
     private async generateReasoning(prompt: string, dataAnalysis?: DataAnalysis) {
+        const trace = startTrace('openai.generateReasoning', {
+            prompt,
+            metrics: dataAnalysis?.availableMetrics?.length
+        });
+        const span = trace?.span({ name: 'openai.chat.completions', metadata: { model: 'gpt-4o' } });
         let reasoningPrompt = `You are a data visualization expert. Think step-by-step about this visualization request.
 
 USER REQUEST: "${prompt}"
@@ -158,6 +164,10 @@ Please provide your reasoning for each step clearly and explicitly.`;
         console.log(reasoning);
         console.log('=== END REASONING ===\n');
 
+        try {
+            (span as any)?.end({ output: reasoning });
+            (trace as any)?.end({ output: { reasoning } });
+        } catch { }
         return reasoning;
     }
 
@@ -165,6 +175,8 @@ Please provide your reasoning for each step clearly and explicitly.`;
      * Make final decision based on reasoning
      */
     private async makeReasonedDecision(prompt: string, dataAnalysis?: DataAnalysis, reasoning?: string) {
+        const trace = startTrace('openai.makeReasonedDecision', { prompt });
+        const span = trace?.span({ name: 'openai.chat.completions', metadata: { model: 'gpt-4o', tools: true } });
         let decisionPrompt = `Based on the following reasoning, create a precise chart specification.
 
 ORIGINAL REQUEST: "${prompt}"
@@ -206,9 +218,18 @@ Select the chart type, metric, and date range that best implements your reasonin
         if (toolCall?.function?.arguments) {
             const chartSpec = JSON.parse(toolCall.function.arguments);
             console.log('Chart decision based on reasoning:', chartSpec);
+            try {
+                (span as any)?.end({ output: chartSpec });
+                (trace as any)?.end({ output: { chartSpec } });
+            } catch { }
             return chartSpec;
         } else {
-            throw new Error('OpenAI did not return a valid tool call response');
+            const err = new Error('OpenAI did not return a valid tool call response');
+            try {
+                (span as any)?.end({ level: 'ERROR', statusMessage: String(err) });
+                (trace as any)?.end({ level: 'ERROR', statusMessage: String(err) });
+            } catch { }
+            throw err;
         }
     }
 
