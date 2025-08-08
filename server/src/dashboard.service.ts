@@ -4,6 +4,7 @@ import { MetricsService } from './metrics.service';
 import { MetricInfo } from './data-analysis.service';
 import { ReasoningService } from './reasoning.service';
 import { DashboardDto, DashboardChartDto } from './chat.dto';
+import { runDashboardGraph } from './dashboard.graph';
 
 interface DashboardResponse {
     dashboardId: string;
@@ -25,52 +26,14 @@ export class DashboardService {
     ) { }
 
     async generateDashboard(request: DashboardDto): Promise<DashboardResponse> {
-        const startTime = Date.now();
-        const dashboardId = this.generateDashboardId();
+        // Use LangGraph-based orchestration for dashboard generation
+        const result = await runDashboardGraph(request, {
+            openAiService: this.openAiService,
+            metricsService: this.metricsService,
+            reasoningService: this.reasoningService
+        });
 
-        // Get data analysis for context
-        const dataAnalysis = await this.metricsService.getDataAnalysis();
-
-        // Identify related metrics from the prompt
-        const relatedMetrics = await this.identifyRelatedMetrics(request.prompt, dataAnalysis, request.maxCharts);
-
-        // Generate chart specifications
-        const chartSpecs = await this.generateChartSpecs(request, relatedMetrics, dataAnalysis);
-
-        // Fetch data for each chart
-        const charts = await Promise.all(
-            chartSpecs.map(async (spec, index) => {
-                const data = await this.metricsService.slice(
-                    spec.metric,
-                    spec.dateRange,
-                    spec.groupBy
-                );
-
-                return {
-                    ...spec,
-                    id: `chart_${index + 1}`,
-                    data,
-                    row: Math.floor(index / 2) + 1,
-                    col: (index % 2) + 1,
-                    span: this.calculateChartSpan(spec.chartType, chartSpecs.length)
-                };
-            })
-        );
-
-        const responseTime = Date.now() - startTime;
-        const insights = request.generateInsights ?
-            await this.generateInsights(charts, request.prompt) : [];
-
-        return {
-            dashboardId,
-            charts,
-            metadata: {
-                totalCharts: charts.length,
-                responseTimeMs: responseTime,
-                suggestedInsights: insights
-            },
-            requestId: `dash_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-        };
+        return result as DashboardResponse;
     }
 
     private async identifyRelatedMetrics(prompt: string, dataAnalysis: any, maxCharts: number = 5): Promise<MetricInfo[]> {
