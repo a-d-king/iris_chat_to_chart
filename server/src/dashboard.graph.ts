@@ -140,6 +140,27 @@ export function createDashboardGraph(deps: DashboardGraphDeps) {
         let index = 0;
         for (const spec of state.chartSpecs) {
             const data = await metricsService.slice(spec.metric, spec.dateRange, spec.groupBy);
+            // Server-side logging of chart data used per dashboard chart
+            try {
+                const seriesLabels = Array.isArray((data as any)?.values)
+                    ? (data as any).values.map((s: any) => s.label)
+                    : [];
+                console.log('=== DASHBOARD CHART DATA USED ===');
+                console.log({
+                    chartId: `chart_${index + 1}`,
+                    chartType: spec.chartType,
+                    metric: spec.metric,
+                    dateRange: spec.dateRange,
+                    groupBy: spec.groupBy,
+                    points: (data as any)?.dates?.length || 0,
+                    series: seriesLabels,
+                    sample: {
+                        dates: (data as any)?.dates?.slice(0, 3),
+                        firstSeriesSample: (data as any)?.values?.[0]?.values?.slice(0, 3)
+                    }
+                });
+                console.log('=== END DASHBOARD CHART DATA ===');
+            } catch { }
             charts.push({
                 ...spec,
                 id: `chart_${index + 1}`,

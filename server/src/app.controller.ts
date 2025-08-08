@@ -75,6 +75,28 @@ export class AppController {
                 }
             );
 
+            // Log the data used for this chart (after requestId is available)
+            try {
+                const seriesLabels = Array.isArray((data as any)?.values)
+                    ? (data as any).values.map((s: any) => s.label)
+                    : [];
+                console.log('=== CHART DATA USED ===');
+                console.log({
+                    requestId,
+                    chartType: spec.chartType,
+                    metric: spec.metric,
+                    dateRange: finalDateRange,
+                    groupBy: spec.groupBy,
+                    points: (data as any)?.dates?.length || 0,
+                    series: seriesLabels,
+                    sample: {
+                        dates: (data as any)?.dates?.slice(0, 3),
+                        firstSeriesSample: (data as any)?.values?.[0]?.values?.slice(0, 3)
+                    }
+                });
+                console.log('=== END CHART DATA ===');
+            } catch (_) { }
+
             // Step 6: Return combined spec and data for the frontend from live Iris Finance API
             // 
             // DATA SHAPE SPECIFICATION:
