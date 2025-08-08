@@ -98,6 +98,21 @@ export interface ReasoningProcess {
 }
 
 /**
+ * Interfaces for joint metric and chart selection workflow
+ */
+export interface MetricChartSelection {
+    metric: MetricInfo;
+    chartType: ChartRanking['chartType'];
+    chartAnalysis: TopKChartsAnalysis;
+    reasoning: ReasoningProcess;
+}
+
+export interface MetricsAndChartsSelection {
+    intentAnalysis: IntentAnalysis;
+    selections: MetricChartSelection[];
+}
+
+/**
  * Service for providing transparent reasoning about chart and data selection decisions
  * Can be enabled/disabled via ENABLE_REASONING environment variable
  */
@@ -287,12 +302,12 @@ export class ReasoningService {
     private performIntentAnalysis(prompt: string): IntentAnalysis {
         const promptLower = prompt.toLowerCase();
         const words = promptLower.split(/\s+/);
-        
+
         // Handle negations and complex queries
         const preprocessedPrompt = this.preprocessComplexQuery(promptLower);
         const negationContext = this.analyzeNegations(promptLower);
         const temporalContext = this.analyzeTemporalPatterns(promptLower);
-        
+
         // Define intent patterns with semantic understanding
         const intentPatterns = {
             temporal_trend: {
@@ -339,28 +354,28 @@ export class ReasoningService {
 
         // Calculate intent scores with complex query handling
         const intentScores: { [key: string]: { score: number; matchedKeywords: string[]; matchedSignals: string[] } } = {};
-        
+
         for (const [intentType, pattern] of Object.entries(intentPatterns)) {
             // Use both original and preprocessed prompt for matching
-            const matchedKeywords = pattern.keywords.filter(keyword => 
+            const matchedKeywords = pattern.keywords.filter(keyword =>
                 preprocessedPrompt.includes(keyword) || promptLower.includes(keyword)
             );
-            const matchedSignals = pattern.semanticSignals.filter(signal => 
+            const matchedSignals = pattern.semanticSignals.filter(signal =>
                 words.some(word => word.includes(signal) || signal.includes(word))
             );
-            
+
             let score = 0;
             score += matchedKeywords.length * 0.8;
             score += matchedSignals.length * 0.6;
             score *= pattern.weight;
-            
+
             // Boost score for exact phrase matches
             pattern.keywords.forEach(keyword => {
                 if (preprocessedPrompt.includes(keyword)) {
                     score += 0.3;
                 }
             });
-            
+
             // Enhance temporal scoring based on temporal context
             if (intentType === 'temporal_trend' && temporalContext.timeframes.length > 0) {
                 score += temporalContext.timeframes.length * 0.4;
@@ -371,16 +386,16 @@ export class ReasoningService {
             if (intentType === 'temporal_trend' && temporalContext.periodicitySignals.length > 0) {
                 score += temporalContext.periodicitySignals.length * 0.3;
             }
-            
+
             // Apply negation adjustments
             if (negationContext.hasNegation && negationContext.modifiedIntent === intentType) {
                 score += 0.5; // Boost alternative intent suggested by negation analysis
             }
-            if (negationContext.hasNegation && intentType === 'temporal_trend' && 
+            if (negationContext.hasNegation && intentType === 'temporal_trend' &&
                 negationContext.negatedConcepts.some(concept => concept.includes('time'))) {
                 score *= 0.3; // Reduce temporal intent if time-related concepts are negated
             }
-            
+
             intentScores[intentType] = {
                 score,
                 matchedKeywords,
@@ -409,38 +424,38 @@ export class ReasoningService {
 
         // Analyze temporal signals using advanced temporal analysis
         const temporalSignals: TemporalSignal[] = [];
-        
+
         // Use temporal context analysis
         if (temporalContext.timeframes.length > 0 || promptLower.match(/trend|over time|growth|decline/)) {
-            temporalSignals.push({ 
-                type: 'trend', 
-                keywords: ['trend', 'growth', 'decline', ...temporalContext.timeframes], 
-                strength: Math.min(0.8 + temporalContext.timeframes.length * 0.1, 1.0) 
+            temporalSignals.push({
+                type: 'trend',
+                keywords: ['trend', 'growth', 'decline', ...temporalContext.timeframes],
+                strength: Math.min(0.8 + temporalContext.timeframes.length * 0.1, 1.0)
             });
         }
-        
+
         if (temporalContext.periodicitySignals.length > 0 || promptLower.match(/seasonal|monthly|quarterly|yearly/)) {
-            temporalSignals.push({ 
-                type: 'seasonality', 
-                keywords: [...temporalContext.periodicitySignals, 'seasonal', 'monthly', 'quarterly'], 
-                strength: Math.min(0.7 + temporalContext.periodicitySignals.length * 0.1, 1.0) 
+            temporalSignals.push({
+                type: 'seasonality',
+                keywords: [...temporalContext.periodicitySignals, 'seasonal', 'monthly', 'quarterly'],
+                strength: Math.min(0.7 + temporalContext.periodicitySignals.length * 0.1, 1.0)
             });
         }
-        
+
         if (temporalContext.temporalComparisons.length > 0 || promptLower.match(/compare.*period|vs.*month|versus.*quarter/)) {
-            temporalSignals.push({ 
-                type: 'period_comparison', 
-                keywords: [...temporalContext.temporalComparisons, 'compare period'], 
-                strength: Math.min(0.6 + temporalContext.temporalComparisons.length * 0.15, 1.0) 
+            temporalSignals.push({
+                type: 'period_comparison',
+                keywords: [...temporalContext.temporalComparisons, 'compare period'],
+                strength: Math.min(0.6 + temporalContext.temporalComparisons.length * 0.15, 1.0)
             });
         }
-        
+
         // Add growth analysis if specific growth patterns detected
         if (promptLower.match(/year\s+over\s+year|growth\s+rate|compound.*growth/)) {
-            temporalSignals.push({ 
-                type: 'growth_analysis', 
-                keywords: ['year over year', 'growth rate', 'compound growth'], 
-                strength: 0.75 
+            temporalSignals.push({
+                type: 'growth_analysis',
+                keywords: ['year over year', 'growth rate', 'compound growth'],
+                strength: 0.75
             });
         }
 
@@ -470,18 +485,18 @@ export class ReasoningService {
 
         // Calculate overall confidence with complex query adjustments
         let overallConfidence = primaryIntent.confidence;
-        
+
         // Boost confidence for clear temporal patterns
         if (temporalSignals.length > 0) overallConfidence += 0.1;
         if (temporalContext.timeframes.length > 1) overallConfidence += 0.05; // Multiple specific timeframes
         if (temporalContext.temporalComparisons.length > 0) overallConfidence += 0.08; // Clear temporal comparisons
-        
+
         // Boost confidence for comparison signals
         if (comparisonSignals.length > 0) overallConfidence += 0.1;
-        
+
         // Boost confidence for explicit metrics
         if (explicitMetrics.length > 0) overallConfidence += 0.15;
-        
+
         // Adjust for complex query characteristics
         if (negationContext.hasNegation) {
             if (negationContext.modifiedIntent && primaryIntent.type === negationContext.modifiedIntent) {
@@ -490,23 +505,23 @@ export class ReasoningService {
                 overallConfidence -= 0.05; // Slight penalty for handling negations
             }
         }
-        
+
         // Boost confidence for sophisticated temporal analysis
         const temporalStrength = temporalSignals.reduce((sum, signal) => sum + signal.strength, 0);
         if (temporalStrength > 1.5) overallConfidence += 0.05;
-        
+
         // Penalty for too many ambiguous patterns
         if (secondaryIntents.length > 2 && primaryIntent.confidence < 0.7) {
             overallConfidence -= 0.08;
         }
-        
+
         overallConfidence = Math.min(overallConfidence, 1.0);
 
         return {
             primaryIntent,
             secondaryIntents,
             confidence: overallConfidence,
-            reasoningFactors: sortedIntents.slice(0, 3).map(intent => 
+            reasoningFactors: sortedIntents.slice(0, 3).map(intent =>
                 `${intent.type}: ${Math.round(intent.confidence * 100)}%`
             ),
             temporalSignals,
@@ -527,14 +542,14 @@ export class ReasoningService {
             /(\w+)\s+vs\s+(\w+)/g,
             /(\w+)\s+versus\s+(\w+)/g
         ];
-        
+
         patterns.forEach(pattern => {
             let match;
             while ((match = pattern.exec(prompt)) !== null) {
                 entities.push(match[1], match[2]);
             }
         });
-        
+
         return [...new Set(entities)];
     }
 
@@ -548,7 +563,7 @@ export class ReasoningService {
             'growth', 'decline', 'performance', 'efficiency', 'productivity',
             'cash', 'balance', 'debt', 'assets', 'liabilities'
         ];
-        
+
         return metricPatterns.filter(metric => prompt.includes(metric));
     }
 
@@ -557,7 +572,7 @@ export class ReasoningService {
      */
     private identifyImplicitRequirements(prompt: string, primaryIntent: IntentType['type']): string[] {
         const requirements: string[] = [];
-        
+
         if (primaryIntent === 'temporal_trend') {
             requirements.push('time-series data required', 'trend visualization needed');
         }
@@ -570,14 +585,14 @@ export class ReasoningService {
         if (primaryIntent === 'performance_overview') {
             requirements.push('multiple metrics display', 'summary statistics');
         }
-        
+
         if (prompt.includes('monthly') || prompt.includes('quarterly')) {
             requirements.push('time-based aggregation');
         }
         if (prompt.includes('by') || prompt.includes('breakdown')) {
             requirements.push('dimensional grouping');
         }
-        
+
         return requirements;
     }
 
@@ -586,35 +601,35 @@ export class ReasoningService {
      */
     private preprocessComplexQuery(prompt: string): string {
         let processed = prompt;
-        
+
         // Handle conditional statements
         processed = processed.replace(/if\s+(.*?)\s+then\s+(.*?)(?:\s+else\s+(.*?))?/gi, (match, condition, thenPart, elsePart) => {
             // Extract the main intent from conditional statements
             return thenPart || condition;
         });
-        
+
         // Handle multiple clauses connected by conjunctions
         processed = processed.replace(/\b(and|but|however|although|while)\b/g, ' ');
-        
+
         // Resolve pronoun references
         processed = processed.replace(/\b(it|this|that|these|those)\b/g, '');
-        
+
         // Handle question words that might confuse intent detection
         processed = processed.replace(/^(what|how|when|where|why|which|who)\s+/i, '');
-        
+
         // Normalize comparative language
         processed = processed.replace(/\b(more|less|better|worse)\s+than\b/gi, 'compare');
         processed = processed.replace(/\b(higher|lower|greater|smaller)\s+than\b/gi, 'compare');
-        
+
         // Handle temporal references
         processed = processed.replace(/\b(last|previous|prior|past)\s+(month|quarter|year|week)\b/gi, 'historical period');
         processed = processed.replace(/\b(next|upcoming|future)\s+(month|quarter|year|week)\b/gi, 'future period');
         processed = processed.replace(/\b(this|current)\s+(month|quarter|year|week)\b/gi, 'current period');
-        
+
         // Handle vague language
         processed = processed.replace(/\b(kind of|sort of|maybe|perhaps|possibly|probably)\b/gi, '');
         processed = processed.replace(/\b(I want to see|show me|can you|could you|please)\b/gi, '');
-        
+
         return processed;
     }
 
@@ -627,10 +642,10 @@ export class ReasoningService {
             /\b(not|no|never|without|exclude|except|ignore)\s+(\w+(?:\s+\w+)*)/gi,
             /\b(don't|won't|can't|shouldn't)\s+(\w+(?:\s+\w+)*)/gi
         ];
-        
+
         const negatedConcepts: string[] = [];
         let hasNegation = false;
-        
+
         // Find negated concepts
         negationPatterns.forEach(pattern => {
             let match;
@@ -639,12 +654,12 @@ export class ReasoningService {
                 negatedConcepts.push(match[2]);
             }
         });
-        
+
         // Check for simple negation words
         if (negationWords.some(word => prompt.includes(word))) {
             hasNegation = true;
         }
-        
+
         // Determine how negation modifies intent
         let modifiedIntent: string | undefined;
         if (hasNegation) {
@@ -657,7 +672,7 @@ export class ReasoningService {
                 modifiedIntent = 'performance_overview';
             }
         }
-        
+
         return {
             hasNegation,
             negatedConcepts,
@@ -684,7 +699,7 @@ export class ReasoningService {
             /\b(last|this|next)\s+(week|month|quarter|year)\b/gi, // Relative time
             /\b(\d+)\s+(days?|weeks?|months?|quarters?|years?)\s+(ago|from\s+now)\b/gi // Relative periods
         ];
-        
+
         const timeframes: string[] = [];
         timeframePatterns.forEach(pattern => {
             let match;
@@ -692,13 +707,13 @@ export class ReasoningService {
                 timeframes.push(match[1] || match[0]);
             }
         });
-        
+
         // Detect temporal relationships
         const relationshipPatterns = [
             /\b(before|after|during|between|from|until|since|through)\b/gi,
             /\b(prior\s+to|following|preceding)\b/gi
         ];
-        
+
         const temporalRelationships: string[] = [];
         relationshipPatterns.forEach(pattern => {
             const matches = prompt.match(pattern);
@@ -706,14 +721,14 @@ export class ReasoningService {
                 temporalRelationships.push(...matches.map(m => m.toLowerCase()));
             }
         });
-        
+
         // Detect periodicity signals
         const periodicityPatterns = [
             /\b(daily|weekly|monthly|quarterly|yearly|annually)\b/gi,
             /\b(seasonal|cyclical|periodic|recurring)\b/gi,
             /\b(every\s+\w+)\b/gi
         ];
-        
+
         const periodicitySignals: string[] = [];
         periodicityPatterns.forEach(pattern => {
             const matches = prompt.match(pattern);
@@ -721,7 +736,7 @@ export class ReasoningService {
                 periodicitySignals.push(...matches.map(m => m.toLowerCase()));
             }
         });
-        
+
         // Detect temporal comparisons
         const comparisonPatterns = [
             /\b(year\s+over\s+year|month\s+over\s+month|quarter\s+over\s+quarter)\b/gi,
@@ -729,7 +744,7 @@ export class ReasoningService {
             /\b(vs\s+(last|previous|prior)\s+(month|quarter|year))\b/gi,
             /\b(same\s+period\s+(last|previous)\s+year)\b/gi
         ];
-        
+
         const temporalComparisons: string[] = [];
         comparisonPatterns.forEach(pattern => {
             const matches = prompt.match(pattern);
@@ -737,7 +752,7 @@ export class ReasoningService {
                 temporalComparisons.push(...matches.map(m => m.toLowerCase()));
             }
         });
-        
+
         return {
             timeframes,
             temporalRelationships,
@@ -750,30 +765,30 @@ export class ReasoningService {
      * Generate top K chart recommendations with systematic ranking
      */
     generateTopKCharts(
-        prompt: string, 
-        dataAnalysis: DataAnalysis, 
+        prompt: string,
+        dataAnalysis: DataAnalysis,
         k: number = 5,
         intentAnalysis?: IntentAnalysis
     ): TopKChartsAnalysis {
-        const availableCharts: ('line' | 'bar' | 'stacked-bar' | 'heatmap' | 'waterfall')[] = 
+        const availableCharts: ('line' | 'bar' | 'stacked-bar' | 'heatmap' | 'waterfall')[] =
             ['line', 'bar', 'stacked-bar', 'heatmap', 'waterfall'];
-        
+
         const rankings: ChartRanking[] = [];
-        
+
         // Score each chart type
         for (const chartType of availableCharts) {
             const ranking = this.scoreChartType(chartType, prompt, dataAnalysis, intentAnalysis);
             rankings.push(ranking);
         }
-        
+
         // Sort by score (descending)
         rankings.sort((a, b) => b.score - a.score);
-        
+
         // Get top K
         const topK = rankings.slice(0, k);
         const recommendedChart = rankings[0];
         const alternativeCharts = rankings.slice(1, 4); // Top 2-4 as alternatives
-        
+
         return {
             rankings,
             topK,
@@ -784,7 +799,7 @@ export class ReasoningService {
                 confidenceThreshold: 0.6,
                 scoringCriteria: [
                     'Data compatibility',
-                    'Intent alignment', 
+                    'Intent alignment',
                     'Visual effectiveness',
                     'Usability score'
                 ]
@@ -803,19 +818,19 @@ export class ReasoningService {
     ): ChartRanking {
         const strengths: string[] = [];
         const weaknesses: string[] = [];
-        
+
         // Score data compatibility (0-1)
         const dataCompatibility = this.scoreDataCompatibility(chartType, dataAnalysis);
-        
+
         // Score intent alignment (0-1)
         const intentAlignment = this.scoreIntentAlignment(chartType, prompt, intentAnalysis);
-        
+
         // Score visual effectiveness (0-1)
         const visualEffectiveness = this.scoreVisualEffectiveness(chartType, dataAnalysis);
-        
+
         // Score usability (0-1)
         const usabilityScore = this.scoreUsability(chartType, dataAnalysis);
-        
+
         // Calculate overall score (weighted average)
         const weights = {
             data: 0.3,
@@ -823,25 +838,25 @@ export class ReasoningService {
             visual: 0.2,
             usability: 0.15
         };
-        
+
         const score = (
             dataCompatibility * weights.data +
             intentAlignment * weights.intent +
             visualEffectiveness * weights.visual +
             usabilityScore * weights.usability
         );
-        
+
         // Generate reasoning and strengths/weaknesses
         const { reasoning, chartStrengths, chartWeaknesses } = this.generateChartReasoning(
             chartType, dataCompatibility, intentAlignment, visualEffectiveness, usabilityScore, dataAnalysis
         );
-        
+
         strengths.push(...chartStrengths);
         weaknesses.push(...chartWeaknesses);
-        
+
         // Calculate confidence based on score and data quality
         const confidence = Math.min(score + 0.1, 1.0) * (dataAnalysis.availableMetrics.length > 0 ? 1.0 : 0.8);
-        
+
         return {
             chartType,
             score,
@@ -862,43 +877,43 @@ export class ReasoningService {
     private scoreDataCompatibility(chartType: string, dataAnalysis: DataAnalysis): number {
         const metrics = dataAnalysis.availableMetrics;
         let score = 0.5; // Base score
-        
+
         const timeSeriesMetrics = metrics.filter(m => m.hasTimeData);
         const groupedMetrics = metrics.filter(m => m.hasGrouping);
         const scalarMetrics = metrics.filter(m => m.type === 'scalar');
-        
+
         switch (chartType) {
             case 'line':
                 if (timeSeriesMetrics.length > 0) score += 0.4;
                 if (timeSeriesMetrics.length > 2) score += 0.1; // Multiple time series
                 if (groupedMetrics.length === 0) score -= 0.2; // No grouping reduces line chart value
                 break;
-                
+
             case 'bar':
                 if (scalarMetrics.length > 0 || groupedMetrics.length > 0) score += 0.3;
                 if (groupedMetrics.some(m => (m.groupingDimensions?.length || 0) <= 8)) score += 0.2;
                 if (scalarMetrics.length > 5) score -= 0.1; // Too many scalars for simple bar
                 break;
-                
+
             case 'stacked-bar':
                 if (groupedMetrics.length > 0) score += 0.4;
                 if (groupedMetrics.some(m => (m.groupingDimensions?.length || 0) >= 2 && (m.groupingDimensions?.length || 0) <= 6)) score += 0.2;
                 if (groupedMetrics.some(m => (m.groupingDimensions?.length || 0) > 8)) score -= 0.3; // Too many categories
                 break;
-                
+
             case 'heatmap':
                 if (groupedMetrics.length > 0 && timeSeriesMetrics.length > 0) score += 0.3;
                 if (groupedMetrics.some(m => (m.groupingDimensions?.length || 0) > 3)) score += 0.2;
                 if (metrics.length < 3) score -= 0.2; // Not enough data for heatmap
                 break;
-                
+
             case 'waterfall':
                 if (timeSeriesMetrics.length > 0) score += 0.2;
                 if (metrics.some(m => m.name.toLowerCase().includes('change') || m.name.toLowerCase().includes('delta'))) score += 0.3;
                 if (scalarMetrics.length > 0) score += 0.1;
                 break;
         }
-        
+
         return Math.max(0, Math.min(1, score));
     }
 
@@ -908,36 +923,36 @@ export class ReasoningService {
     private scoreIntentAlignment(chartType: string, prompt: string, intentAnalysis?: IntentAnalysis): number {
         let score = 0.5; // Base score
         const promptLower = prompt.toLowerCase();
-        
+
         // Use intentAnalysis if available
         if (intentAnalysis) {
             const primaryIntent = intentAnalysis.primaryIntent.type;
-            
+
             switch (chartType) {
                 case 'line':
                     if (primaryIntent === 'temporal_trend') score += 0.4;
                     if (intentAnalysis.temporalSignals.some(s => s.type === 'trend')) score += 0.2;
                     if (primaryIntent === 'categorical_comparison') score -= 0.1;
                     break;
-                    
+
                 case 'bar':
                     if (primaryIntent === 'categorical_comparison') score += 0.4;
                     if (primaryIntent === 'performance_overview') score += 0.2;
                     if (intentAnalysis.comparisonSignals.length > 0) score += 0.2;
                     break;
-                    
+
                 case 'stacked-bar':
                     if (primaryIntent === 'compositional_breakdown') score += 0.4;
                     if (primaryIntent === 'categorical_comparison') score += 0.2;
                     if (intentAnalysis.aggregationLevel === 'detailed') score += 0.1;
                     break;
-                    
+
                 case 'heatmap':
                     if (primaryIntent === 'correlation_analysis') score += 0.4;
                     if (primaryIntent === 'anomaly_detection') score += 0.3;
                     if (intentAnalysis.aggregationLevel === 'detailed') score += 0.1;
                     break;
-                    
+
                 case 'waterfall':
                     if (primaryIntent === 'temporal_trend' && intentAnalysis.temporalSignals.some(s => s.type === 'growth_analysis')) score += 0.3;
                     if (promptLower.includes('impact') || promptLower.includes('change')) score += 0.2;
@@ -963,7 +978,7 @@ export class ReasoningService {
                     break;
             }
         }
-        
+
         return Math.max(0, Math.min(1, score));
     }
 
@@ -973,40 +988,40 @@ export class ReasoningService {
     private scoreVisualEffectiveness(chartType: string, dataAnalysis: DataAnalysis): number {
         let score = 0.6; // Base effectiveness score
         const metrics = dataAnalysis.availableMetrics;
-        
+
         switch (chartType) {
             case 'line':
                 // Lines are excellent for trends but poor for categories without time
                 if (metrics.some(m => m.hasTimeData)) score += 0.3;
                 if (metrics.filter(m => m.hasTimeData).length > 1) score += 0.1; // Multiple trends
                 break;
-                
+
             case 'bar':
                 // Bars are versatile and generally effective
                 score += 0.2;
                 if (metrics.some(m => m.hasGrouping && (m.groupingDimensions?.length || 0) <= 10)) score += 0.1;
                 break;
-                
+
             case 'stacked-bar':
                 // Stacked bars excellent for composition but can be cluttered
                 if (metrics.some(m => m.hasGrouping && (m.groupingDimensions?.length || 0) >= 2)) score += 0.2;
                 if (metrics.some(m => (m.groupingDimensions?.length || 0) > 6)) score -= 0.2; // Too cluttered
                 break;
-                
+
             case 'heatmap':
                 // Heatmaps great for patterns but need sufficient data
                 if (metrics.length >= 3) score += 0.2;
                 if (metrics.some(m => m.hasGrouping && m.hasTimeData)) score += 0.2;
                 if (metrics.length < 2) score -= 0.3; // Insufficient for heatmap
                 break;
-                
+
             case 'waterfall':
                 // Waterfalls are specialized but very effective for the right data
                 if (metrics.some(m => m.name.toLowerCase().includes('change'))) score += 0.3;
                 else score -= 0.1; // Less effective without change data
                 break;
         }
-        
+
         return Math.max(0, Math.min(1, score));
     }
 
@@ -1015,7 +1030,7 @@ export class ReasoningService {
      */
     private scoreUsability(chartType: string, dataAnalysis: DataAnalysis): number {
         let score = 0.7; // Base usability score
-        
+
         switch (chartType) {
             case 'line':
                 score += 0.2; // Generally easy to read
@@ -1036,7 +1051,7 @@ export class ReasoningService {
                 score += 0.0; // Specialized but clear when appropriate
                 break;
         }
-        
+
         return Math.max(0, Math.min(1, score));
     }
 
@@ -1053,9 +1068,9 @@ export class ReasoningService {
     ): { reasoning: string; chartStrengths: string[]; chartWeaknesses: string[] } {
         const strengths: string[] = [];
         const weaknesses: string[] = [];
-        
+
         let reasoning = `${chartType.charAt(0).toUpperCase() + chartType.slice(1)} chart analysis: `;
-        
+
         // Data compatibility reasoning
         if (dataCompatibility > 0.8) {
             reasoning += 'Excellent data compatibility. ';
@@ -1067,7 +1082,7 @@ export class ReasoningService {
             reasoning += 'Limited data compatibility. ';
             weaknesses.push('Data structure not optimal for this chart type');
         }
-        
+
         // Intent alignment reasoning
         if (intentAlignment > 0.8) {
             reasoning += 'Strong alignment with user intent. ';
@@ -1078,21 +1093,21 @@ export class ReasoningService {
             reasoning += 'Weak intent alignment. ';
             weaknesses.push('Does not strongly address user intent');
         }
-        
+
         // Visual effectiveness reasoning
         if (visualEffectiveness > 0.8) {
             strengths.push('Highly effective visualization');
         } else if (visualEffectiveness < 0.5) {
             weaknesses.push('Limited visual effectiveness for this data');
         }
-        
+
         // Usability reasoning
         if (usabilityScore > 0.8) {
             strengths.push('Easy to interpret and understand');
         } else if (usabilityScore < 0.6) {
             weaknesses.push('May require more interpretation');
         }
-        
+
         // Chart-specific strengths and weaknesses
         switch (chartType) {
             case 'line':
@@ -1120,7 +1135,7 @@ export class ReasoningService {
                 weaknesses.push('Specialized use case - not suitable for all data');
                 break;
         }
-        
+
         return {
             reasoning: reasoning.trim(),
             chartStrengths: strengths,
@@ -1191,33 +1206,33 @@ export class ReasoningService {
     ): ReasoningStep {
         // Generate comprehensive chart rankings
         const chartRankings = this.generateTopKCharts(prompt, dataAnalysis, 5);
-        
+
         const factors: string[] = [];
         let reasoning = `Advanced chart selection analysis completed. `;
 
         // Find the selected chart in rankings
         const selectedChartRanking = chartRankings.rankings.find(r => r.chartType === selectedChartType);
         const selectedIndex = chartRankings.rankings.findIndex(r => r.chartType === selectedChartType);
-        
+
         if (selectedChartRanking) {
             reasoning += `${selectedChartType} chart ranked #${selectedIndex + 1} out of ${chartRankings.rankings.length} options. `;
-            
+
             // Add score breakdown
             factors.push(`Overall score: ${Math.round(selectedChartRanking.score * 100)}%`);
             factors.push(`Data compatibility: ${Math.round(selectedChartRanking.dataCompatibility * 100)}%`);
             factors.push(`Intent alignment: ${Math.round(selectedChartRanking.intentAlignment * 100)}%`);
             factors.push(`Visual effectiveness: ${Math.round(selectedChartRanking.visualEffectiveness * 100)}%`);
             factors.push(`Usability: ${Math.round(selectedChartRanking.usabilityScore * 100)}%`);
-            
+
             // Add strengths
             if (selectedChartRanking.strengths.length > 0) {
                 factors.push(`Strengths: ${selectedChartRanking.strengths.join(', ')}`);
                 reasoning += `Key strengths: ${selectedChartRanking.strengths.slice(0, 2).join(' and ')}. `;
             }
-            
+
             // Add reasoning from detailed analysis
             reasoning += selectedChartRanking.reasoning + ' ';
-            
+
             // Explain ranking position
             if (selectedIndex === 0) {
                 reasoning += 'This was the top-ranked option. ';
@@ -1389,20 +1404,20 @@ export class ReasoningService {
     } {
         // Perform intent analysis
         const intentAnalysis = this.performIntentAnalysis(prompt);
-        
+
         // Score all metrics
         const scoredMetrics = this.scoreMetricsForRelevance(prompt, availableMetrics, intentAnalysis);
-        
+
         // Apply relationship analysis
         const enhancedMetrics = this.applyMetricRelationships(scoredMetrics);
-        
+
         // Analyze data quality
         const qualityAnalysis = enhancedMetrics.map(scored => ({
             metric: scored.metric,
             quality: this.analyzeMetricDataQuality(scored.metric),
             scored
         }));
-        
+
         // Extract quality issues
         const qualityIssues = qualityAnalysis
             .filter(qa => qa.quality.issues.length > 0)
@@ -1411,13 +1426,13 @@ export class ReasoningService {
                 issues: qa.quality.issues,
                 severity: qa.quality.severity
             }));
-        
+
         // Refine selection based on quality
         const refinedMetrics = qualityAnalysis
             .map(qa => {
                 let adjustedScore = qa.scored.score;
                 const newReasons = [...qa.scored.reasons];
-                
+
                 // Adjust score based on quality
                 if (qa.quality.severity === 'high') {
                     adjustedScore *= 0.7;
@@ -1426,7 +1441,7 @@ export class ReasoningService {
                     adjustedScore *= 0.9;
                     newReasons.push(`Minor quality issues: ${qa.quality.issues.join(', ')}`);
                 }
-                
+
                 return {
                     metric: qa.metric,
                     score: adjustedScore,
@@ -1435,7 +1450,7 @@ export class ReasoningService {
             })
             .sort((a, b) => b.score - a.score)
             .slice(0, maxMetrics);
-        
+
         return {
             rankedMetrics: refinedMetrics,
             qualityIssues,
@@ -1453,24 +1468,24 @@ export class ReasoningService {
     ): { metric: MetricInfo; score: number; reasons: string[] }[] {
         const promptLower = prompt.toLowerCase();
         const promptWords = promptLower.split(/\s+/);
-        
+
         return metrics.map(metric => {
             let score = 0;
             const reasons: string[] = [];
-            
+
             const metricName = metric.name.toLowerCase();
             const metricWords = metricName.split(/[._\s]+/);
-            
+
             // 1. Direct name matching
             if (promptLower.includes(metricName)) {
                 score += 2.0;
                 reasons.push('Direct name match');
             }
-            
+
             // 2. Word-level matching with semantic similarity
             for (const promptWord of promptWords) {
                 if (promptWord.length < 3) continue;
-                
+
                 for (const metricWord of metricWords) {
                     if (promptWord === metricWord) {
                         score += 1.5;
@@ -1487,21 +1502,21 @@ export class ReasoningService {
                     }
                 }
             }
-            
+
             // 3. Intent-based boosting
             const intentBoost = this.calculateIntentBasedBoost(metric, intentAnalysis);
             score += intentBoost.score;
             if (intentBoost.reasons.length > 0) {
                 reasons.push(...intentBoost.reasons);
             }
-            
+
             // 4. Data structure quality
             const structureBoost = this.calculateDataStructureBoost(metric);
             score += structureBoost.score;
             if (structureBoost.reasons.length > 0) {
                 reasons.push(...structureBoost.reasons);
             }
-            
+
             return { metric, score, reasons };
         });
     }
@@ -1519,24 +1534,24 @@ export class ReasoningService {
             temporal: ['monthly', 'quarterly', 'yearly', 'period', 'time'],
             channels: ['channel', 'connector', 'source', 'platform']
         };
-        
+
         // Find shared semantic groups
         for (const [groupName, terms] of Object.entries(semanticGroups)) {
             const word1InGroup = terms.some(term => word1.includes(term) || term.includes(word1));
             const word2InGroup = terms.some(term => word2.includes(term) || term.includes(word2));
-            
+
             if (word1InGroup && word2InGroup) {
                 return 0.7; // Strong semantic similarity
             }
         }
-        
+
         // String similarity fallback
         const maxLen = Math.max(word1.length, word2.length);
         if (maxLen < 3) return 0;
-        
+
         const editDistance = this.levenshteinDistance(word1, word2);
         const similarity = 1 - (editDistance / maxLen);
-        
+
         return similarity > 0.7 ? similarity * 0.4 : 0;
     }
 
@@ -1545,20 +1560,20 @@ export class ReasoningService {
      */
     private levenshteinDistance(s1: string, s2: string): number {
         const dp = Array(s2.length + 1).fill(null).map(() => Array(s1.length + 1).fill(0));
-        
+
         for (let i = 0; i <= s1.length; i++) dp[0][i] = i;
         for (let j = 0; j <= s2.length; j++) dp[j][0] = j;
-        
+
         for (let j = 1; j <= s2.length; j++) {
             for (let i = 1; i <= s1.length; i++) {
-                if (s1[i-1] === s2[j-1]) {
-                    dp[j][i] = dp[j-1][i-1];
+                if (s1[i - 1] === s2[j - 1]) {
+                    dp[j][i] = dp[j - 1][i - 1];
                 } else {
-                    dp[j][i] = Math.min(dp[j-1][i-1], dp[j][i-1], dp[j-1][i]) + 1;
+                    dp[j][i] = Math.min(dp[j - 1][i - 1], dp[j][i - 1], dp[j - 1][i]) + 1;
                 }
             }
         }
-        
+
         return dp[s2.length][s1.length];
     }
 
@@ -1566,20 +1581,20 @@ export class ReasoningService {
      * Calculate intent-based metric boosting
      */
     private calculateIntentBasedBoost(
-        metric: MetricInfo, 
+        metric: MetricInfo,
         intentAnalysis: IntentAnalysis
     ): { score: number; reasons: string[] } {
         let score = 0;
         const reasons: string[] = [];
-        
+
         const primaryIntent = intentAnalysis.primaryIntent.type;
-        
+
         // Temporal intent boosting
         if (primaryIntent === 'temporal_trend' && metric.hasTimeData) {
             score += 1.0;
             reasons.push('Perfect for temporal analysis');
         }
-        
+
         // Comparison intent boosting
         if (primaryIntent === 'categorical_comparison' && metric.hasGrouping) {
             const categories = metric.groupingDimensions?.length || 0;
@@ -1588,7 +1603,7 @@ export class ReasoningService {
                 reasons.push('Good for categorical comparison');
             }
         }
-        
+
         // Overview intent boosting
         if (primaryIntent === 'performance_overview') {
             if (metric.name.match(/revenue|sales|profit|customer|order/i)) {
@@ -1596,7 +1611,7 @@ export class ReasoningService {
                 reasons.push('Key business metric');
             }
         }
-        
+
         return { score, reasons };
     }
 
@@ -1606,17 +1621,17 @@ export class ReasoningService {
     private calculateDataStructureBoost(metric: MetricInfo): { score: number; reasons: string[] } {
         let score = 0;
         const reasons: string[] = [];
-        
+
         if (metric.hasTimeData && metric.hasGrouping) {
             score += 0.3;
             reasons.push('Rich data structure');
         }
-        
+
         if (metric.valueType === 'currency' || metric.valueType === 'percentage') {
             score += 0.2;
             reasons.push('Well-defined value type');
         }
-        
+
         return { score, reasons };
     }
 
@@ -1627,21 +1642,21 @@ export class ReasoningService {
         scoredMetrics: { metric: MetricInfo; score: number; reasons: string[] }[]
     ): { metric: MetricInfo; score: number; reasons: string[] }[] {
         const topMetrics = scoredMetrics.slice(0, 3);
-        
+
         return scoredMetrics.map(scored => {
             let relationshipBoost = 0;
             const newReasons = [...scored.reasons];
-            
+
             for (const topMetric of topMetrics) {
                 if (scored.metric.name === topMetric.metric.name) continue;
-                
+
                 const relationship = this.analyzeMetricRelationship(scored.metric, topMetric.metric);
                 if (relationship.score > 0) {
                     relationshipBoost += relationship.score * 0.5; // Scale down relationship boost
                     newReasons.push(`Related to ${topMetric.metric.name}: ${relationship.type}`);
                 }
             }
-            
+
             return {
                 ...scored,
                 score: scored.score + relationshipBoost,
@@ -1656,36 +1671,36 @@ export class ReasoningService {
     private analyzeMetricRelationship(metric1: MetricInfo, metric2: MetricInfo): { score: number; type: string } {
         const name1 = metric1.name.toLowerCase();
         const name2 = metric2.name.toLowerCase();
-        
+
         // Domain relationships
         const domains = {
             sales: ['sales', 'revenue', 'orders'],
             financial: ['profit', 'margin', 'cost', 'cash'],
             customer: ['customer', 'user', 'client']
         };
-        
+
         for (const [domain, keywords] of Object.entries(domains)) {
             const metric1InDomain = keywords.some(k => name1.includes(k));
             const metric2InDomain = keywords.some(k => name2.includes(k));
-            
+
             if (metric1InDomain && metric2InDomain) {
                 return { score: 0.5, type: `Same ${domain} domain` };
             }
         }
-        
+
         // Complementary relationships
-        if ((name1.includes('gross') && name2.includes('net')) || 
+        if ((name1.includes('gross') && name2.includes('net')) ||
             (name2.includes('gross') && name1.includes('net'))) {
             return { score: 0.7, type: 'Complementary metrics' };
         }
-        
+
         return { score: 0, type: 'No relationship' };
     }
 
     /**
      * Analyze metric data quality
      */
-    analyzeMetricDataQuality(metric: MetricInfo): { 
+    analyzeMetricDataQuality(metric: MetricInfo): {
         issues: string[];
         severity: 'low' | 'medium' | 'high';
         recommendations: string[];
@@ -1693,7 +1708,7 @@ export class ReasoningService {
         const issues: string[] = [];
         const recommendations: string[] = [];
         let severity: 'low' | 'medium' | 'high' = 'low';
-        
+
         // Check grouping quality
         if (metric.hasGrouping) {
             const categoryCount = metric.groupingDimensions?.length || 0;
@@ -1707,30 +1722,30 @@ export class ReasoningService {
                 issues.push('Too many categories');
                 severity = 'medium';
             }
-            
+
             // Check for unknown categories
             const unknownCount = metric.groupingDimensions?.filter(dim =>
                 dim.toLowerCase().includes('unknown') || dim.toLowerCase().includes('undefined')
             ).length || 0;
-            
+
             if (unknownCount > categoryCount * 0.3) {
                 issues.push('High proportion of unknown categories');
                 severity = severity === 'high' ? 'high' : 'medium';
             }
         }
-        
+
         // Check value type
         if (metric.valueType === 'generic') {
             issues.push('Generic value type');
             if (severity === 'low') severity = 'low';
         }
-        
+
         // Check for problematic names
         if (metric.name.toLowerCase().includes('test') || metric.name.toLowerCase().includes('debug')) {
             issues.push('Test/debug metric');
             severity = 'high';
         }
-        
+
         return { issues, severity, recommendations };
     }
 
@@ -1771,5 +1786,62 @@ export class ReasoningService {
         console.log(`Selected Metric: ${reasoning.summary.selectedMetric}`);
         console.log(`Key Factors: ${reasoning.summary.keyFactors.join(', ')}`);
         console.log('=== END REASONING ===\n');
+    }
+
+    /**
+     * Public helper: select top metrics and for each, select the best chart using shared intent
+     * Returns selections along with full reasoning per metric-chart pair
+     */
+    selectMetricsAndCharts(
+        prompt: string,
+        dataAnalysis: DataAnalysis,
+        options?: { maxMetrics?: number; topKCharts?: number; dateRange?: string }
+    ): MetricsAndChartsSelection {
+        const maxMetrics = options?.maxMetrics ?? 3;
+        const topKCharts = options?.topKCharts ?? 5;
+        const dateRange = options?.dateRange;
+
+        const metricResults = this.analyzeAndRankMetrics(
+            prompt,
+            dataAnalysis.availableMetrics,
+            maxMetrics
+        );
+
+        const intentAnalysis = metricResults.intentAnalysis;
+
+        const selections: MetricChartSelection[] = metricResults.rankedMetrics.map(({ metric }) => {
+            // Create a per-metric view of available data to score chart compatibility accurately
+            const filteredDataAnalysis: DataAnalysis = {
+                ...dataAnalysis,
+                availableMetrics: [metric]
+            };
+
+            const chartAnalysis = this.generateTopKCharts(
+                prompt,
+                filteredDataAnalysis,
+                topKCharts,
+                intentAnalysis
+            );
+
+            const chartType = chartAnalysis.recommendedChart.chartType;
+
+            const reasoning = this.generateReasoning(prompt, filteredDataAnalysis, {
+                chartType,
+                metric: metric.name,
+                dateRange
+            });
+
+            return {
+                metric,
+                chartType,
+                chartAnalysis,
+                reasoning
+            };
+        });
+
+        return {
+            intentAnalysis,
+            selections
+        };
     }
 } 

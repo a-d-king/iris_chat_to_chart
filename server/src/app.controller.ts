@@ -5,6 +5,7 @@ import { MetricsService } from './metrics.service';
 import { AuditService } from './audit.service';
 import { DashboardService } from './dashboard.service';
 import { ReasoningService } from './reasoning.service';
+import { startTrace } from './observability/langfuse';
 
 /**
  * Main application controller
@@ -29,6 +30,7 @@ export class AppController {
      */
     @Post('chat')
     async chat(@Body(new ValidationPipe()) body: ChatDto) {
+        const trace = startTrace('endpoint.chat', { body });
         const startTime = Date.now();
 
         try {
@@ -73,6 +75,28 @@ export class AppController {
                 }
             );
 
+            // Log the data used for this chart (after requestId is available)
+            try {
+                const seriesLabels = Array.isArray((data as any)?.values)
+                    ? (data as any).values.map((s: any) => s.label)
+                    : [];
+                console.log('=== CHART DATA USED ===');
+                console.log({
+                    requestId,
+                    chartType: spec.chartType,
+                    metric: spec.metric,
+                    dateRange: finalDateRange,
+                    groupBy: spec.groupBy,
+                    points: (data as any)?.dates?.length || 0,
+                    series: seriesLabels,
+                    sample: {
+                        dates: (data as any)?.dates?.slice(0, 3),
+                        firstSeriesSample: (data as any)?.values?.[0]?.values?.slice(0, 3)
+                    }
+                });
+                console.log('=== END CHART DATA ===');
+            } catch (_) { }
+
             // Step 6: Return combined spec and data for the frontend from live Iris Finance API
             // 
             // DATA SHAPE SPECIFICATION:
@@ -98,7 +122,7 @@ export class AppController {
             //     suggestedChartTypes: string[]    // Array of suggested chart types
             //   }
             // }
-            return {
+            const result = {
                 chartType: spec.chartType,
                 metric: spec.metric,
                 groupBy: spec.groupBy,
@@ -116,7 +140,10 @@ export class AppController {
                     aiReasoning: spec.aiReasoning
                 }
             };
+            try { (trace as any)?.end({ output: { chartType: result.chartType, metric: result.metric } }); } catch { }
+            return result;
         } catch (error) {
+            try { (trace as any)?.end({ level: 'ERROR', statusMessage: String(error) }); } catch { }
             const responseTime = Date.now() - startTime;
             const errorMessage = error instanceof Error ? error.message : String(error);
 
@@ -180,6 +207,7 @@ export class AppController {
      */
     @Post('dashboard')
     async generateDashboard(@Body(new ValidationPipe()) body: DashboardDto) {
+        const trace = startTrace('endpoint.dashboard', { body });
         const startTime = Date.now();
 
         try {
@@ -198,12 +226,15 @@ export class AppController {
                 }
             );
 
-            return {
+            const response = {
                 ...result,
                 requestId,
                 originalPrompt: body.prompt
             };
+            try { (trace as any)?.end({ output: { charts: result.charts?.length ?? 0 } }); } catch { }
+            return response;
         } catch (error) {
+            try { (trace as any)?.end({ level: 'ERROR', statusMessage: String(error) }); } catch { }
             console.error('Error generating dashboard:', error);
             throw new Error('Failed to generate dashboard');
         }
