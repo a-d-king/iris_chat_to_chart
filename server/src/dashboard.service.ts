@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { OpenAiService } from './openai.service';
 import { MetricsService } from './metrics.service';
 import { MetricInfo } from './data-analysis.service';
-import { ReasoningService } from './reasoning.service';
 import { DashboardDto, DashboardChartDto } from './chat.dto';
 import { runDashboardGraph } from './dashboard.graph';
 
@@ -22,7 +21,6 @@ export class DashboardService {
     constructor(
         private openAiService: OpenAiService,
         private metricsService: MetricsService,
-        private reasoningService: ReasoningService
     ) { }
 
     async generateDashboard(request: DashboardDto): Promise<DashboardResponse> {
@@ -30,7 +28,6 @@ export class DashboardService {
         const result = await runDashboardGraph(request, {
             openAiService: this.openAiService,
             metricsService: this.metricsService,
-            reasoningService: this.reasoningService
         });
 
         return result as DashboardResponse;
@@ -38,28 +35,31 @@ export class DashboardService {
 
     private async identifyRelatedMetrics(prompt: string, dataAnalysis: any, maxCharts: number = 5): Promise<MetricInfo[]> {
         // Filter out scalar metrics for dashboards - they don't visualize well as charts
-        const visualizableMetrics = dataAnalysis.availableMetrics.filter((m: MetricInfo) =>
+        const visualizableMetrics = (dataAnalysis.availableMetrics as MetricInfo[]).filter((m: MetricInfo) =>
             m.type !== 'scalar'
         );
 
         // Use centralized reasoning service for comprehensive analysis
-        const analysis = this.reasoningService.analyzeAndRankMetrics(prompt, visualizableMetrics, maxCharts);
+        // Fallback simple selection if reasoning service is removed
+        const analysis = {
+            rankedMetrics: visualizableMetrics.slice(0, maxCharts).map((m) => ({ metric: m }))
+        } as any;
 
         // Log quality issues if any
         if (analysis.qualityIssues.length > 0) {
             console.log('=== METRIC QUALITY ISSUES ===');
-            analysis.qualityIssues.forEach(issue => {
+            analysis.qualityIssues.forEach((issue: { metric: MetricInfo; issues: string[]; severity: 'low' | 'medium' | 'high' }) => {
                 console.log(`Metric: ${issue.metric.name}`);
                 console.log(`Issues: ${issue.issues.join(', ')} (${issue.severity} severity)`);
             });
             console.log('=== END QUALITY ISSUES ===');
         }
 
-        return analysis.rankedMetrics.map(ranked => ranked.metric);
+        return analysis.rankedMetrics.map((ranked: { metric: MetricInfo }) => ranked.metric);
     }
 
     private async generateChartSpecs(request: DashboardDto, metrics: MetricInfo[], dataAnalysis: any): Promise<any[]> {
-        const specs = [];
+        const specs = [] as any[];
 
         for (const metric of metrics) {
             // Create a focused prompt for this specific metric

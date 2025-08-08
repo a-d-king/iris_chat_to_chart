@@ -2,13 +2,11 @@ import { START, END, StateGraph, Annotation } from "@langchain/langgraph";
 import { DashboardDto, DashboardChartDto } from "./chat.dto";
 import { OpenAiService } from "./openai.service";
 import { MetricsService } from "./metrics.service";
-import { ReasoningService } from "./reasoning.service";
 import { MetricInfo } from "./data-analysis.service";
 
 export type DashboardGraphDeps = {
     openAiService: OpenAiService;
     metricsService: MetricsService;
-    reasoningService: ReasoningService;
 };
 
 type DashboardState = typeof DashboardAnnotation.State;
@@ -90,7 +88,7 @@ function basicInsights(charts: DashboardChartDto[]): string[] {
 }
 
 export function createDashboardGraph(deps: DashboardGraphDeps) {
-    const { openAiService, metricsService, reasoningService } = deps;
+    const { openAiService, metricsService } = deps;
 
     const initNode = async (state: DashboardState) => {
         return {
@@ -108,8 +106,9 @@ export function createDashboardGraph(deps: DashboardGraphDeps) {
         // Exclude scalar metrics for visualization
         const visualizable = state.dataAnalysis.availableMetrics.filter((m: MetricInfo) => m.type !== 'scalar');
         const maxCharts = state.maxCharts ?? 5;
-        const analysis = reasoningService.analyzeAndRankMetrics(state.prompt, visualizable, maxCharts);
-        return { relatedMetrics: analysis.rankedMetrics.map((r) => r.metric) };
+        // Simple fallback: pick first N metrics deterministically
+        const related = visualizable.slice(0, maxCharts);
+        return { relatedMetrics: related };
     };
 
     const generateSpecsNode = async (state: DashboardState) => {

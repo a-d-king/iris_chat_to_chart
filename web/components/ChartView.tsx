@@ -398,7 +398,7 @@ export default function ChartView({ spec, showFeedback = true }: ChartViewProps)
 
     return (
         <div>
-            {/* Header with AI indicator */}
+            {/* Header */}
             <div style={{
                 padding: 20,
                 borderBottom: '2px solid #7c3aed',
@@ -422,7 +422,7 @@ export default function ChartView({ spec, showFeedback = true }: ChartViewProps)
                         justifyContent: 'center',
                         marginRight: 12
                     }}>
-                        🤖
+                        📈
                     </div>
                     <h3 style={{
                         fontSize: 18,
@@ -430,7 +430,7 @@ export default function ChartView({ spec, showFeedback = true }: ChartViewProps)
                         color: '#7c3aed',
                         margin: 0
                     }}>
-                        AI-Generated Chart
+                        Chart
                     </h3>
                 </div>
 

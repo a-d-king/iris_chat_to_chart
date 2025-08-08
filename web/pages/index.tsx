@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import ChatBox from '../components/ChatBox';
-import ChartView from '../components/ChartView';
 import DashboardView from '../components/DashboardView';
 
 /**
@@ -8,7 +7,6 @@ import DashboardView from '../components/DashboardView';
  * Combines the ChatBox and ChartView components to create the full application
  */
 export default function Home() {
-    const [spec, setSpec] = useState(null);
     const [dashboard, setDashboard] = useState(null);
 
     return (
@@ -121,10 +119,7 @@ export default function Home() {
                     boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
                     border: '2px solid #7c3aed'
                 }}>
-                    <ChatBox
-                        onResponse={setSpec}
-                        onDashboardResponse={setDashboard}
-                    />
+                    <ChatBox onDashboardResponse={setDashboard} />
                 </div>
 
                 <div style={{
@@ -134,11 +129,7 @@ export default function Home() {
                     border: '2px solid #7c3aed',
                     overflow: 'hidden'
                 }}>
-                    {dashboard ? (
-                        <DashboardView dashboard={dashboard} />
-                    ) : (
-                        <ChartView spec={spec} />
-                    )}
+                    <DashboardView dashboard={dashboard} />
                 </div>
 
                 <div style={{

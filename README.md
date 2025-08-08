@@ -1,6 +1,6 @@
 ## 🎯 Iris Finance — Chat → Chart AI Platform
 
-Transform natural language into business charts and dashboards with live Iris data, OpenAI-assisted chart specs, and a transparent reasoning engine.
+Transform natural language into business dashboards with live Iris data and OpenAI-assisted chart specs.
 
 ---
 
@@ -18,7 +18,7 @@ Transform natural language into business charts and dashboards with live Iris da
 - **Frontend Components**
 - **Data Analysis Engine**
 - **Dashboard System**
-- **Reasoning System**
+- **Reasoning System** (optional, internal)
 - **Iris API Integration**
 - **Audit & Compliance**
 - **Testing**
@@ -30,14 +30,14 @@ Transform natural language into business charts and dashboards with live Iris da
 
 ## 🌟 Overview
 
-This app converts plain-English questions into visual insights. Users ask questions, the backend discovers metrics from live Iris Finance data, the AI selects the best visualization and metric, and the frontend renders interactive charts and dashboards. The enhanced reasoning system explains why a chart and metric were chosen and can be toggled via environment variable.
+This app converts plain-English questions into visual insights. Users ask questions, the backend discovers metrics from live Iris Finance data, the AI selects suitable visualizations per metric, and the frontend renders interactive dashboards.
 
 ### Core capabilities
-- **Chat to Chart**: Natural language → structured chart spec
+- **Dashboard generation**: Natural language → multi-chart dashboard
 - **Live Data**: Pulls from Iris Finance API with caching and flexible date ranges
 - **Metric Discovery**: Deep analysis over nested, embedded, and dynamic metrics
 - **Dashboards**: Generates multiple related charts, ranked by prompt relevance
-- **Transparent Reasoning**: Deterministic, explainable selection process
+- **Deterministic selection**: Simple, explainable selection process
 - **Full Audit Trail**: Request, spec, data, and metadata saved to disk
 
 ---
@@ -46,8 +46,7 @@ This app converts plain-English questions into visual insights. Users ask questi
 
 ### AI and Reasoning
 - **OpenAI-assisted decisions** in `OpenAiService` with explicit step-by-step chain-of-thought output captured as `aiReasoning`.
-- **Deterministic reasoning** in `ReasoningService` for intent detection, top‑K chart ranking, metric scoring, and final decision synthesis.
-- **Toggle** with `ENABLE_REASONING=true` to emit reasoning steps and console logs.
+*Note: Internal reasoning utilities may exist but are not surfaced or required to run the app.*
 
 ### Visualization
 - **Chart types**: `line`, `bar`, `stacked-bar`, `heatmap`, `waterfall`.
@@ -61,7 +60,7 @@ This app converts plain-English questions into visual insights. Users ask questi
 
 ### Enterprise
 - **Audit logs** in `server/audit-logs/` with full context.
-- **Endpoints** for feedback, audit stats, and reasoning status.
+- **Endpoints** for feedback and audit stats.
 
 ---
 
@@ -99,7 +98,7 @@ graph TB
     Metrics --> IrisAPI --> Iris
     Metrics --> DataAnalysis
     API --> OpenAI --> GPT4
-    API --> Reasoning
+    %% Reasoning node omitted in simplified flow
     API --> Dashboard
     API --> Audit
     API --> ChartView
@@ -204,7 +203,7 @@ Open `http://localhost:3000`.
 - **`OPENAI_API_KEY`**: required for OpenAI.
 - **`IRIS_API_TOKEN`**: required for Iris API calls.
 - **`IRIS_API_URL`**: Iris endpoint (defaults to production).
-- **`ENABLE_REASONING`**: `true|false` to emit reasoning steps and status.
+  (Reasoning flags are not required.)
 - **`PORT`**, **`NODE_ENV`**: standard server config.
 
 ### Date ranges accepted
@@ -218,24 +217,12 @@ Open `http://localhost:3000`.
 ## 🔄 How It Works (Data & Reasoning Flows)
 
 ### Single chart flow (`POST /chat`)
-1. `MetricsService.getDataAnalysis(dateRange)`
-   - `IrisApiService.fetchMetrics()` loads live data and caches by date range.
-   - `DataAnalysisService.analyzeData()` discovers metrics and suggests chart types.
-2. `OpenAiService.prompt()`
-   - Generates explicit reasoning text (`aiReasoning`).
-   - Performs a tool call to produce a structured chart spec.
-3. `ReasoningService.generateReasoning()`
-   - Creates a deterministic reasoning object with steps and confidence.
-4. `MetricsService.slice()`
-   - Slices the requested metric into a common chart data shape.
-5. `AuditService.logChartGeneration()`
-   - Persists request, spec, data, analysis, and metadata.
+Removed. The app now supports dashboard generation only.
 
 ### Dashboard flow (`POST /dashboard`)
 1. `MetricsService.getDataAnalysis()` → metric catalog.
 2. `DashboardService.identifyRelatedMetrics()`
-   - Uses `ReasoningService.analyzeAndRankMetrics()` to score and rank metrics related to the prompt.
-   - Logs metric quality issues (e.g., too many unknown categories).
+   - Selects visualizable metrics deterministically (excludes scalars) up to `maxCharts`.
 3. `DashboardService.generateChartSpecs()`
    - For each metric, uses `OpenAiService` to produce a chart spec; falls back to sane defaults.
 4. `MetricsService.slice()` per spec → `charts[]` array with layout metadata.
@@ -246,23 +233,7 @@ Open `http://localhost:3000`.
 ## 📡 API Documentation
 
 ### POST `/chat`
-Body (`ChatDto`):
-```json
-{ "prompt": "Compare revenue by sales channel", "dateRange": "2025-06" }
-```
-Response (abridged):
-```json
-{
-  "chartType": "bar",
-  "metric": "dataBySalesConnectors.grossSales",
-  "dateRange": "2025-06",
-  "data": { "dates": [...], "values": [...] },
-  "requestId": "...",
-  "originalPrompt": "...",
-  "dataAnalysis": { "totalMetrics": 99, "suggestedChartTypes": ["bar","line"], "runtimeReasoning": true },
-  "reasoning": { "enabled": true, "steps": [...], "summary": {...}, "metadata": {...}, "aiReasoning": "..." }
-}
-```
+Removed.
 
 ### POST `/dashboard`
 Body (`DashboardDto`):
@@ -281,13 +252,13 @@ Aggregated feedback statistics.
 Audit summary (totals, today, breakdowns, avg response time, top metrics).
 
 ### GET `/reasoning/status`
-Runtime toggle/health for the reasoning system.
+Removed.
 
 ---
 
 ## 🎨 Frontend Components
-- **`pages/index.tsx`**: Orchestrates `ChatBox`, `ChartView`, `DashboardView`.
-- **`components/ChatBox.tsx`**: Mode toggle (single/dashboard), date range picker, calls backend.
+- **`pages/index.tsx`**: Orchestrates `ChatBox`, `DashboardView`.
+- **`components/ChatBox.tsx`**: Dashboard-only input with date range picker, calls backend.
 - **`components/DateRangeSelector.tsx`**: Outputs `YYYY`, `YYYY-MM`, `YYYY-MM-DD`, or `start,end` strings.
 - **`components/ChartView.tsx`**: AG Charts config, tooltips, formatting, and `ag-grid` table.
 - **`components/DashboardView.tsx`**: Renders list of charts with titles/insights and `ChartView` instances.
@@ -310,20 +281,12 @@ Metric types detected:
 
 ## 📊 Dashboard System
 - File: `server/src/dashboard.service.ts`
-- Uses `ReasoningService.analyzeAndRankMetrics()` to select visualizable metrics (excludes scalars), logs quality issues, then generates specs per metric through `OpenAiService` with robust fallbacks and titles.
+- Selects visualizable metrics deterministically (excludes scalars), then generates specs per metric through `OpenAiService` with robust fallbacks and titles.
 
 ---
 
 ## 🧠 Reasoning System
-- File: `server/src/reasoning.service.ts`
-- Toggle via `ENABLE_REASONING=true`.
-- Capabilities:
-  - Intent detection (temporal trend, comparison, breakdown, overview, correlation, anomaly, forecasting, drill-down)
-  - Top‑K chart ranking with weighted criteria: data compatibility, intent alignment, visual effectiveness, usability
-  - Metric scoring with semantic similarity, intent boosts, structure and quality checks
-  - Quality analysis: unknown categories, too many categories, generic value types, etc.
-  - Final decision synthesis with confidence and key factors
-- Exposes `getReasoningStatus()` and console logging for step-by-step traces.
+Internal utilities may remain but are not exposed via API, nor required for normal operation.
 
 ---
 

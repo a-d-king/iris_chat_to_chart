@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import DateRangeSelector from './DateRangeSelector';
 
 interface ChatBoxProps {
-    onResponse: (response: any) => void;
     onDashboardResponse?: (dashboard: any) => void;
 }
 
@@ -10,10 +9,10 @@ interface ChatBoxProps {
  * ChatBox component for user input and API communication
  * Provides a text input and submit button to send prompts to the backend
  */
-export default function ChatBox({ onResponse, onDashboardResponse }: ChatBoxProps) {
+export default function ChatBox({ onDashboardResponse }: ChatBoxProps) {
     const [text, setText] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const [mode, setMode] = useState<'single' | 'dashboard'>('single');
+    const [mode] = useState<'single' | 'dashboard'>('dashboard');
     const [selectedDateRange, setSelectedDateRange] = useState('');
 
     // Helper function to format date range for API
@@ -31,15 +30,7 @@ export default function ChatBox({ onResponse, onDashboardResponse }: ChatBoxProp
         return range;
     };
 
-    const handleModeChange = (newMode: 'single' | 'dashboard') => {
-        setMode(newMode);
-        // Clear previous results when switching modes
-        if (newMode === 'single' && onDashboardResponse) {
-            onDashboardResponse(null);
-        } else if (newMode === 'dashboard') {
-            onResponse(null);
-        }
-    };
+    // Single chart mode removed. Mode toggle disabled.
 
     /**
      * Handle form submission - send the prompt to the backend API
@@ -49,7 +40,7 @@ export default function ChatBox({ onResponse, onDashboardResponse }: ChatBoxProp
 
         setIsLoading(true);
         try {
-            const endpoint = mode === 'dashboard' ? '/dashboard' : '/chat';
+            const endpoint = '/dashboard';
 
             // Prepare request body with optional date range
             const requestBody: any = { prompt: text };
@@ -70,11 +61,7 @@ export default function ChatBox({ onResponse, onDashboardResponse }: ChatBoxProp
 
             const result = await response.json();
 
-            if (mode === 'dashboard' && onDashboardResponse) {
-                onDashboardResponse(result);
-            } else {
-                onResponse(result);
-            }
+            if (onDashboardResponse) onDashboardResponse(result);
             setText('');
         } catch (error) {
             console.error('Error sending prompt:', error);
@@ -128,45 +115,7 @@ export default function ChatBox({ onResponse, onDashboardResponse }: ChatBoxProp
                 </div>
 
                 {/* Mode Toggle */}
-                <div style={{
-                    display: 'flex',
-                    backgroundColor: '#f1f5f9',
-                    borderRadius: 8,
-                    padding: 4
-                }}>
-                    <button
-                        onClick={() => handleModeChange('single')}
-                        style={{
-                            padding: '6px 12px',
-                            backgroundColor: mode === 'single' ? '#7c3aed' : 'transparent',
-                            color: mode === 'single' ? 'white' : '#6b7280',
-                            border: 'none',
-                            borderRadius: 4,
-                            fontSize: 12,
-                            fontWeight: '600',
-                            cursor: 'pointer',
-                            transition: 'all 0.2s'
-                        }}
-                    >
-                        Single Chart
-                    </button>
-                    <button
-                        onClick={() => handleModeChange('dashboard')}
-                        style={{
-                            padding: '6px 12px',
-                            backgroundColor: mode === 'dashboard' ? '#7c3aed' : 'transparent',
-                            color: mode === 'dashboard' ? 'white' : '#6b7280',
-                            border: 'none',
-                            borderRadius: 4,
-                            fontSize: 12,
-                            fontWeight: '600',
-                            cursor: 'pointer',
-                            transition: 'all 0.2s'
-                        }}
-                    >
-                        Dashboard
-                    </button>
-                </div>
+                {/* Single chart mode removed */}
             </div>
 
             {/* Date Range Selector */}
@@ -250,17 +199,12 @@ export default function ChatBox({ onResponse, onDashboardResponse }: ChatBoxProp
                     flexWrap: 'wrap',
                     gap: 8
                 }}>
-                    {(mode === 'dashboard' ? [
+                    {[
                         "Show me comprehensive June performance",
                         "Business overview dashboard",
                         "Financial performance dashboard",
                         "Sales and orders analysis"
-                    ] : [
-                        "Show me sales trends over time",
-                        "Compare revenue by sales channel",
-                        "Account performance breakdown",
-                        "Cash flow analysis"
-                    ]).map((example, index) => (
+                    ].map((example, index) => (
                         <button
                             key={index}
                             onClick={() => setText(example)}

@@ -1,19 +1,6 @@
 import { IsEnum, IsString, IsOptional, Matches, IsNumber, Min, Max, IsBoolean, IsArray } from 'class-validator';
 
 /**
- * DTO for chat requests
- * Validates that the incoming request has a valid prompt string
- */
-export class ChatDto {
-    @IsString()
-    prompt: string;
-
-    @IsOptional()
-    @IsString()
-    dateRange?: string;
-}
-
-/**
  * DTO for feedback submissions
  * Validates feedback data for chart quality ratings
  */
@@ -61,10 +48,9 @@ export class DashboardDto {
 }
 
 /**
- * DTO for chart specifications
- * Defines the structure and validation rules for chart configuration
+ * Chart specification for dashboards
  */
-export class ChartSpecDto {
+export class DashboardChartDto {
     @IsEnum(['line', 'bar', 'stacked-bar', 'heatmap', 'waterfall'])
     chartType: 'line' | 'bar' | 'stacked-bar' | 'heatmap' | 'waterfall';
 
@@ -78,12 +64,7 @@ export class ChartSpecDto {
     // Matches YYYY or YYYY-MM format
     @Matches(/^\d{4}(-\d{2})?$/)
     dateRange: string;
-}
 
-/**
- * Extended chart specification for dashboards
- */
-export class DashboardChartDto extends ChartSpecDto {
     @IsString()
     id: string;
 
