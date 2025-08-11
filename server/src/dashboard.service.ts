@@ -28,15 +28,19 @@ export class DashboardService {
     async generateDashboard(request: DashboardDto): Promise<DashboardResponse> {
         // Use LangGraph-based orchestration for dashboard generation
         const result = await runDashboardGraph(request, {
-            openAiService: this.openAiService,
             metricsService: this.metricsService,
-            reasoningService: this.reasoningService
+            identifyRelatedMetrics: this.identifyRelatedMetrics.bind(this),
+            generateChartSpecs: this.generateChartSpecs.bind(this),
+            formatTitle: this.generateChartTitle.bind(this),
+            calcSpan: this.calculateChartSpan.bind(this),
+            generateInsights: this.generateInsights.bind(this),
+            generateDashboardId: this.generateDashboardId.bind(this),
         });
 
         return result as DashboardResponse;
     }
 
-    private async identifyRelatedMetrics(prompt: string, dataAnalysis: any, maxCharts: number = 5): Promise<MetricInfo[]> {
+    public async identifyRelatedMetrics(prompt: string, dataAnalysis: any, maxCharts: number = 5): Promise<MetricInfo[]> {
         // Filter out scalar metrics for dashboards - they don't visualize well as charts
         const visualizableMetrics = dataAnalysis.availableMetrics.filter((m: MetricInfo) =>
             m.type !== 'scalar'
@@ -58,7 +62,7 @@ export class DashboardService {
         return analysis.rankedMetrics.map(ranked => ranked.metric);
     }
 
-    private async generateChartSpecs(request: DashboardDto, metrics: MetricInfo[], dataAnalysis: any): Promise<any[]> {
+    public async generateChartSpecs(request: DashboardDto, metrics: MetricInfo[], dataAnalysis: any): Promise<any[]> {
         const specs = [];
 
         for (const metric of metrics) {
@@ -87,7 +91,7 @@ export class DashboardService {
         return specs;
     }
 
-    private generateChartTitle(metricName: string, chartType: string): string {
+    public generateChartTitle(metricName: string, chartType: string): string {
         const cleanName = metricName.split('.').pop() || metricName;
         const formattedName = cleanName
             .replace(/([A-Z])/g, ' $1')
@@ -105,12 +109,12 @@ export class DashboardService {
         return `${formattedName} ${typeMap[chartType as keyof typeof typeMap] || 'Analysis'}`;
     }
 
-    private calculateChartSpan(chartType: string, totalCharts: number): number {
+    public calculateChartSpan(chartType: string, totalCharts: number): number {
         // All charts take full width in single column layout
         return 4;
     }
 
-    private async generateInsights(charts: any[], originalPrompt: string): Promise<string[]> {
+    public async generateInsights(charts: any[], originalPrompt: string): Promise<string[]> {
         const insights = [];
 
         // Basic insights based on chart count and types
@@ -134,7 +138,7 @@ export class DashboardService {
         return insights.slice(0, 3); // Limit to 3 insights
     }
 
-    private generateDashboardId(): string {
+    public generateDashboardId(): string {
         return `dashboard_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     }
 } 

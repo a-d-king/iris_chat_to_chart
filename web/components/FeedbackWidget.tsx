@@ -29,7 +29,7 @@ const FeedbackWidget: React.FC<FeedbackWidgetProps> = ({
 
         setIsSubmitting(true);
         try {
-            const response = await fetch('http://localhost:4000/feedback', {
+            const response = await fetch('http://localhost:4000/v1/feedback', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
