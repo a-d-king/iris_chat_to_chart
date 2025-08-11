@@ -49,7 +49,7 @@ export default function ChatBox({ onResponse, onDashboardResponse }: ChatBoxProp
 
         setIsLoading(true);
         try {
-            const endpoint = mode === 'dashboard' ? '/dashboard' : '/chat';
+            const endpoint = mode === 'dashboard' ? '/v1/dashboard' : '/v1/chat';
 
             // Prepare request body with optional date range
             const requestBody: any = { prompt: text };

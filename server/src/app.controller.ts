@@ -1,5 +1,6 @@
-import { Body, Controller, Post, Get, ValidationPipe } from '@nestjs/common';
-import { ChatDto, DashboardDto, FeedbackDto } from './chat.dto';
+import { Body, Controller, Post, Get, ValidationPipe, Version } from '@nestjs/common';
+import { ChatDto, DashboardDto, FeedbackDto, ChatResponseDto, DashboardResponseDto } from './chat.dto';
+import { ApiBody, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { OpenAiService } from './openai.service';
 import { MetricsService } from './metrics.service';
 import { AuditService } from './audit.service';
@@ -11,7 +12,8 @@ import { startTrace } from './observability/langfuse';
  * Main application controller
  * Handles the chat endpoint that coordinates between OpenAI and metrics data
  */
-@Controller()
+@ApiTags('v1')
+@Controller({ version: '1' })
 export class AppController {
     constructor(
         private ai: OpenAiService,
@@ -29,7 +31,10 @@ export class AppController {
      * @returns Promise<object> - Chart specification with data
      */
     @Post('chat')
-    async chat(@Body(new ValidationPipe()) body: ChatDto) {
+    @Version('1')
+    @ApiBody({ type: ChatDto })
+    @ApiOkResponse({ type: ChatResponseDto })
+    async chat(@Body(new ValidationPipe()) body: ChatDto): Promise<ChatResponseDto> {
         const trace = startTrace('endpoint.chat', { body });
         const startTime = Date.now();
 
@@ -141,7 +146,7 @@ export class AppController {
                 }
             };
             try { (trace as any)?.end({ output: { chartType: result.chartType, metric: result.metric } }); } catch { }
-            return result;
+            return result as any;
         } catch (error) {
             try { (trace as any)?.end({ level: 'ERROR', statusMessage: String(error) }); } catch { }
             const responseTime = Date.now() - startTime;
@@ -183,6 +188,7 @@ export class AppController {
      * Returns audit statistics for monitoring and analysis
      */
     @Get('audit/stats')
+    @Version('1')
     async getAuditStats() {
         try {
             const stats = await this.audit.getAuditStats();
@@ -206,7 +212,10 @@ export class AppController {
      * @returns Promise<object> - Dashboard with multiple charts and metadata
      */
     @Post('dashboard')
-    async generateDashboard(@Body(new ValidationPipe()) body: DashboardDto) {
+    @Version('1')
+    @ApiBody({ type: DashboardDto })
+    @ApiOkResponse({ type: DashboardResponseDto })
+    async generateDashboard(@Body(new ValidationPipe()) body: DashboardDto): Promise<DashboardResponseDto> {
         const trace = startTrace('endpoint.dashboard', { body });
         const startTime = Date.now();
 
@@ -232,7 +241,7 @@ export class AppController {
                 originalPrompt: body.prompt
             };
             try { (trace as any)?.end({ output: { charts: result.charts?.length ?? 0 } }); } catch { }
-            return response;
+            return response as any;
         } catch (error) {
             try { (trace as any)?.end({ level: 'ERROR', statusMessage: String(error) }); } catch { }
             console.error('Error generating dashboard:', error);
@@ -247,6 +256,7 @@ export class AppController {
      * @returns Promise<object> - Success response
      */
     @Post('feedback')
+    @Version('1')
     async submitFeedback(@Body(new ValidationPipe()) body: FeedbackDto) {
         try {
             await this.audit.addFeedback(
@@ -272,6 +282,7 @@ export class AppController {
      * @returns Promise<object> - Feedback statistics
      */
     @Get('feedback/stats')
+    @Version('1')
     async getFeedbackStats() {
         try {
             return await this.audit.getFeedbackStats();
@@ -287,6 +298,7 @@ export class AppController {
      * @returns object - Reasoning configuration status
      */
     @Get('reasoning/status')
+    @Version('1')
     async getReasoningStatus() {
         try {
             return this.reasoning.getReasoningStatus();

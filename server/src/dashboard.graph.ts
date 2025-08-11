@@ -1,14 +1,17 @@
 import { START, END, StateGraph, Annotation } from "@langchain/langgraph";
 import { DashboardDto, DashboardChartDto } from "./chat.dto";
-import { OpenAiService } from "./openai.service";
 import { MetricsService } from "./metrics.service";
-import { ReasoningService } from "./reasoning.service";
 import { MetricInfo } from "./data-analysis.service";
 
 export type DashboardGraphDeps = {
-    openAiService: OpenAiService;
     metricsService: MetricsService;
-    reasoningService: ReasoningService;
+    // Required helpers injected from DashboardService (no fallbacks)
+    identifyRelatedMetrics: (prompt: string, dataAnalysis: any, maxCharts?: number) => Promise<MetricInfo[]>;
+    generateChartSpecs: (request: DashboardDto, metrics: MetricInfo[], dataAnalysis: any) => Promise<any[]>;
+    formatTitle: (metricName: string, chartType: string) => string;
+    calcSpan: (chartType: string, totalCharts: number) => number;
+    generateInsights: (charts: DashboardChartDto[], originalPrompt: string) => Promise<string[]> | string[];
+    generateDashboardId: () => string;
 };
 
 type DashboardState = typeof DashboardAnnotation.State;
@@ -19,6 +22,8 @@ const DashboardAnnotation = Annotation.Root({
     dateRange: Annotation<string | undefined>(),
     maxCharts: Annotation<number | undefined>(),
     generateInsights: Annotation<boolean | undefined>(),
+    // Keep full request available for helpers like generateChartSpecs
+    request: Annotation<DashboardDto | undefined>(),
 
     // Working state
     startTime: Annotation<number>(),
@@ -45,57 +50,13 @@ const DashboardAnnotation = Annotation.Root({
     responseTimeMs: Annotation<number>(),
 });
 
-function generateDashboardId(): string {
-    return `dashboard_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-}
-
-function generateChartTitle(metricName: string, chartType: string): string {
-    const cleanName = metricName.split('.').pop() || metricName;
-    const formattedName = cleanName
-        .replace(/([A-Z])/g, ' $1')
-        .replace(/^./, (str) => str.toUpperCase())
-        .trim();
-
-    const typeMap: Record<string, string> = {
-        'line': 'Trends',
-        'bar': 'Comparison',
-        'stacked-bar': 'Breakdown',
-        'heatmap': 'Pattern Analysis',
-        'waterfall': 'Impact Analysis'
-    };
-
-    return `${formattedName} ${typeMap[chartType] || 'Analysis'}`;
-}
-
-function calculateChartSpan(): number {
-    // Single column layout for now; can evolve later
-    return 4;
-}
-
-function basicInsights(charts: DashboardChartDto[]): string[] {
-    const insights: string[] = [];
-    if (charts.length > 3) {
-        insights.push(`Generated ${charts.length} related charts for comprehensive analysis`);
-    }
-    const chartTypes = [...new Set(charts.map((c) => c.chartType))];
-    if (chartTypes.length > 2) {
-        insights.push('Multiple visualization types used for different data perspectives');
-    }
-    const hasTimeSeries = charts.some((c) => c.chartType === 'line');
-    const hasComparison = charts.some((c) => c.chartType === 'bar' || c.chartType === 'stacked-bar');
-    if (hasTimeSeries && hasComparison) {
-        insights.push('Dashboard includes both trend analysis and comparative metrics');
-    }
-    return insights.slice(0, 3);
-}
-
 export function createDashboardGraph(deps: DashboardGraphDeps) {
-    const { openAiService, metricsService, reasoningService } = deps;
+    const { metricsService } = deps;
 
     const initNode = async (state: DashboardState) => {
         return {
             startTime: Date.now(),
-            dashboardId: generateDashboardId(),
+            dashboardId: deps.generateDashboardId(),
         };
     };
 
@@ -105,33 +66,14 @@ export function createDashboardGraph(deps: DashboardGraphDeps) {
     };
 
     const selectRelatedMetricsNode = async (state: DashboardState) => {
-        // Exclude scalar metrics for visualization
-        const visualizable = state.dataAnalysis.availableMetrics.filter((m: MetricInfo) => m.type !== 'scalar');
         const maxCharts = state.maxCharts ?? 5;
-        const analysis = reasoningService.analyzeAndRankMetrics(state.prompt, visualizable, maxCharts);
-        return { relatedMetrics: analysis.rankedMetrics.map((r) => r.metric) };
+        const related = await deps.identifyRelatedMetrics(state.prompt, state.dataAnalysis, maxCharts);
+        return { relatedMetrics: related };
     };
 
     const generateSpecsNode = async (state: DashboardState) => {
-        const specs: any[] = [];
-        for (const metric of state.relatedMetrics) {
-            const metricPrompt = `Show ${metric.name} ${metric.hasTimeData ? 'trends over time' : 'breakdown'}`;
-            try {
-                const spec = await openAiService.prompt(metricPrompt, state.dataAnalysis);
-                specs.push({
-                    ...spec,
-                    title: generateChartTitle(metric.name, spec.chartType),
-                    dateRange: state.dateRange || spec.dateRange,
-                });
-            } catch (error) {
-                specs.push({
-                    chartType: metric.hasTimeData ? 'line' : 'bar',
-                    metric: metric.name,
-                    dateRange: state.dateRange || '2025-06',
-                    title: generateChartTitle(metric.name, metric.hasTimeData ? 'line' : 'bar'),
-                });
-            }
-        }
+        if (!state.request) return { chartSpecs: [] };
+        const specs = await deps.generateChartSpecs(state.request, state.relatedMetrics, state.dataAnalysis);
         return { chartSpecs: specs };
     };
 
@@ -167,7 +109,7 @@ export function createDashboardGraph(deps: DashboardGraphDeps) {
                 data,
                 row: Math.floor(index / 2) + 1,
                 col: (index % 2) + 1,
-                span: calculateChartSpan(),
+                span: deps.calcSpan(spec.chartType, state.chartSpecs.length),
             } as DashboardChartDto);
             index++;
         }
@@ -176,7 +118,8 @@ export function createDashboardGraph(deps: DashboardGraphDeps) {
 
     const computeInsightsNode = async (state: DashboardState) => {
         if (!(state.generateInsights ?? true)) return { insights: [] };
-        return { insights: basicInsights(state.charts) };
+        const insights = await deps.generateInsights(state.charts, state.prompt);
+        return { insights: Array.isArray(insights) ? insights : [] };
     };
 
     const finalizeNode = async (state: DashboardState) => {
@@ -214,6 +157,7 @@ export async function runDashboardGraph(
         dateRange: request.dateRange,
         maxCharts: request.maxCharts,
         generateInsights: request.generateInsights,
+        request,
     } as any);
 
     return {
