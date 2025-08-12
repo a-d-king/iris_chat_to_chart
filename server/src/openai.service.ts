@@ -152,7 +152,7 @@ Please provide your reasoning for each step clearly and explicitly.`;
 
         const reasoningResponse = await openai.chat.completions.create({
             model: 'gpt-4o',
-            temperature: 0.3, // Slightly higher for reasoning creativity
+            temperature: 0.2,
             messages: [{
                 role: 'user',
                 content: reasoningPrompt

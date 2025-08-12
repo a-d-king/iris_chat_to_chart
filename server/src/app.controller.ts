@@ -43,15 +43,27 @@ export class AppController {
             const effectiveDateRange = body.dateRange || undefined;
             const dataAnalysis = await this.metrics.getDataAnalysis(effectiveDateRange);
 
-            // Step 2: Convert natural language prompt to structured chart spec with context
-            const spec = await this.ai.prompt(body.prompt, dataAnalysis);
+            // Step 2: Use ReasoningService to select metric and chart type (same as dashboard)
+            const selection = this.reasoning.selectMetricsAndCharts(body.prompt, dataAnalysis, {
+                maxMetrics: 1,
+                topKCharts: 5,
+                dateRange: effectiveDateRange
+            });
 
-            // Step 3: Generate reasoning for the decision (if enabled)
-            const reasoningProcess = this.reasoning.generateReasoning(
-                body.prompt,
-                dataAnalysis,
-                spec
-            );
+            if (selection.selections.length === 0) {
+                throw new Error('No suitable metrics found for visualization');
+            }
+
+            // Step 3: Extract the top choice
+            const topChoice = selection.selections[0];
+            const spec = {
+                chartType: topChoice.chartType,
+                metric: topChoice.metric.name,
+                dateRange: effectiveDateRange || '2025-06',
+                groupBy: topChoice.metric.hasGrouping ? 'auto' : undefined
+            };
+
+            const reasoningProcess = topChoice.reasoning;
 
             // Log reasoning to console if enabled
             this.reasoning.logReasoning(reasoningProcess);
@@ -142,7 +154,8 @@ export class AppController {
                 },
                 reasoning: {
                     ...reasoningProcess,
-                    aiReasoning: spec.aiReasoning
+                    chartAnalysis: topChoice.chartAnalysis,
+                    intentAnalysis: selection.intentAnalysis
                 }
             };
             try { (trace as any)?.end({ output: { chartType: result.chartType, metric: result.metric } }); } catch { }
