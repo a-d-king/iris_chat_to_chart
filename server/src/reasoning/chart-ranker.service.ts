@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { DataAnalysis } from '../data-analysis.service';
+import { DataAnalysis } from '../data/data-analysis.service';
 import { IntentAnalysis } from './intent-analyzer.service';
 
 /**

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import OpenAI from 'openai';
-import { DataAnalysis } from './data-analysis.service';
+import { DataAnalysis } from './data/data-analysis.service';
 import { startTrace } from './observability/langfuse';
 
 const openai = new OpenAI();

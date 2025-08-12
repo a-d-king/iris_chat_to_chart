@@ -1,4 +1,5 @@
-import { MetricInfo } from '../data-analysis.service';
+import { Injectable } from '@nestjs/common';
+import { MetricInfo } from './data-analysis.service';
 import { DateFilterUtil } from '../utils/date-filter.util';
 
 /**
@@ -318,7 +319,8 @@ export class ArraySlicingStrategy implements SlicingStrategy {
 /**
  * Main chart data slicer that uses strategy pattern to handle different metric types
  */
-export class ChartDataSlicer {
+@Injectable()
+export class ChartDataSlicerService {
     private strategies = new Map<string, SlicingStrategy>([
         ['timeSeries', new TimeSeriesSlicingStrategy()],
         ['groupedSeries', new GroupedSeriesSlicingStrategy()],
@@ -337,7 +339,7 @@ export class ChartDataSlicer {
      */
     slice(data: any, metricInfo: MetricInfo, dateRange?: string): ChartData {
         const strategy = this.strategies.get(metricInfo.type);
-        
+
         if (!strategy) {
             throw new Error(`Unsupported metric type: ${metricInfo.type}`);
         }

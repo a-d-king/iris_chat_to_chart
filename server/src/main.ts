@@ -6,16 +6,16 @@ import { Module } from '@nestjs/common';
 import { HttpModule } from '@nestjs/axios';
 import { AppController } from './app.controller';
 import { OpenAiService } from './openai.service';
-import { MetricsService } from './metrics.service';
-import { DataAnalysisService } from './data-analysis.service';
-import { AuditService } from './audit.service';
+import { MetricsService } from './data/metrics.service';
+import { DataAnalysisService } from './data/data-analysis.service';
+import { AuditService } from './audit/audit.service';
 import { DashboardService } from './dashboard.service';
-import { IrisApiService } from './iris-api.service';
+import { IrisApiService } from './api/iris-api.service';
 import { ReasoningService } from './reasoning.service';
 import { IntentAnalyzerService } from './reasoning/intent-analyzer.service';
 import { ChartRankerService } from './reasoning/chart-ranker.service';
 import { ErrorHandlerService } from './common/error-handler.service';
-import { ChartDataSlicerProvider } from './providers';
+import { ChartDataSlicerService } from './data/chart-data-slicer.service';
 import { VersioningType } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
@@ -33,7 +33,7 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
         IntentAnalyzerService,
         ChartRankerService,
         ErrorHandlerService,
-        ChartDataSlicerProvider
+        ChartDataSlicerService
     ]
 })
 class AppModule { }

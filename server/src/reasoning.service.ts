@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { DataAnalysis, MetricInfo } from './data-analysis.service';
+import { DataAnalysis, MetricInfo } from './data/data-analysis.service';
 import { IntentAnalyzerService, IntentAnalysis } from './reasoning/intent-analyzer.service';
 import { ChartRankerService, TopKChartsAnalysis, ChartRanking } from './reasoning/chart-ranker.service';
 import { ErrorHandlerService } from './common/error-handler.service';

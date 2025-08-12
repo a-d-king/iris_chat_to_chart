@@ -1,0 +1,3604 @@
+{
+  "timestamp": "2025-08-12T20:54:15.294Z",
+  "requestId": "1755032055294-3ee51h77k",
+  "userPrompt": "Sales and orders analysis",
+  "chartSpec": {
+    "chartType": "dashboard",
+    "metric": "multiple",
+    "dateRange": "2025-05-14T00:00:00.000Z,2025-08-12T23:59:59.999Z"
+  },
+  "dataUsed": [
+    {
+      "chartType": "line",
+      "metric": "sales",
+      "dateRange": "2025-05-14T00:00:00.000Z,2025-08-12T23:59:59.999Z",
+      "aiReasoning": "To address the user's request for a visualization of \"sales trends over time,\" let's systematically walk through each step to determine the best approach:\n\n### STEP 1 - ANALYZE USER INTENT:\n- **User Intent:** The user wants to understand or discover trends in sales over time. This indicates a focus on temporal analysis.\n- **Keywords:** \"Sales trends,\" \"over time\" suggest the user is interested in observing how sales figures change across different time periods.\n- **Analysis Type:** Temporal analysis is the primary focus here, as the user is interested in how sales evolve over time.\n\n### STEP 2 - EVALUATE AVAILABLE DATA:\n- **Available Metrics:** The dataset includes several time-series metrics, including \"sales,\" \"netSales,\" and \"totalGrossSales.\"\n- **Data Characteristics:** These metrics are temporal and continuous, which aligns well with the user's request for trend analysis.\n- **Data Quality Considerations:** The data quality appears suitable for time-series analysis, but it's important to note that some metrics have unknown or unlabeled categories, which might affect detailed breakdowns.\n\n### STEP 3 - CONSIDER CHART VISUALIZATION PRINCIPLES:\n- **Line Chart:** Ideal for continuous data and trends over time. It allows for the visualization of progression, growth, and decline over time.\n- **Data Requirements:** Requires time-series data with continuous values, which matches the available \"sales\" and \"netSales\" metrics.\n\n### STEP 4 - MATCH DATA TO VISUALIZATION:\n- **Chart Type:** A line chart is the most appropriate visualization for showing sales trends over time.\n- **Data Structure Alignment:** The time-series nature of \"sales\" and \"netSales\" aligns perfectly with the requirements for a line chart.\n- **Metric Selection:** \"Sales\" is the primary metric of interest for the user, but \"netSales\" could also be included for additional insights.\n- **Date Range:** Since the data appears to be from 2025, using the full range available for 2025 would provide a comprehensive view of the sales trends.\n\n### STEP 5 - FINAL DECISION:\n- **Recommended Chart Type:** Line Chart\n- **Rationale:** A line chart effectively displays trends over time, which aligns with the user's intent to observe sales trends. It provides a clear visual representation of how sales figures change across different time periods.\n- **Key Factors:** The continuous and temporal nature of the \"sales\" metric, along with the user's focus on trends over time, makes the line chart the optimal choice.\n\nIn conclusion, a line chart using the \"sales\" metric over the available 2025 date range will best serve the user's request to visualize sales trends over time. This choice ensures that the visualization is both informative and aligned with the user's analytical goals.",
+      "title": "Sales Trends",
+      "id": "chart_1",
+      "data": {
+        "dates": [
+          "2025-05-14",
+          "2025-05-15",
+          "2025-05-16",
+          "2025-05-17",
+          "2025-05-18",
+          "2025-05-19",
+          "2025-05-20",
+          "2025-05-21",
+          "2025-05-22",
+          "2025-05-23",
+          "2025-05-24",
+          "2025-05-25",
+          "2025-05-26",
+          "2025-05-27",
+          "2025-05-28",
+          "2025-05-29",
+          "2025-05-30",
+          "2025-05-31",
+          "2025-06-01",
+          "2025-06-02",
+          "2025-06-03",
+          "2025-06-04",
+          "2025-06-05",
+          "2025-06-06",
+          "2025-06-07",
+          "2025-06-08",
+          "2025-06-09",
+          "2025-06-10",
+          "2025-06-11",
+          "2025-06-12",
+          "2025-06-13",
+          "2025-06-14",
+          "2025-06-15",
+          "2025-06-16",
+          "2025-06-17",
+          "2025-06-18",
+          "2025-06-19",
+          "2025-06-20",
+          "2025-06-21",
+          "2025-06-22",
+          "2025-06-23",
+          "2025-06-24",
+          "2025-06-25",
+          "2025-06-26",
+          "2025-06-27",
+          "2025-06-28",
+          "2025-06-29",
+          "2025-06-30",
+          "2025-07-01",
+          "2025-07-02",
+          "2025-07-03",
+          "2025-07-04",
+          "2025-07-05",
+          "2025-07-06",
+          "2025-07-07",
+          "2025-07-08",
+          "2025-07-09",
+          "2025-07-10",
+          "2025-07-11",
+          "2025-07-12",
+          "2025-07-13",
+          "2025-07-14",
+          "2025-07-15",
+          "2025-07-16",
+          "2025-07-17",
+          "2025-07-18",
+          "2025-07-19",
+          "2025-07-20",
+          "2025-07-21",
+          "2025-07-22",
+          "2025-07-23",
+          "2025-07-24",
+          "2025-07-25",
+          "2025-07-26",
+          "2025-07-27",
+          "2025-07-28",
+          "2025-07-29",
+          "2025-07-30",
+          "2025-07-31",
+          "2025-08-01",
+          "2025-08-02",
+          "2025-08-03",
+          "2025-08-04",
+          "2025-08-05",
+          "2025-08-06",
+          "2025-08-07",
+          "2025-08-08",
+          "2025-08-09",
+          "2025-08-10",
+          "2025-08-11",
+          "2025-08-12"
+        ],
+        "values": [
+          {
+            "label": "sales over time",
+            "values": [
+              24325.190000000002,
+              18662.77,
+              16884.6,
+              15843.94,
+              18539.27,
+              16835.5,
+              19752.309999999998,
+              18652.52,
+              17912.15,
+              17563.260000000002,
+              16190.240000000002,
+              13708.57,
+              15555.84,
+              16376.14,
+              16262.36,
+              17950.6,
+              18887.96,
+              13760.29,
+              18088.03,
+              17254.51,
+              16411.86,
+              18438.39,
+              14436.07,
+              14902.16,
+              13729.720000000001,
+              15044.64,
+              14820.66,
+              17021.52,
+              18409.61,
+              15255.96,
+              17336.65,
+              13713.900000000001,
+              13050.02,
+              18672.239999999998,
+              14826.03,
+              17960.27,
+              15924.35,
+              16922.91,
+              13379.669999999998,
+              15679.21,
+              15471.04,
+              13992.75,
+              15691.15,
+              17073.57,
+              13249.72,
+              12251,
+              14276.170000000002,
+              15991.69,
+              14272.4,
+              15267.6,
+              13375.279999999999,
+              10865.92,
+              11879.740000000002,
+              12847.13,
+              15055.23,
+              77190.09,
+              56447.69,
+              50361.56,
+              60926.079999999994,
+              15995.109999999999,
+              12834.89,
+              16427.260000000002,
+              17308.07,
+              15322.22,
+              16859.68,
+              27089.460000000003,
+              13453.74,
+              19591.35,
+              17476.57,
+              19354.22,
+              20649.519999999997,
+              25834.76,
+              18375.010000000002,
+              17186.21,
+              22215.09,
+              22772.740714285712,
+              19068.63,
+              19939.97588235294,
+              22021.12,
+              19259.08,
+              18653.28,
+              22294.831261997868,
+              24754.941132296182,
+              22466.074666666664,
+              26694.04680672269,
+              28100.72696969697,
+              23623.975124741777,
+              24991.599763131628,
+              27558.67636577708,
+              27076.048979591837,
+              727.01
+            ]
+          }
+        ]
+      },
+      "row": 1,
+      "col": 1,
+      "span": 4
+    },
+    {
+      "chartType": "line",
+      "metric": "orders",
+      "dateRange": "2025-05-14T00:00:00.000Z,2025-08-12T23:59:59.999Z",
+      "aiReasoning": "To address the user request for \"Show orders trends over time,\" let's systematically go through the steps to determine the best visualization approach.\n\n### STEP 1 - ANALYZE USER INTENT:\n- **User Goal:** The user wants to understand how orders have changed over time, indicating a focus on trends.\n- **Keywords:** \"orders trends,\" \"over time\" suggest a temporal analysis.\n- **Analytical Intent:** The user is interested in identifying patterns, growth, or decline in order volume over a specified period.\n\n### STEP 2 - EVALUATE AVAILABLE DATA:\n- **Relevant Metrics:** The dataset includes a metric for \"orders\" which is a time-series metric, making it suitable for trend analysis.\n- **Data Characteristics:** The \"orders\" metric is temporal and scalar, ideal for showing changes over time.\n- **Data Quality Considerations:** The data for \"orders\" has 100% unknown/unlabeled categories and a large number of categories (91), which suggests potential complexity but does not directly impact a simple time trend analysis.\n\n### STEP 3 - CONSIDER CHART VISUALIZATION PRINCIPLES:\n- **Line Chart:** Best for visualizing continuous data and trends over time. It is suitable for showing progression, growth, or decline.\n- **Data Requirements:** Requires time series data with continuous values, which aligns with the \"orders\" metric.\n\n### STEP 4 - MATCH DATA TO VISUALIZATION:\n- **Chart Type:** A line chart is the most appropriate choice for visualizing order trends over time.\n- **Data Structure Alignment:** The \"orders\" metric is a time series, which aligns perfectly with the requirements for a line chart.\n- **Specific Metric:** Use the \"orders\" metric to plot the trend.\n- **Date Range:** Since the data is from 2025, use the available 2025 data for the analysis unless specified otherwise by the user.\n\n### STEP 5 - FINAL DECISION:\n- **Recommended Chart Type:** Line Chart\n- **Rationale:** A line chart effectively displays trends over time, which matches the user's intent to understand order trends. The time-series nature of the \"orders\" metric supports this choice.\n- **Key Factors:** The user's focus on temporal trends, the availability of a suitable time-series metric, and the alignment with visualization principles led to this decision.\n\nBy following these steps, a line chart is recommended to visualize the \"orders\" metric over the year 2025, providing a clear view of order trends over time.",
+      "title": "Orders Trends",
+      "id": "chart_2",
+      "data": {
+        "dates": [
+          "2025-05-14",
+          "2025-05-15",
+          "2025-05-16",
+          "2025-05-17",
+          "2025-05-18",
+          "2025-05-19",
+          "2025-05-20",
+          "2025-05-21",
+          "2025-05-22",
+          "2025-05-23",
+          "2025-05-24",
+          "2025-05-25",
+          "2025-05-26",
+          "2025-05-27",
+          "2025-05-28",
+          "2025-05-29",
+          "2025-05-30",
+          "2025-05-31",
+          "2025-06-01",
+          "2025-06-02",
+          "2025-06-03",
+          "2025-06-04",
+          "2025-06-05",
+          "2025-06-06",
+          "2025-06-07",
+          "2025-06-08",
+          "2025-06-09",
+          "2025-06-10",
+          "2025-06-11",
+          "2025-06-12",
+          "2025-06-13",
+          "2025-06-14",
+          "2025-06-15",
+          "2025-06-16",
+          "2025-06-17",
+          "2025-06-18",
+          "2025-06-19",
+          "2025-06-20",
+          "2025-06-21",
+          "2025-06-22",
+          "2025-06-23",
+          "2025-06-24",
+          "2025-06-25",
+          "2025-06-26",
+          "2025-06-27",
+          "2025-06-28",
+          "2025-06-29",
+          "2025-06-30",
+          "2025-07-01",
+          "2025-07-02",
+          "2025-07-03",
+          "2025-07-04",
+          "2025-07-05",
+          "2025-07-06",
+          "2025-07-07",
+          "2025-07-08",
+          "2025-07-09",
+          "2025-07-10",
+          "2025-07-11",
+          "2025-07-12",
+          "2025-07-13",
+          "2025-07-14",
+          "2025-07-15",
+          "2025-07-16",
+          "2025-07-17",
+          "2025-07-18",
+          "2025-07-19",
+          "2025-07-20",
+          "2025-07-21",
+          "2025-07-22",
+          "2025-07-23",
+          "2025-07-24",
+          "2025-07-25",
+          "2025-07-26",
+          "2025-07-27",
+          "2025-07-28",
+          "2025-07-29",
+          "2025-07-30",
+          "2025-07-31",
+          "2025-08-01",
+          "2025-08-02",
+          "2025-08-03",
+          "2025-08-04",
+          "2025-08-05",
+          "2025-08-06",
+          "2025-08-07",
+          "2025-08-08",
+          "2025-08-09",
+          "2025-08-10",
+          "2025-08-11",
+          "2025-08-12"
+        ],
+        "values": [
+          {
+            "label": "orders over time",
+            "values": [
+              649,
+              434,
+              427,
+              409,
+              439,
+              408,
+              459,
+              454,
+              438,
+              417,
+              397,
+              342,
+              405,
+              370,
+              411,
+              405,
+              347,
+              309,
+              412,
+              371,
+              383,
+              412,
+              333,
+              338,
+              317,
+              338,
+              372,
+              410,
+              409,
+              376,
+              385,
+              348,
+              336,
+              439,
+              340,
+              424,
+              377,
+              399,
+              335,
+              388,
+              361,
+              333,
+              389,
+              371,
+              333,
+              300,
+              349,
+              389,
+              343,
+              351,
+              326,
+              250,
+              279,
+              328,
+              352,
+              2868,
+              1948,
+              1643,
+              2016,
+              440,
+              327,
+              380,
+              402,
+              364,
+              402,
+              388,
+              354,
+              489,
+              446,
+              464,
+              508,
+              495,
+              462,
+              451,
+              549,
+              559,
+              504,
+              507,
+              543,
+              494,
+              501,
+              606,
+              663,
+              587,
+              700,
+              712,
+              621,
+              686,
+              739,
+              705,
+              20
+            ]
+          }
+        ]
+      },
+      "row": 1,
+      "col": 2,
+      "span": 4
+    },
+    {
+      "chartType": "line",
+      "metric": "netSalesByConnector",
+      "dateRange": "2025-05-14T00:00:00.000Z,2025-08-12T23:59:59.999Z",
+      "aiReasoning": "Let's go through the steps systematically to determine the best visualization for the user's request to \"Show netSalesByConnector trends over time.\"\n\n### STEP 1 - ANALYZE USER INTENT:\n- **User Intent:** The user wants to understand trends in net sales by different connectors over time. This indicates they are interested in a temporal analysis to observe how net sales evolve across different connectors.\n- **Keywords:** \"trends over time\" suggest a focus on temporal patterns or progression.\n- **Analysis Type:** Temporal analysis with a focus on trends.\n\n### STEP 2 - EVALUATE AVAILABLE DATA:\n- **Relevant Metric:** `netSalesByConnector` is the most relevant metric as it is specifically mentioned and is a grouped series metric that can be broken down by category over time.\n- **Data Characteristics:** This metric is time-series data, broken down by different connectors (categorical).\n- **Data Quality:** No specific data quality issues mentioned for `netSalesByConnector`, so it should be suitable for visualization.\n\n### STEP 3 - CONSIDER CHART VISUALIZATION PRINCIPLES:\n- **Line Chart:** Ideal for showing trends over time, especially when dealing with continuous data. It allows for easy comparison of trends across different categories (connectors in this case).\n- **Stacked-Bar Chart:** Good for showing composition and part-to-whole relationships, but may not be as effective for highlighting trends over time.\n- **Recommendation:** A line chart is more suitable for highlighting trends over time across multiple categories.\n\n### STEP 4 - MATCH DATA TO VISUALIZATION:\n- **Chart Type:** Line chart is recommended as it aligns with the user's intent to observe trends over time.\n- **Data Structure Alignment:** `netSalesByConnector` is a time-series metric with categorical breakdowns, which fits well with a line chart.\n- **Date Range:** Use data from 2025, as specified, to ensure the analysis is current and relevant.\n\n### STEP 5 - FINAL DECISION:\n- **Recommended Chart Type:** Line Chart\n- **Rationale:** The line chart effectively serves both the data structure and user intent by clearly illustrating trends over time for each connector. It allows for easy comparison of how net sales by each connector change throughout the year 2025.\n- **Key Factors:** The need to highlight temporal trends and the suitability of time-series data for line charts led to this decision.\n\nIn conclusion, a line chart is the best choice to visualize `netSalesByConnector` trends over time, as it will clearly show the progression and patterns of net sales across different connectors throughout 2025.",
+      "title": "Net Sales By Connector Trends",
+      "id": "chart_3",
+      "data": {
+        "dates": [
+          "2025-05-14",
+          "2025-05-15",
+          "2025-05-16",
+          "2025-05-17",
+          "2025-05-18",
+          "2025-05-19",
+          "2025-05-20",
+          "2025-05-21",
+          "2025-05-22",
+          "2025-05-23",
+          "2025-05-24",
+          "2025-05-25",
+          "2025-05-26",
+          "2025-05-27",
+          "2025-05-28",
+          "2025-05-29",
+          "2025-05-30",
+          "2025-05-31",
+          "2025-06-01",
+          "2025-06-02",
+          "2025-06-03",
+          "2025-06-04",
+          "2025-06-05",
+          "2025-06-06",
+          "2025-06-07",
+          "2025-06-08",
+          "2025-06-09",
+          "2025-06-10",
+          "2025-06-11",
+          "2025-06-12",
+          "2025-06-13",
+          "2025-06-14",
+          "2025-06-15",
+          "2025-06-16",
+          "2025-06-17",
+          "2025-06-18",
+          "2025-06-19",
+          "2025-06-20",
+          "2025-06-21",
+          "2025-06-22",
+          "2025-06-23",
+          "2025-06-24",
+          "2025-06-25",
+          "2025-06-26",
+          "2025-06-27",
+          "2025-06-28",
+          "2025-06-29",
+          "2025-06-30",
+          "2025-07-01",
+          "2025-07-02",
+          "2025-07-03",
+          "2025-07-04",
+          "2025-07-05",
+          "2025-07-06",
+          "2025-07-07",
+          "2025-07-08",
+          "2025-07-09",
+          "2025-07-10",
+          "2025-07-11",
+          "2025-07-12",
+          "2025-07-13",
+          "2025-07-14",
+          "2025-07-15",
+          "2025-07-16",
+          "2025-07-17",
+          "2025-07-18",
+          "2025-07-19",
+          "2025-07-20",
+          "2025-07-21",
+          "2025-07-22",
+          "2025-07-23",
+          "2025-07-24",
+          "2025-07-25",
+          "2025-07-26",
+          "2025-07-27",
+          "2025-07-28",
+          "2025-07-29",
+          "2025-07-30",
+          "2025-07-31",
+          "2025-08-01",
+          "2025-08-02",
+          "2025-08-03",
+          "2025-08-04",
+          "2025-08-05",
+          "2025-08-06",
+          "2025-08-07",
+          "2025-08-08",
+          "2025-08-09",
+          "2025-08-10",
+          "2025-08-11",
+          "2025-08-12"
+        ],
+        "values": [
+          {
+            "label": "Amazon Seller Partner",
+            "values": [
+              17740.93,
+              12334.41,
+              11938.66,
+              12162.85,
+              13018.5,
+              11468.84,
+              13708.62,
+              14477.27,
+              13920.109999999999,
+              13046.630000000001,
+              11518.509999999998,
+              10713.99,
+              11609.09,
+              12607.01,
+              12253.6,
+              11801.52,
+              13391.18,
+              9310.490000000002,
+              11767.26,
+              11392.69,
+              10830.14,
+              12346.73,
+              9208.22,
+              9831.52,
+              9077.73,
+              10156.82,
+              11136.890000000001,
+              11788.49,
+              14469.960000000001,
+              10576.77,
+              12847.5,
+              9995.2,
+              9753.61,
+              12874.8,
+              10187.63,
+              12902.269999999999,
+              11120.06,
+              13350.380000000001,
+              9891.06,
+              11325,
+              9746.82,
+              10331.58,
+              10872.060000000001,
+              12233.85,
+              9260.710000000001,
+              8436.490000000002,
+              9663.87,
+              11008.21,
+              9727.77,
+              10580.189999999999,
+              8887.15,
+              7376.68,
+              8091.82,
+              9345.85,
+              10289.31,
+              72213.04,
+              51621.090000000004,
+              46790.689999999995,
+              56238.39,
+              13309.050000000001,
+              10554.59,
+              11514.380000000001,
+              12820.33,
+              11850.83,
+              14688.28,
+              24270.86,
+              10234.26,
+              16250.31,
+              13686.539999999999,
+              14902.259999999998,
+              17577.21,
+              22148.58,
+              14652.3,
+              13016.67,
+              17462.260000000002,
+              17211.500714285714,
+              14758.38,
+              14953.182470588235,
+              16928.525150625504,
+              14373.0304,
+              15633.85,
+              18846.011261997864,
+              21449.641132296187,
+              18125.484666666667,
+              22531.43680672269,
+              22610.48696969697,
+              19483.685124741776,
+              22594.33976313163,
+              23827.78636577708,
+              23353.838979591837,
+              615.01
+            ]
+          },
+          {
+            "label": "Shopify",
+            "values": [
+              3729.4,
+              5689.07,
+              4402.15,
+              3010.96,
+              4467.31,
+              3840.54,
+              4057.54,
+              3646.43,
+              3380.91,
+              3721.58,
+              3966.33,
+              2369.69,
+              3295.49,
+              3341.6,
+              3253.64,
+              5292.27,
+              4476.51,
+              3942.3999999999996,
+              5313.759999999999,
+              4982.08,
+              4580.74,
+              4959.009999999999,
+              4401.02,
+              4563,
+              4049.1,
+              4147.6,
+              3038.26,
+              4527.7,
+              3164.32,
+              3865.25,
+              4016.6800000000003,
+              3293.31,
+              3002.16,
+              4564.639999999999,
+              3363.97,
+              3444.3799999999997,
+              3287.49,
+              2168.09,
+              2632.16,
+              3067.8999999999996,
+              4176.12,
+              2475.98,
+              3660.27,
+              3214.54,
+              2863.08,
+              2328.41,
+              3347,
+              3391.06,
+              3772.8,
+              3430.45,
+              3393.48,
+              2445.48,
+              2960.2099999999996,
+              2608.59,
+              3698.62,
+              2305.69,
+              3196.7700000000004,
+              2102.53,
+              2896.09,
+              1975.41,
+              1926.72,
+              4099.219999999999,
+              3864.46,
+              2830.29,
+              1688.31,
+              2415.19,
+              2558.7400000000002,
+              2849.58,
+              3363.7,
+              4049.83,
+              2597.06,
+              2887.39,
+              2904.83,
+              3549,
+              4099.01,
+              5188.73,
+              3916.27,
+              4404.44,
+              4368.88,
+              4780.48,
+              2846.64,
+              2990.8,
+              3157.55,
+              4088.32,
+              3938.89,
+              4515.37,
+              3761.8999999999996,
+              2215.16,
+              3590.95,
+              3490,
+              109.9
+            ]
+          }
+        ]
+      },
+      "row": 2,
+      "col": 1,
+      "span": 4
+    }
+  ],
+  "dataAnalysis": {
+    "availableMetrics": [
+      {
+        "name": "totalGrossSales",
+        "type": "scalar",
+        "description": "Total total gross sales",
+        "hasTimeData": false,
+        "hasGrouping": false,
+        "valueType": "currency",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "sampleValues": [
+          159717.08400966198
+        ],
+        "keyPath": "totalGrossSales"
+      },
+      {
+        "name": "totalDiscounts",
+        "type": "scalar",
+        "description": "Total total discounts",
+        "hasTimeData": false,
+        "hasGrouping": false,
+        "valueType": "count",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "sampleValues": [
+          2870.97
+        ],
+        "keyPath": "totalDiscounts"
+      },
+      {
+        "name": "totalRefunds",
+        "type": "scalar",
+        "description": "Total total refunds",
+        "hasTimeData": false,
+        "hasGrouping": false,
+        "valueType": "generic",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "sampleValues": [
+          207.36
+        ],
+        "keyPath": "totalRefunds"
+      },
+      {
+        "name": "totalShippingIncome",
+        "type": "scalar",
+        "description": "Total total shipping income",
+        "hasTimeData": false,
+        "hasGrouping": false,
+        "valueType": "currency",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "sampleValues": [
+          945
+        ],
+        "keyPath": "totalShippingIncome"
+      },
+      {
+        "name": "sales",
+        "type": "timeSeries",
+        "description": "sales over time",
+        "hasTimeData": true,
+        "hasGrouping": false,
+        "valueType": "currency",
+        "chartRecommendations": [
+          "line",
+          "bar"
+        ],
+        "sampleValues": [
+          26694.04680672269,
+          28100.72696969697,
+          23623.975124741777
+        ],
+        "keyPath": "sales"
+      },
+      {
+        "name": "sales",
+        "type": "embeddedMetrics",
+        "description": "sales with multiple metrics containing 1 metrics",
+        "hasTimeData": false,
+        "hasGrouping": true,
+        "groupingDimensions": [
+          "Category 1",
+          "Category 2",
+          "Category 3",
+          "Category 4",
+          "Category 5",
+          "Category 6",
+          "Category 7"
+        ],
+        "valueType": "generic",
+        "chartRecommendations": [
+          "bar",
+          "stacked-bar"
+        ],
+        "keyPath": "sales",
+        "embeddedMetrics": [
+          "value"
+        ],
+        "sampleValues": [
+          26694.04680672269
+        ]
+      },
+      {
+        "name": "sales.value",
+        "type": "groupedSeries",
+        "description": "value broken down by category over time from sales",
+        "hasTimeData": false,
+        "hasGrouping": true,
+        "groupingDimensions": [
+          "Category 1",
+          "Category 2",
+          "Category 3",
+          "Category 4",
+          "Category 5",
+          "Category 6",
+          "Category 7"
+        ],
+        "valueType": "generic",
+        "chartRecommendations": [
+          "bar",
+          "stacked-bar"
+        ],
+        "keyPath": "sales.value",
+        "sampleValues": [
+          26694.04680672269,
+          28100.72696969697,
+          23623.975124741777
+        ]
+      },
+      {
+        "name": "totalGrossSalesChangePercentage",
+        "type": "scalar",
+        "description": "Total total gross sales change percentage",
+        "hasTimeData": false,
+        "hasGrouping": false,
+        "valueType": "currency",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "sampleValues": [
+          1.68
+        ],
+        "keyPath": "totalGrossSalesChangePercentage"
+      },
+      {
+        "name": "totalNetSalesChangePercentage",
+        "type": "scalar",
+        "description": "Total total net sales change percentage",
+        "hasTimeData": false,
+        "hasGrouping": false,
+        "valueType": "currency",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "sampleValues": [
+          1.67
+        ],
+        "keyPath": "totalNetSalesChangePercentage"
+      },
+      {
+        "name": "netSalesByConnector",
+        "type": "groupedSeries",
+        "description": "net sales by connector broken down by category over time",
+        "hasTimeData": true,
+        "hasGrouping": true,
+        "groupingDimensions": [
+          "Amazon Seller Partner",
+          "Shopify"
+        ],
+        "valueType": "currency",
+        "chartRecommendations": [
+          "line",
+          "bar",
+          "stacked-bar"
+        ],
+        "sampleValues": [
+          22531.43680672269,
+          22610.48696969697,
+          19483.685124741776
+        ],
+        "keyPath": "netSalesByConnector"
+      },
+      {
+        "name": "totalOrders",
+        "type": "scalar",
+        "description": "Total total orders",
+        "hasTimeData": false,
+        "hasGrouping": false,
+        "valueType": "count",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "sampleValues": [
+          4183
+        ],
+        "keyPath": "totalOrders"
+      },
+      {
+        "name": "orders",
+        "type": "timeSeries",
+        "description": "orders over time",
+        "hasTimeData": true,
+        "hasGrouping": false,
+        "valueType": "count",
+        "chartRecommendations": [
+          "line",
+          "bar"
+        ],
+        "sampleValues": [
+          700,
+          712,
+          621
+        ],
+        "keyPath": "orders"
+      },
+      {
+        "name": "orders",
+        "type": "embeddedMetrics",
+        "description": "orders with multiple metrics containing 1 metrics",
+        "hasTimeData": false,
+        "hasGrouping": true,
+        "groupingDimensions": [
+          "Category 1",
+          "Category 2",
+          "Category 3",
+          "Category 4",
+          "Category 5",
+          "Category 6",
+          "Category 7"
+        ],
+        "valueType": "generic",
+        "chartRecommendations": [
+          "bar",
+          "stacked-bar"
+        ],
+        "keyPath": "orders",
+        "embeddedMetrics": [
+          "value"
+        ],
+        "sampleValues": [
+          700
+        ]
+      },
+      {
+        "name": "orders.value",
+        "type": "groupedSeries",
+        "description": "value broken down by category over time from orders",
+        "hasTimeData": false,
+        "hasGrouping": true,
+        "groupingDimensions": [
+          "Category 1",
+          "Category 2",
+          "Category 3",
+          "Category 4",
+          "Category 5",
+          "Category 6",
+          "Category 7"
+        ],
+        "valueType": "generic",
+        "chartRecommendations": [
+          "bar",
+          "stacked-bar"
+        ],
+        "keyPath": "orders.value",
+        "sampleValues": [
+          700,
+          712,
+          621
+        ]
+      },
+      {
+        "name": "totalOrdersChangePercentage",
+        "type": "scalar",
+        "description": "Total total orders change percentage",
+        "hasTimeData": false,
+        "hasGrouping": false,
+        "valueType": "percentage",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "sampleValues": [
+          2.17
+        ],
+        "keyPath": "totalOrdersChangePercentage"
+      },
+      {
+        "name": "averageOrderValue",
+        "type": "scalar",
+        "description": "Total average order value",
+        "hasTimeData": false,
+        "hasGrouping": false,
+        "valueType": "generic",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "sampleValues": [
+          37.45
+        ],
+        "keyPath": "averageOrderValue"
+      },
+      {
+        "name": "newCustomerAverageOrderValue",
+        "type": "scalar",
+        "description": "Total new customer average order value",
+        "hasTimeData": false,
+        "hasGrouping": false,
+        "valueType": "generic",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "sampleValues": [
+          36.4
+        ],
+        "keyPath": "newCustomerAverageOrderValue"
+      },
+      {
+        "name": "newCustomerContributionMarginPerOrder",
+        "type": "scalar",
+        "description": "Total new customer contribution margin per order",
+        "hasTimeData": false,
+        "hasGrouping": false,
+        "valueType": "currency",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "sampleValues": [
+          22.339125550343383
+        ],
+        "keyPath": "newCustomerContributionMarginPerOrder"
+      },
+      {
+        "name": "cashOnHand",
+        "type": "scalar",
+        "description": "Total cash on hand",
+        "hasTimeData": false,
+        "hasGrouping": false,
+        "valueType": "currency",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "sampleValues": [
+          4169610.8700000006
+        ],
+        "keyPath": "cashOnHand"
+      },
+      {
+        "name": "cashOnHandChangePercentage",
+        "type": "scalar",
+        "description": "Total cash on hand change percentage",
+        "hasTimeData": false,
+        "hasGrouping": false,
+        "valueType": "currency",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "sampleValues": [
+          -2.78
+        ],
+        "keyPath": "cashOnHandChangePercentage"
+      },
+      {
+        "name": "cashOnHandAmounts",
+        "type": "timeSeries",
+        "description": "cash on hand amounts over time",
+        "hasTimeData": true,
+        "hasGrouping": false,
+        "valueType": "currency",
+        "chartRecommendations": [
+          "line",
+          "bar"
+        ],
+        "sampleValues": [
+          4288960.8500000015,
+          4212327.630000001,
+          4213423.11
+        ],
+        "keyPath": "cashOnHandAmounts"
+      },
+      {
+        "name": "cashOnHandAmounts",
+        "type": "embeddedMetrics",
+        "description": "cash on hand amounts with multiple metrics containing 1 metrics",
+        "hasTimeData": false,
+        "hasGrouping": true,
+        "groupingDimensions": [
+          "Category 1",
+          "Category 2",
+          "Category 3",
+          "Category 4",
+          "Category 5",
+          "Category 6",
+          "Category 7"
+        ],
+        "valueType": "generic",
+        "chartRecommendations": [
+          "bar",
+          "stacked-bar"
+        ],
+        "keyPath": "cashOnHandAmounts",
+        "embeddedMetrics": [
+          "value"
+        ],
+        "sampleValues": [
+          4288960.8500000015
+        ]
+      },
+      {
+        "name": "cashOnHandAmounts.value",
+        "type": "groupedSeries",
+        "description": "value broken down by category over time from cashOnHandAmounts",
+        "hasTimeData": false,
+        "hasGrouping": true,
+        "groupingDimensions": [
+          "Category 1",
+          "Category 2",
+          "Category 3",
+          "Category 4",
+          "Category 5",
+          "Category 6",
+          "Category 7"
+        ],
+        "valueType": "generic",
+        "chartRecommendations": [
+          "bar",
+          "stacked-bar"
+        ],
+        "keyPath": "cashOnHandAmounts.value",
+        "sampleValues": [
+          4288960.8500000015,
+          4212327.630000001,
+          4213423.11
+        ]
+      },
+      {
+        "name": "cashDetails",
+        "type": "dynamicKeyObject",
+        "description": "cash details breakdown by account/entity with 7 accounts",
+        "hasTimeData": false,
+        "hasGrouping": true,
+        "groupingDimensions": [
+          "Cash (Checking)",
+          "PREM CMML MONEY MKT",
+          "COMMERCIAL CHECKING",
+          "Treasury",
+          "Vault",
+          "US Sales Tax",
+          "Primary checking"
+        ],
+        "valueType": "generic",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "keyPath": "cashDetails",
+        "embeddedMetrics": [
+          "current",
+          "available",
+          "limit"
+        ],
+        "sampleValues": [
+          24581.95,
+          24581.95,
+          0
+        ]
+      },
+      {
+        "name": "cashDetails.current",
+        "type": "groupedSeries",
+        "description": "current broken down by category over time across cashDetails",
+        "hasTimeData": false,
+        "hasGrouping": true,
+        "groupingDimensions": [
+          "Cash (Checking)",
+          "PREM CMML MONEY MKT",
+          "COMMERCIAL CHECKING",
+          "Treasury",
+          "Vault",
+          "US Sales Tax",
+          "Primary checking"
+        ],
+        "valueType": "generic",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "keyPath": "cashDetails.current",
+        "sampleValues": [
+          24581.95,
+          4027743.99,
+          26026.41
+        ]
+      },
+      {
+        "name": "cashDetails.available",
+        "type": "groupedSeries",
+        "description": "available broken down by category over time across cashDetails",
+        "hasTimeData": false,
+        "hasGrouping": true,
+        "groupingDimensions": [
+          "Cash (Checking)",
+          "PREM CMML MONEY MKT",
+          "COMMERCIAL CHECKING",
+          "Treasury",
+          "Vault",
+          "US Sales Tax",
+          "Primary checking"
+        ],
+        "valueType": "generic",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "keyPath": "cashDetails.available",
+        "sampleValues": [
+          24581.95,
+          4027743.99,
+          26026.41
+        ]
+      },
+      {
+        "name": "cashDetails.limit",
+        "type": "groupedSeries",
+        "description": "limit broken down by category over time across cashDetails",
+        "hasTimeData": false,
+        "hasGrouping": true,
+        "groupingDimensions": [
+          "Cash (Checking)",
+          "PREM CMML MONEY MKT",
+          "COMMERCIAL CHECKING",
+          "Treasury",
+          "Vault",
+          "US Sales Tax",
+          "Primary checking"
+        ],
+        "valueType": "generic",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "keyPath": "cashDetails.limit",
+        "sampleValues": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "creditCardBalance",
+        "type": "scalar",
+        "description": "Total credit card balance",
+        "hasTimeData": false,
+        "hasGrouping": false,
+        "valueType": "currency",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "sampleValues": [
+          23379.96
+        ],
+        "keyPath": "creditCardBalance"
+      },
+      {
+        "name": "creditCardBalances",
+        "type": "timeSeries",
+        "description": "credit card balances over time",
+        "hasTimeData": true,
+        "hasGrouping": false,
+        "valueType": "currency",
+        "chartRecommendations": [
+          "line",
+          "bar"
+        ],
+        "sampleValues": [
+          14254.48,
+          18760.46,
+          14468.96
+        ],
+        "keyPath": "creditCardBalances"
+      },
+      {
+        "name": "creditCardBalances",
+        "type": "embeddedMetrics",
+        "description": "credit card balances with multiple metrics containing 1 metrics",
+        "hasTimeData": false,
+        "hasGrouping": true,
+        "groupingDimensions": [
+          "Category 1",
+          "Category 2",
+          "Category 3",
+          "Category 4",
+          "Category 5",
+          "Category 6",
+          "Category 7"
+        ],
+        "valueType": "generic",
+        "chartRecommendations": [
+          "bar",
+          "stacked-bar"
+        ],
+        "keyPath": "creditCardBalances",
+        "embeddedMetrics": [
+          "value"
+        ],
+        "sampleValues": [
+          14254.48
+        ]
+      },
+      {
+        "name": "creditCardBalances.value",
+        "type": "groupedSeries",
+        "description": "value broken down by category over time from creditCardBalances",
+        "hasTimeData": false,
+        "hasGrouping": true,
+        "groupingDimensions": [
+          "Category 1",
+          "Category 2",
+          "Category 3",
+          "Category 4",
+          "Category 5",
+          "Category 6",
+          "Category 7"
+        ],
+        "valueType": "generic",
+        "chartRecommendations": [
+          "bar",
+          "stacked-bar"
+        ],
+        "keyPath": "creditCardBalances.value",
+        "sampleValues": [
+          14254.48,
+          18760.46,
+          14468.96
+        ]
+      },
+      {
+        "name": "creditCardDetails",
+        "type": "dynamicKeyObject",
+        "description": "credit card details breakdown by account/entity with 2 accounts",
+        "hasTimeData": false,
+        "hasGrouping": true,
+        "groupingDimensions": [
+          "Credit Account",
+          "Brex Card Account"
+        ],
+        "valueType": "generic",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "keyPath": "creditCardDetails",
+        "embeddedMetrics": [
+          "current",
+          "available",
+          "limit"
+        ],
+        "sampleValues": [
+          0,
+          23650.87,
+          0
+        ]
+      },
+      {
+        "name": "creditCardDetails.current",
+        "type": "groupedSeries",
+        "description": "current broken down by category over time across creditCardDetails",
+        "hasTimeData": false,
+        "hasGrouping": true,
+        "groupingDimensions": [
+          "Credit Account",
+          "Brex Card Account"
+        ],
+        "valueType": "generic",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "keyPath": "creditCardDetails.current",
+        "sampleValues": [
+          0,
+          23379.96
+        ]
+      },
+      {
+        "name": "creditCardDetails.available",
+        "type": "groupedSeries",
+        "description": "available broken down by category over time across creditCardDetails",
+        "hasTimeData": false,
+        "hasGrouping": true,
+        "groupingDimensions": [
+          "Credit Account",
+          "Brex Card Account"
+        ],
+        "valueType": "generic",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "keyPath": "creditCardDetails.available",
+        "sampleValues": [
+          23650.87,
+          0
+        ]
+      },
+      {
+        "name": "creditCardDetails.limit",
+        "type": "groupedSeries",
+        "description": "limit broken down by category over time across creditCardDetails",
+        "hasTimeData": false,
+        "hasGrouping": true,
+        "groupingDimensions": [
+          "Credit Account",
+          "Brex Card Account"
+        ],
+        "valueType": "generic",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "keyPath": "creditCardDetails.limit",
+        "sampleValues": [
+          0,
+          15000
+        ]
+      },
+      {
+        "name": "grossProfit",
+        "type": "scalar",
+        "description": "Total gross profit",
+        "hasTimeData": false,
+        "hasGrouping": false,
+        "valueType": "currency",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "sampleValues": [
+          111439.24184332078
+        ],
+        "keyPath": "grossProfit"
+      },
+      {
+        "name": "grossProfitMargin",
+        "type": "scalar",
+        "description": "Total gross profit margin",
+        "hasTimeData": false,
+        "hasGrouping": false,
+        "valueType": "currency",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "sampleValues": [
+          71.14
+        ],
+        "keyPath": "grossProfitMargin"
+      },
+      {
+        "name": "grossProfits",
+        "type": "timeSeries",
+        "description": "gross profits over time",
+        "hasTimeData": true,
+        "hasGrouping": false,
+        "valueType": "currency",
+        "chartRecommendations": [
+          "line",
+          "bar"
+        ],
+        "sampleValues": [
+          17731.82223258802,
+          19288.023358278657,
+          16728.287785897224
+        ],
+        "keyPath": "grossProfits"
+      },
+      {
+        "name": "grossProfits",
+        "type": "embeddedMetrics",
+        "description": "gross profits with multiple metrics containing 1 metrics",
+        "hasTimeData": false,
+        "hasGrouping": true,
+        "groupingDimensions": [
+          "Category 1",
+          "Category 2",
+          "Category 3",
+          "Category 4",
+          "Category 5",
+          "Category 6",
+          "Category 7"
+        ],
+        "valueType": "generic",
+        "chartRecommendations": [
+          "bar",
+          "stacked-bar"
+        ],
+        "keyPath": "grossProfits",
+        "embeddedMetrics": [
+          "value"
+        ],
+        "sampleValues": [
+          17731.82223258802
+        ]
+      },
+      {
+        "name": "grossProfits.value",
+        "type": "groupedSeries",
+        "description": "value broken down by category over time from grossProfits",
+        "hasTimeData": false,
+        "hasGrouping": true,
+        "groupingDimensions": [
+          "Category 1",
+          "Category 2",
+          "Category 3",
+          "Category 4",
+          "Category 5",
+          "Category 6",
+          "Category 7"
+        ],
+        "valueType": "generic",
+        "chartRecommendations": [
+          "bar",
+          "stacked-bar"
+        ],
+        "keyPath": "grossProfits.value",
+        "sampleValues": [
+          17731.82223258802,
+          19288.023358278657,
+          16728.287785897224
+        ]
+      },
+      {
+        "name": "changeInCash",
+        "type": "scalar",
+        "description": "Total change in cash",
+        "hasTimeData": false,
+        "hasGrouping": false,
+        "valueType": "currency",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "sampleValues": [
+          -119349.98000000091
+        ],
+        "keyPath": "changeInCash"
+      },
+      {
+        "name": "changeInCashChangePercentage",
+        "type": "scalar",
+        "description": "Total change in cash change percentage",
+        "hasTimeData": false,
+        "hasGrouping": false,
+        "valueType": "currency",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "sampleValues": [
+          -2.78
+        ],
+        "keyPath": "changeInCashChangePercentage"
+      },
+      {
+        "name": "changesInCash",
+        "type": "timeSeries",
+        "description": "changes in cash over time",
+        "hasTimeData": true,
+        "hasGrouping": false,
+        "valueType": "currency",
+        "chartRecommendations": [
+          "line",
+          "bar"
+        ],
+        "sampleValues": [
+          -50583.88000000001,
+          -76633.22,
+          1095.48
+        ],
+        "keyPath": "changesInCash"
+      },
+      {
+        "name": "changesInCash",
+        "type": "embeddedMetrics",
+        "description": "changes in cash with multiple metrics containing 1 metrics",
+        "hasTimeData": false,
+        "hasGrouping": true,
+        "groupingDimensions": [
+          "Category 1",
+          "Category 2",
+          "Category 3",
+          "Category 4",
+          "Category 5",
+          "Category 6",
+          "Category 7"
+        ],
+        "valueType": "generic",
+        "chartRecommendations": [
+          "bar",
+          "stacked-bar"
+        ],
+        "keyPath": "changesInCash",
+        "embeddedMetrics": [
+          "value"
+        ],
+        "sampleValues": [
+          -50583.88000000001
+        ]
+      },
+      {
+        "name": "changesInCash.value",
+        "type": "groupedSeries",
+        "description": "value broken down by category over time from changesInCash",
+        "hasTimeData": false,
+        "hasGrouping": true,
+        "groupingDimensions": [
+          "Category 1",
+          "Category 2",
+          "Category 3",
+          "Category 4",
+          "Category 5",
+          "Category 6",
+          "Category 7"
+        ],
+        "valueType": "generic",
+        "chartRecommendations": [
+          "bar",
+          "stacked-bar"
+        ],
+        "keyPath": "changesInCash.value",
+        "sampleValues": [
+          -50583.88000000001,
+          -76633.22,
+          1095.48
+        ]
+      },
+      {
+        "name": "freeCashYield",
+        "type": "scalar",
+        "description": "Total free cash yield",
+        "hasTimeData": false,
+        "hasGrouping": false,
+        "valueType": "currency",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "sampleValues": [
+          -76.19
+        ],
+        "keyPath": "freeCashYield"
+      },
+      {
+        "name": "aMer",
+        "type": "scalar",
+        "description": "Total a mer",
+        "hasTimeData": false,
+        "hasGrouping": false,
+        "valueType": "generic",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "sampleValues": [
+          9.73
+        ],
+        "keyPath": "aMer"
+      },
+      {
+        "name": "contributionMargin",
+        "type": "scalar",
+        "description": "Total contribution margin",
+        "hasTimeData": false,
+        "hasGrouping": false,
+        "valueType": "currency",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "sampleValues": [
+          97953.26184332078
+        ],
+        "keyPath": "contributionMargin"
+      },
+      {
+        "name": "contributionMarginPercentage",
+        "type": "scalar",
+        "description": "Total contribution margin percentage",
+        "hasTimeData": false,
+        "hasGrouping": false,
+        "valueType": "percentage",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "sampleValues": [
+          62.529999999999994
+        ],
+        "keyPath": "contributionMarginPercentage"
+      },
+      {
+        "name": "contributionMargins",
+        "type": "timeSeries",
+        "description": "contribution margins over time",
+        "hasTimeData": true,
+        "hasGrouping": false,
+        "valueType": "currency",
+        "chartRecommendations": [
+          "line",
+          "bar"
+        ],
+        "sampleValues": [
+          15439.41223258802,
+          17463.743358278658,
+          14667.387785897225
+        ],
+        "keyPath": "contributionMargins"
+      },
+      {
+        "name": "contributionMargins",
+        "type": "embeddedMetrics",
+        "description": "contribution margins with multiple metrics containing 1 metrics",
+        "hasTimeData": false,
+        "hasGrouping": true,
+        "groupingDimensions": [
+          "Category 1",
+          "Category 2",
+          "Category 3",
+          "Category 4",
+          "Category 5",
+          "Category 6",
+          "Category 7"
+        ],
+        "valueType": "generic",
+        "chartRecommendations": [
+          "bar",
+          "stacked-bar"
+        ],
+        "keyPath": "contributionMargins",
+        "embeddedMetrics": [
+          "value"
+        ],
+        "sampleValues": [
+          15439.41223258802
+        ]
+      },
+      {
+        "name": "contributionMargins.value",
+        "type": "groupedSeries",
+        "description": "value broken down by category over time from contributionMargins",
+        "hasTimeData": false,
+        "hasGrouping": true,
+        "groupingDimensions": [
+          "Category 1",
+          "Category 2",
+          "Category 3",
+          "Category 4",
+          "Category 5",
+          "Category 6",
+          "Category 7"
+        ],
+        "valueType": "generic",
+        "chartRecommendations": [
+          "bar",
+          "stacked-bar"
+        ],
+        "keyPath": "contributionMargins.value",
+        "sampleValues": [
+          15439.41223258802,
+          17463.743358278658,
+          14667.387785897225
+        ]
+      },
+      {
+        "name": "contributionMarginRatio",
+        "type": "scalar",
+        "description": "Total contribution margin ratio",
+        "hasTimeData": false,
+        "hasGrouping": false,
+        "valueType": "currency",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "sampleValues": [
+          62.529999999999994
+        ],
+        "keyPath": "contributionMarginRatio"
+      },
+      {
+        "name": "totalMarketingExpense",
+        "type": "scalar",
+        "description": "Total total marketing expense",
+        "hasTimeData": false,
+        "hasGrouping": false,
+        "valueType": "generic",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "sampleValues": [
+          13485.980000000001
+        ],
+        "keyPath": "totalMarketingExpense"
+      },
+      {
+        "name": "marketingExpenses.metricNames",
+        "type": "array",
+        "description": "metric names data points",
+        "hasTimeData": false,
+        "hasGrouping": false,
+        "valueType": "generic",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "sampleValues": [
+          "Amazon Ads",
+          "Product Giveaway Marketing"
+        ],
+        "keyPath": "marketingExpenses.metricNames"
+      },
+      {
+        "name": "marketingExpenses.values",
+        "type": "embeddedMetrics",
+        "description": "marketing expenses.values with multiple metrics containing 2 metrics",
+        "hasTimeData": false,
+        "hasGrouping": true,
+        "groupingDimensions": [
+          "Category 1",
+          "Category 2",
+          "Category 3",
+          "Category 4",
+          "Category 5",
+          "Category 6",
+          "Category 7"
+        ],
+        "valueType": "generic",
+        "chartRecommendations": [
+          "bar",
+          "stacked-bar"
+        ],
+        "keyPath": "marketingExpenses.values",
+        "embeddedMetrics": [
+          "Amazon Ads",
+          "Product Giveaway Marketing"
+        ],
+        "sampleValues": [
+          2292.41,
+          0
+        ]
+      },
+      {
+        "name": "marketingExpenses.values.Amazon Ads",
+        "type": "groupedSeries",
+        "description": "amazon  ads broken down by category over time from marketingExpenses.values",
+        "hasTimeData": false,
+        "hasGrouping": true,
+        "groupingDimensions": [
+          "Category 1",
+          "Category 2",
+          "Category 3",
+          "Category 4",
+          "Category 5",
+          "Category 6",
+          "Category 7"
+        ],
+        "valueType": "generic",
+        "chartRecommendations": [
+          "bar",
+          "stacked-bar"
+        ],
+        "keyPath": "marketingExpenses.values.Amazon Ads",
+        "sampleValues": [
+          2292.41,
+          1824.28,
+          2060.9
+        ]
+      },
+      {
+        "name": "marketingExpenses.values.Product Giveaway Marketing",
+        "type": "groupedSeries",
+        "description": "product  giveaway  marketing broken down by category over time from marketingExpenses.values",
+        "hasTimeData": false,
+        "hasGrouping": true,
+        "groupingDimensions": [
+          "Category 1",
+          "Category 2",
+          "Category 3",
+          "Category 4",
+          "Category 5",
+          "Category 6",
+          "Category 7"
+        ],
+        "valueType": "generic",
+        "chartRecommendations": [
+          "bar",
+          "stacked-bar"
+        ],
+        "keyPath": "marketingExpenses.values.Product Giveaway Marketing",
+        "sampleValues": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "name": "netMER",
+        "type": "scalar",
+        "description": "Total net m e r",
+        "hasTimeData": false,
+        "hasGrouping": false,
+        "valueType": "generic",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "sampleValues": [
+          11.61
+        ],
+        "keyPath": "netMER"
+      },
+      {
+        "name": "netMERGrowthPercentage",
+        "type": "scalar",
+        "description": "Total net m e r growth percentage",
+        "hasTimeData": false,
+        "hasGrouping": false,
+        "valueType": "percentage",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "sampleValues": [
+          0
+        ],
+        "keyPath": "netMERGrowthPercentage"
+      },
+      {
+        "name": "netSales",
+        "type": "timeSeries",
+        "description": "net sales over time",
+        "hasTimeData": true,
+        "hasGrouping": false,
+        "valueType": "currency",
+        "chartRecommendations": [
+          "line",
+          "bar"
+        ],
+        "sampleValues": [
+          26470.32680672269,
+          27125.856969696968,
+          23245.585124741774
+        ],
+        "keyPath": "netSales"
+      },
+      {
+        "name": "netSales",
+        "type": "embeddedMetrics",
+        "description": "net sales with multiple metrics containing 1 metrics",
+        "hasTimeData": false,
+        "hasGrouping": true,
+        "groupingDimensions": [
+          "Category 1",
+          "Category 2",
+          "Category 3",
+          "Category 4",
+          "Category 5",
+          "Category 6",
+          "Category 7"
+        ],
+        "valueType": "generic",
+        "chartRecommendations": [
+          "bar",
+          "stacked-bar"
+        ],
+        "keyPath": "netSales",
+        "embeddedMetrics": [
+          "value"
+        ],
+        "sampleValues": [
+          26470.32680672269
+        ]
+      },
+      {
+        "name": "netSales.value",
+        "type": "groupedSeries",
+        "description": "value broken down by category over time from netSales",
+        "hasTimeData": false,
+        "hasGrouping": true,
+        "groupingDimensions": [
+          "Category 1",
+          "Category 2",
+          "Category 3",
+          "Category 4",
+          "Category 5",
+          "Category 6",
+          "Category 7"
+        ],
+        "valueType": "generic",
+        "chartRecommendations": [
+          "bar",
+          "stacked-bar"
+        ],
+        "keyPath": "netSales.value",
+        "sampleValues": [
+          26470.32680672269,
+          27125.856969696968,
+          23245.585124741774
+        ]
+      },
+      {
+        "name": "totalNetSales",
+        "type": "scalar",
+        "description": "Total total net sales",
+        "hasTimeData": false,
+        "hasGrouping": false,
+        "valueType": "currency",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "sampleValues": [
+          156638.75400966202
+        ],
+        "keyPath": "totalNetSales"
+      },
+      {
+        "name": "totalNewCustomerTotalNetSales",
+        "type": "scalar",
+        "description": "Total total new customer total net sales",
+        "hasTimeData": false,
+        "hasGrouping": false,
+        "valueType": "currency",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "sampleValues": [
+          131212.99400966198
+        ],
+        "keyPath": "totalNewCustomerTotalNetSales"
+      },
+      {
+        "name": "totalReturningCustomerTotalNetSales",
+        "type": "scalar",
+        "description": "Total total returning customer total net sales",
+        "hasTimeData": false,
+        "hasGrouping": false,
+        "valueType": "currency",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "sampleValues": [
+          25425.76000000004
+        ],
+        "keyPath": "totalReturningCustomerTotalNetSales"
+      },
+      {
+        "name": "totalNewCustomerOrders",
+        "type": "scalar",
+        "description": "Total total new customer orders",
+        "hasTimeData": false,
+        "hasGrouping": false,
+        "valueType": "count",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "sampleValues": [
+          3605
+        ],
+        "keyPath": "totalNewCustomerOrders"
+      },
+      {
+        "name": "totalReturningCustomerOrders",
+        "type": "scalar",
+        "description": "Total total returning customer orders",
+        "hasTimeData": false,
+        "hasGrouping": false,
+        "valueType": "count",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "sampleValues": [
+          578
+        ],
+        "keyPath": "totalReturningCustomerOrders"
+      },
+      {
+        "name": "totalNewCustomersCount",
+        "type": "scalar",
+        "description": "Total total new customers count",
+        "hasTimeData": false,
+        "hasGrouping": false,
+        "valueType": "count",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "sampleValues": [
+          3605
+        ],
+        "keyPath": "totalNewCustomersCount"
+      },
+      {
+        "name": "burnRates",
+        "type": "timeSeries",
+        "description": "burn rates over time",
+        "hasTimeData": true,
+        "hasGrouping": false,
+        "valueType": "percentage",
+        "chartRecommendations": [
+          "line",
+          "bar"
+        ],
+        "sampleValues": [
+          8800.07223258802,
+          10824.403358278656,
+          8028.047785897223
+        ],
+        "keyPath": "burnRates"
+      },
+      {
+        "name": "burnRates",
+        "type": "embeddedMetrics",
+        "description": "burn rates with multiple metrics containing 1 metrics",
+        "hasTimeData": false,
+        "hasGrouping": true,
+        "groupingDimensions": [
+          "Category 1",
+          "Category 2",
+          "Category 3",
+          "Category 4",
+          "Category 5",
+          "Category 6",
+          "Category 7"
+        ],
+        "valueType": "generic",
+        "chartRecommendations": [
+          "bar",
+          "stacked-bar"
+        ],
+        "keyPath": "burnRates",
+        "embeddedMetrics": [
+          "value"
+        ],
+        "sampleValues": [
+          8800.07223258802
+        ]
+      },
+      {
+        "name": "burnRates.value",
+        "type": "groupedSeries",
+        "description": "value broken down by category over time from burnRates",
+        "hasTimeData": false,
+        "hasGrouping": true,
+        "groupingDimensions": [
+          "Category 1",
+          "Category 2",
+          "Category 3",
+          "Category 4",
+          "Category 5",
+          "Category 6",
+          "Category 7"
+        ],
+        "valueType": "generic",
+        "chartRecommendations": [
+          "bar",
+          "stacked-bar"
+        ],
+        "keyPath": "burnRates.value",
+        "sampleValues": [
+          8800.07223258802,
+          10824.403358278656,
+          8028.047785897223
+        ]
+      },
+      {
+        "name": "contributionMarginPercentages",
+        "type": "timeSeries",
+        "description": "contribution margin percentages over time",
+        "hasTimeData": true,
+        "hasGrouping": false,
+        "valueType": "percentage",
+        "chartRecommendations": [
+          "line",
+          "bar"
+        ],
+        "sampleValues": [
+          58.330000000000005,
+          64.38000000000001,
+          63.1
+        ],
+        "keyPath": "contributionMarginPercentages"
+      },
+      {
+        "name": "contributionMarginPercentages",
+        "type": "embeddedMetrics",
+        "description": "contribution margin percentages with multiple metrics containing 1 metrics",
+        "hasTimeData": false,
+        "hasGrouping": true,
+        "groupingDimensions": [
+          "Category 1",
+          "Category 2",
+          "Category 3",
+          "Category 4",
+          "Category 5",
+          "Category 6",
+          "Category 7"
+        ],
+        "valueType": "generic",
+        "chartRecommendations": [
+          "bar",
+          "stacked-bar"
+        ],
+        "keyPath": "contributionMarginPercentages",
+        "embeddedMetrics": [
+          "value"
+        ],
+        "sampleValues": [
+          58.330000000000005
+        ]
+      },
+      {
+        "name": "contributionMarginPercentages.value",
+        "type": "groupedSeries",
+        "description": "value broken down by category over time from contributionMarginPercentages",
+        "hasTimeData": false,
+        "hasGrouping": true,
+        "groupingDimensions": [
+          "Category 1",
+          "Category 2",
+          "Category 3",
+          "Category 4",
+          "Category 5",
+          "Category 6",
+          "Category 7"
+        ],
+        "valueType": "generic",
+        "chartRecommendations": [
+          "bar",
+          "stacked-bar"
+        ],
+        "keyPath": "contributionMarginPercentages.value",
+        "sampleValues": [
+          58.330000000000005,
+          64.38000000000001,
+          63.1
+        ]
+      },
+      {
+        "name": "aMers",
+        "type": "timeSeries",
+        "description": "a mers over time",
+        "hasTimeData": true,
+        "hasGrouping": false,
+        "valueType": "generic",
+        "chartRecommendations": [
+          "line",
+          "bar"
+        ],
+        "sampleValues": [
+          9.4,
+          11.7,
+          9.1
+        ],
+        "keyPath": "aMers"
+      },
+      {
+        "name": "aMers",
+        "type": "embeddedMetrics",
+        "description": "a mers with multiple metrics containing 1 metrics",
+        "hasTimeData": false,
+        "hasGrouping": true,
+        "groupingDimensions": [
+          "Category 1",
+          "Category 2",
+          "Category 3",
+          "Category 4",
+          "Category 5",
+          "Category 6",
+          "Category 7"
+        ],
+        "valueType": "generic",
+        "chartRecommendations": [
+          "bar",
+          "stacked-bar"
+        ],
+        "keyPath": "aMers",
+        "embeddedMetrics": [
+          "value"
+        ],
+        "sampleValues": [
+          9.4
+        ]
+      },
+      {
+        "name": "aMers.value",
+        "type": "groupedSeries",
+        "description": "value broken down by category over time from aMers",
+        "hasTimeData": false,
+        "hasGrouping": true,
+        "groupingDimensions": [
+          "Category 1",
+          "Category 2",
+          "Category 3",
+          "Category 4",
+          "Category 5",
+          "Category 6",
+          "Category 7"
+        ],
+        "valueType": "generic",
+        "chartRecommendations": [
+          "bar",
+          "stacked-bar"
+        ],
+        "keyPath": "aMers.value",
+        "sampleValues": [
+          9.4,
+          11.7,
+          9.1
+        ]
+      },
+      {
+        "name": "aMerGrowthPercentage",
+        "type": "scalar",
+        "description": "Total a mer growth percentage",
+        "hasTimeData": false,
+        "hasGrouping": false,
+        "valueType": "percentage",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "sampleValues": [
+          0
+        ],
+        "keyPath": "aMerGrowthPercentage"
+      },
+      {
+        "name": "customerAqCost",
+        "type": "scalar",
+        "description": "Total customer aq cost",
+        "hasTimeData": false,
+        "hasGrouping": false,
+        "valueType": "currency",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "sampleValues": [
+          3.74
+        ],
+        "keyPath": "customerAqCost"
+      },
+      {
+        "name": "amazonBalance",
+        "type": "scalar",
+        "description": "Total amazon balance",
+        "hasTimeData": false,
+        "hasGrouping": false,
+        "valueType": "currency",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "sampleValues": [
+          0
+        ],
+        "keyPath": "amazonBalance"
+      },
+      {
+        "name": "totalCogs",
+        "type": "scalar",
+        "description": "Total total cogs",
+        "hasTimeData": false,
+        "hasGrouping": false,
+        "valueType": "generic",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "sampleValues": [
+          45199.51216634119
+        ],
+        "keyPath": "totalCogs"
+      },
+      {
+        "name": "productCogs",
+        "type": "scalar",
+        "description": "Total product cogs",
+        "hasTimeData": false,
+        "hasGrouping": false,
+        "valueType": "generic",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "sampleValues": [
+          6401.09
+        ],
+        "keyPath": "productCogs"
+      },
+      {
+        "name": "newCustomerProductCOGS",
+        "type": "scalar",
+        "description": "Total new customer product c o g s",
+        "hasTimeData": false,
+        "hasGrouping": false,
+        "valueType": "generic",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "sampleValues": [
+          0.6244492649098474
+        ],
+        "keyPath": "newCustomerProductCOGS"
+      },
+      {
+        "name": "newCustomerTotalCOGS",
+        "type": "scalar",
+        "description": "Total new customer total c o g s",
+        "hasTimeData": false,
+        "hasGrouping": false,
+        "valueType": "generic",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "sampleValues": [
+          10.320874449656614
+        ],
+        "keyPath": "newCustomerTotalCOGS"
+      },
+      {
+        "name": "fixedOverheadAbsorption",
+        "type": "scalar",
+        "description": "Total fixed overhead absorption",
+        "hasTimeData": false,
+        "hasGrouping": false,
+        "valueType": "generic",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "sampleValues": [
+          0
+        ],
+        "keyPath": "fixedOverheadAbsorption"
+      },
+      {
+        "name": "totalLogistics",
+        "type": "scalar",
+        "description": "Total total logistics",
+        "hasTimeData": false,
+        "hasGrouping": false,
+        "valueType": "generic",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "sampleValues": [
+          18502.91371946903
+        ],
+        "keyPath": "totalLogistics"
+      },
+      {
+        "name": "totalFreight",
+        "type": "scalar",
+        "description": "Total total freight",
+        "hasTimeData": false,
+        "hasGrouping": false,
+        "valueType": "count",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "sampleValues": [
+          0
+        ],
+        "keyPath": "totalFreight"
+      },
+      {
+        "name": "totalFees",
+        "type": "scalar",
+        "description": "Total total fees",
+        "hasTimeData": false,
+        "hasGrouping": false,
+        "valueType": "generic",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "sampleValues": [
+          20295.50844687216
+        ],
+        "keyPath": "totalFees"
+      },
+      {
+        "name": "dataBySalesConnectors",
+        "type": "embeddedMetrics",
+        "description": "data by sales connectors with multiple metrics containing 7 metrics",
+        "hasTimeData": false,
+        "hasGrouping": true,
+        "groupingDimensions": [
+          "Amazon Seller Partner",
+          "Shopify"
+        ],
+        "valueType": "generic",
+        "chartRecommendations": [
+          "bar",
+          "stacked-bar"
+        ],
+        "keyPath": "dataBySalesConnectors",
+        "embeddedMetrics": [
+          "grossSales",
+          "grossSalesPeriodAgo",
+          "grossSalesChangePercentage",
+          "netSales",
+          "netSalesPeriodAgo",
+          "netSalesChangePercentage",
+          "fees"
+        ],
+        "sampleValues": [
+          135016.58400966198,
+          128380.3338676834,
+          5.04,
+          135016.584009662,
+          127887.97941830893,
+          5.57,
+          19597.894321315434
+        ]
+      },
+      {
+        "name": "dataBySalesConnectors.grossSales",
+        "type": "groupedSeries",
+        "description": "gross sales broken down by category over time from dataBySalesConnectors",
+        "hasTimeData": false,
+        "hasGrouping": true,
+        "groupingDimensions": [
+          "Amazon Seller Partner",
+          "Shopify"
+        ],
+        "valueType": "currency",
+        "chartRecommendations": [
+          "bar",
+          "stacked-bar"
+        ],
+        "keyPath": "dataBySalesConnectors.grossSales",
+        "sampleValues": [
+          135016.58400966198,
+          24700.500000000004
+        ]
+      },
+      {
+        "name": "dataBySalesConnectors.grossSalesPeriodAgo",
+        "type": "groupedSeries",
+        "description": "gross sales period ago broken down by category over time from dataBySalesConnectors",
+        "hasTimeData": false,
+        "hasGrouping": true,
+        "groupingDimensions": [
+          "Amazon Seller Partner",
+          "Shopify"
+        ],
+        "valueType": "currency",
+        "chartRecommendations": [
+          "bar",
+          "stacked-bar"
+        ],
+        "keyPath": "dataBySalesConnectors.grossSalesPeriodAgo",
+        "sampleValues": [
+          128380.3338676834,
+          27763.039999999997
+        ]
+      },
+      {
+        "name": "dataBySalesConnectors.grossSalesChangePercentage",
+        "type": "groupedSeries",
+        "description": "gross sales change percentage broken down by category over time from dataBySalesConnectors",
+        "hasTimeData": false,
+        "hasGrouping": true,
+        "groupingDimensions": [
+          "Amazon Seller Partner",
+          "Shopify"
+        ],
+        "valueType": "currency",
+        "chartRecommendations": [
+          "bar",
+          "stacked-bar"
+        ],
+        "keyPath": "dataBySalesConnectors.grossSalesChangePercentage",
+        "sampleValues": [
+          5.04,
+          -13.86
+        ]
+      },
+      {
+        "name": "dataBySalesConnectors.netSales",
+        "type": "groupedSeries",
+        "description": "net sales broken down by category over time from dataBySalesConnectors",
+        "hasTimeData": false,
+        "hasGrouping": true,
+        "groupingDimensions": [
+          "Amazon Seller Partner",
+          "Shopify"
+        ],
+        "valueType": "currency",
+        "chartRecommendations": [
+          "bar",
+          "stacked-bar"
+        ],
+        "keyPath": "dataBySalesConnectors.netSales",
+        "sampleValues": [
+          135016.584009662,
+          21622.170000000002
+        ]
+      },
+      {
+        "name": "dataBySalesConnectors.netSalesPeriodAgo",
+        "type": "groupedSeries",
+        "description": "net sales period ago broken down by category over time from dataBySalesConnectors",
+        "hasTimeData": false,
+        "hasGrouping": true,
+        "groupingDimensions": [
+          "Amazon Seller Partner",
+          "Shopify"
+        ],
+        "valueType": "currency",
+        "chartRecommendations": [
+          "bar",
+          "stacked-bar"
+        ],
+        "keyPath": "dataBySalesConnectors.netSalesPeriodAgo",
+        "sampleValues": [
+          127887.97941830893,
+          26171.559999999998
+        ]
+      },
+      {
+        "name": "dataBySalesConnectors.netSalesChangePercentage",
+        "type": "groupedSeries",
+        "description": "net sales change percentage broken down by category over time from dataBySalesConnectors",
+        "hasTimeData": false,
+        "hasGrouping": true,
+        "groupingDimensions": [
+          "Amazon Seller Partner",
+          "Shopify"
+        ],
+        "valueType": "currency",
+        "chartRecommendations": [
+          "bar",
+          "stacked-bar"
+        ],
+        "keyPath": "dataBySalesConnectors.netSalesChangePercentage",
+        "sampleValues": [
+          5.57,
+          -17.380000000000003
+        ]
+      },
+      {
+        "name": "dataBySalesConnectors.fees",
+        "type": "groupedSeries",
+        "description": "fees broken down by category over time from dataBySalesConnectors",
+        "hasTimeData": false,
+        "hasGrouping": true,
+        "groupingDimensions": [
+          "Amazon Seller Partner",
+          "Shopify"
+        ],
+        "valueType": "generic",
+        "chartRecommendations": [
+          "bar",
+          "stacked-bar"
+        ],
+        "keyPath": "dataBySalesConnectors.fees",
+        "sampleValues": [
+          19597.894321315434,
+          697.6141255567288
+        ]
+      },
+      {
+        "name": "newCustomerAOVPercentageChange",
+        "type": "scalar",
+        "description": "Total new customer a o v percentage change",
+        "hasTimeData": false,
+        "hasGrouping": false,
+        "valueType": "percentage",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "sampleValues": [
+          -0.36
+        ],
+        "keyPath": "newCustomerAOVPercentageChange"
+      },
+      {
+        "name": "customerAqCostPercentageChange",
+        "type": "scalar",
+        "description": "Total customer aq cost percentage change",
+        "hasTimeData": false,
+        "hasGrouping": false,
+        "valueType": "currency",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "sampleValues": [
+          0
+        ],
+        "keyPath": "customerAqCostPercentageChange"
+      },
+      {
+        "name": "burnRate",
+        "type": "scalar",
+        "description": "Total burn rate",
+        "hasTimeData": false,
+        "hasGrouping": false,
+        "valueType": "percentage",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "sampleValues": [
+          51477.881843320836
+        ],
+        "keyPath": "burnRate"
+      },
+      {
+        "name": "totalSalesGeneralAdministrativeExpenses",
+        "type": "scalar",
+        "description": "Total total sales general administrative expenses",
+        "hasTimeData": false,
+        "hasGrouping": false,
+        "valueType": "currency",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "sampleValues": [
+          46475.37999999999
+        ],
+        "keyPath": "totalSalesGeneralAdministrativeExpenses"
+      },
+      {
+        "name": "totalSalesGeneralAdministrativeExpensesChangePercentage",
+        "type": "scalar",
+        "description": "Total total sales general administrative expenses change percentage",
+        "hasTimeData": false,
+        "hasGrouping": false,
+        "valueType": "currency",
+        "chartRecommendations": [
+          "bar"
+        ],
+        "sampleValues": [
+          0.9299999999999999
+        ],
+        "keyPath": "totalSalesGeneralAdministrativeExpensesChangePercentage"
+      }
+    ],
+    "suggestedChartTypes": [
+      {
+        "chartType": "line",
+        "confidence": 0.9,
+        "reason": "Time series data is ideal for showing trends and patterns over time",
+        "bestForMetrics": [
+          "sales"
+        ]
+      },
+      {
+        "chartType": "line",
+        "confidence": 0.9,
+        "reason": "Time series data is ideal for showing trends and patterns over time",
+        "bestForMetrics": [
+          "orders"
+        ]
+      },
+      {
+        "chartType": "line",
+        "confidence": 0.9,
+        "reason": "Time series data is ideal for showing trends and patterns over time",
+        "bestForMetrics": [
+          "cashOnHandAmounts"
+        ]
+      },
+      {
+        "chartType": "line",
+        "confidence": 0.9,
+        "reason": "Time series data is ideal for showing trends and patterns over time",
+        "bestForMetrics": [
+          "creditCardBalances"
+        ]
+      },
+      {
+        "chartType": "line",
+        "confidence": 0.9,
+        "reason": "Time series data is ideal for showing trends and patterns over time",
+        "bestForMetrics": [
+          "grossProfits"
+        ]
+      },
+      {
+        "chartType": "line",
+        "confidence": 0.9,
+        "reason": "Time series data is ideal for showing trends and patterns over time",
+        "bestForMetrics": [
+          "changesInCash"
+        ]
+      },
+      {
+        "chartType": "line",
+        "confidence": 0.9,
+        "reason": "Time series data is ideal for showing trends and patterns over time",
+        "bestForMetrics": [
+          "contributionMargins"
+        ]
+      },
+      {
+        "chartType": "line",
+        "confidence": 0.9,
+        "reason": "Time series data is ideal for showing trends and patterns over time",
+        "bestForMetrics": [
+          "netSales"
+        ]
+      },
+      {
+        "chartType": "line",
+        "confidence": 0.9,
+        "reason": "Time series data is ideal for showing trends and patterns over time",
+        "bestForMetrics": [
+          "burnRates"
+        ]
+      },
+      {
+        "chartType": "line",
+        "confidence": 0.9,
+        "reason": "Time series data is ideal for showing trends and patterns over time",
+        "bestForMetrics": [
+          "contributionMarginPercentages"
+        ]
+      },
+      {
+        "chartType": "line",
+        "confidence": 0.9,
+        "reason": "Time series data is ideal for showing trends and patterns over time",
+        "bestForMetrics": [
+          "aMers"
+        ]
+      },
+      {
+        "chartType": "stacked-bar",
+        "confidence": 0.85,
+        "reason": "Grouped data with multiple categories shows composition well in stacked bars",
+        "bestForMetrics": [
+          "sales.value"
+        ]
+      },
+      {
+        "chartType": "stacked-bar",
+        "confidence": 0.85,
+        "reason": "Grouped data with multiple categories shows composition well in stacked bars",
+        "bestForMetrics": [
+          "netSalesByConnector"
+        ]
+      },
+      {
+        "chartType": "stacked-bar",
+        "confidence": 0.85,
+        "reason": "Grouped data with multiple categories shows composition well in stacked bars",
+        "bestForMetrics": [
+          "orders.value"
+        ]
+      },
+      {
+        "chartType": "stacked-bar",
+        "confidence": 0.85,
+        "reason": "Grouped data with multiple categories shows composition well in stacked bars",
+        "bestForMetrics": [
+          "cashOnHandAmounts.value"
+        ]
+      },
+      {
+        "chartType": "stacked-bar",
+        "confidence": 0.85,
+        "reason": "Grouped data with multiple categories shows composition well in stacked bars",
+        "bestForMetrics": [
+          "cashDetails.current"
+        ]
+      },
+      {
+        "chartType": "stacked-bar",
+        "confidence": 0.85,
+        "reason": "Grouped data with multiple categories shows composition well in stacked bars",
+        "bestForMetrics": [
+          "cashDetails.available"
+        ]
+      },
+      {
+        "chartType": "stacked-bar",
+        "confidence": 0.85,
+        "reason": "Grouped data with multiple categories shows composition well in stacked bars",
+        "bestForMetrics": [
+          "cashDetails.limit"
+        ]
+      },
+      {
+        "chartType": "stacked-bar",
+        "confidence": 0.85,
+        "reason": "Grouped data with multiple categories shows composition well in stacked bars",
+        "bestForMetrics": [
+          "creditCardBalances.value"
+        ]
+      },
+      {
+        "chartType": "stacked-bar",
+        "confidence": 0.85,
+        "reason": "Grouped data with multiple categories shows composition well in stacked bars",
+        "bestForMetrics": [
+          "creditCardDetails.current"
+        ]
+      },
+      {
+        "chartType": "stacked-bar",
+        "confidence": 0.85,
+        "reason": "Grouped data with multiple categories shows composition well in stacked bars",
+        "bestForMetrics": [
+          "creditCardDetails.available"
+        ]
+      },
+      {
+        "chartType": "stacked-bar",
+        "confidence": 0.85,
+        "reason": "Grouped data with multiple categories shows composition well in stacked bars",
+        "bestForMetrics": [
+          "creditCardDetails.limit"
+        ]
+      },
+      {
+        "chartType": "stacked-bar",
+        "confidence": 0.85,
+        "reason": "Grouped data with multiple categories shows composition well in stacked bars",
+        "bestForMetrics": [
+          "grossProfits.value"
+        ]
+      },
+      {
+        "chartType": "stacked-bar",
+        "confidence": 0.85,
+        "reason": "Grouped data with multiple categories shows composition well in stacked bars",
+        "bestForMetrics": [
+          "changesInCash.value"
+        ]
+      },
+      {
+        "chartType": "stacked-bar",
+        "confidence": 0.85,
+        "reason": "Grouped data with multiple categories shows composition well in stacked bars",
+        "bestForMetrics": [
+          "contributionMargins.value"
+        ]
+      },
+      {
+        "chartType": "stacked-bar",
+        "confidence": 0.85,
+        "reason": "Grouped data with multiple categories shows composition well in stacked bars",
+        "bestForMetrics": [
+          "marketingExpenses.values.Amazon Ads"
+        ]
+      },
+      {
+        "chartType": "stacked-bar",
+        "confidence": 0.85,
+        "reason": "Grouped data with multiple categories shows composition well in stacked bars",
+        "bestForMetrics": [
+          "marketingExpenses.values.Product Giveaway Marketing"
+        ]
+      },
+      {
+        "chartType": "stacked-bar",
+        "confidence": 0.85,
+        "reason": "Grouped data with multiple categories shows composition well in stacked bars",
+        "bestForMetrics": [
+          "netSales.value"
+        ]
+      },
+      {
+        "chartType": "stacked-bar",
+        "confidence": 0.85,
+        "reason": "Grouped data with multiple categories shows composition well in stacked bars",
+        "bestForMetrics": [
+          "burnRates.value"
+        ]
+      },
+      {
+        "chartType": "stacked-bar",
+        "confidence": 0.85,
+        "reason": "Grouped data with multiple categories shows composition well in stacked bars",
+        "bestForMetrics": [
+          "contributionMarginPercentages.value"
+        ]
+      },
+      {
+        "chartType": "stacked-bar",
+        "confidence": 0.85,
+        "reason": "Grouped data with multiple categories shows composition well in stacked bars",
+        "bestForMetrics": [
+          "aMers.value"
+        ]
+      },
+      {
+        "chartType": "stacked-bar",
+        "confidence": 0.85,
+        "reason": "Grouped data with multiple categories shows composition well in stacked bars",
+        "bestForMetrics": [
+          "dataBySalesConnectors.grossSales"
+        ]
+      },
+      {
+        "chartType": "stacked-bar",
+        "confidence": 0.85,
+        "reason": "Grouped data with multiple categories shows composition well in stacked bars",
+        "bestForMetrics": [
+          "dataBySalesConnectors.grossSalesPeriodAgo"
+        ]
+      },
+      {
+        "chartType": "stacked-bar",
+        "confidence": 0.85,
+        "reason": "Grouped data with multiple categories shows composition well in stacked bars",
+        "bestForMetrics": [
+          "dataBySalesConnectors.grossSalesChangePercentage"
+        ]
+      },
+      {
+        "chartType": "stacked-bar",
+        "confidence": 0.85,
+        "reason": "Grouped data with multiple categories shows composition well in stacked bars",
+        "bestForMetrics": [
+          "dataBySalesConnectors.netSales"
+        ]
+      },
+      {
+        "chartType": "stacked-bar",
+        "confidence": 0.85,
+        "reason": "Grouped data with multiple categories shows composition well in stacked bars",
+        "bestForMetrics": [
+          "dataBySalesConnectors.netSalesPeriodAgo"
+        ]
+      },
+      {
+        "chartType": "stacked-bar",
+        "confidence": 0.85,
+        "reason": "Grouped data with multiple categories shows composition well in stacked bars",
+        "bestForMetrics": [
+          "dataBySalesConnectors.netSalesChangePercentage"
+        ]
+      },
+      {
+        "chartType": "stacked-bar",
+        "confidence": 0.85,
+        "reason": "Grouped data with multiple categories shows composition well in stacked bars",
+        "bestForMetrics": [
+          "dataBySalesConnectors.fees"
+        ]
+      },
+      {
+        "chartType": "line",
+        "confidence": 0.85,
+        "reason": "Multiple time series metrics available for trend analysis",
+        "bestForMetrics": [
+          "sales",
+          "netSalesByConnector",
+          "orders"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "totalGrossSales"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "totalDiscounts"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "totalRefunds"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "totalShippingIncome"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "sales"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "totalGrossSalesChangePercentage"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "totalNetSalesChangePercentage"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "totalOrders"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "orders"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "totalOrdersChangePercentage"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "averageOrderValue"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "newCustomerAverageOrderValue"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "newCustomerContributionMarginPerOrder"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "cashOnHand"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "cashOnHandChangePercentage"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "cashOnHandAmounts"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "cashDetails"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "creditCardBalance"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "creditCardBalances"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "creditCardDetails"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "grossProfit"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "grossProfitMargin"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "grossProfits"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "changeInCash"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "changeInCashChangePercentage"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "changesInCash"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "freeCashYield"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "aMer"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "contributionMargin"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "contributionMarginPercentage"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "contributionMargins"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "contributionMarginRatio"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "totalMarketingExpense"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "marketingExpenses.values"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "netMER"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "netMERGrowthPercentage"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "netSales"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "totalNetSales"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "totalNewCustomerTotalNetSales"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "totalReturningCustomerTotalNetSales"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "totalNewCustomerOrders"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "totalReturningCustomerOrders"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "totalNewCustomersCount"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "burnRates"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "contributionMarginPercentages"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "aMers"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "aMerGrowthPercentage"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "customerAqCost"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "amazonBalance"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "totalCogs"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "productCogs"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "newCustomerProductCOGS"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "newCustomerTotalCOGS"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "fixedOverheadAbsorption"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "totalLogistics"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "totalFreight"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "totalFees"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "dataBySalesConnectors"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "newCustomerAOVPercentageChange"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "customerAqCostPercentageChange"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "burnRate"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "totalSalesGeneralAdministrativeExpenses"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.8,
+        "reason": "Categorical or scalar data is excellent for side-by-side comparisons",
+        "bestForMetrics": [
+          "totalSalesGeneralAdministrativeExpensesChangePercentage"
+        ]
+      },
+      {
+        "chartType": "bar",
+        "confidence": 0.75,
+        "reason": "Categorical data available for comparison analysis",
+        "bestForMetrics": [
+          "sales",
+          "sales.value",
+          "netSalesByConnector"
+        ]
+      },
+      {
+        "chartType": "waterfall",
+        "confidence": 0.7,
+        "reason": "Change/delta metrics are perfect for showing cumulative effects",
+        "bestForMetrics": [
+          "totalGrossSalesChangePercentage",
+          "totalNetSalesChangePercentage",
+          "totalOrdersChangePercentage",
+          "cashOnHandChangePercentage",
+          "changeInCash",
+          "changeInCashChangePercentage",
+          "changesInCash",
+          "changesInCash",
+          "changesInCash.value",
+          "dataBySalesConnectors.grossSalesChangePercentage",
+          "dataBySalesConnectors.netSalesChangePercentage",
+          "newCustomerAOVPercentageChange",
+          "customerAqCostPercentageChange",
+          "totalSalesGeneralAdministrativeExpensesChangePercentage"
+        ]
+      }
+    ],
+    "dataContext": "This dataset contains 102 metrics. There are 12 time-series metrics that show trends over time. There are 42 grouped metrics that can be broken down by categories. There are 48 summary/total metrics. There are 15 complex metrics with embedded sub-metrics or account-level breakdowns. Currency metrics include: totalGrossSales, totalShippingIncome, sales, totalGrossSalesChangePercentage, totalNetSalesChangePercentage, netSalesByConnector, newCustomerContributionMarginPerOrder, cashOnHand, cashOnHandChangePercentage, cashOnHandAmounts, creditCardBalance, creditCardBalances, grossProfit, grossProfitMargin, grossProfits, changeInCash, changeInCashChangePercentage, changesInCash, freeCashYield, contributionMargin, contributionMargins, contributionMarginRatio, netSales, totalNetSales, totalNewCustomerTotalNetSales, totalReturningCustomerTotalNetSales, customerAqCost, amazonBalance, dataBySalesConnectors.grossSales, dataBySalesConnectors.grossSalesPeriodAgo, dataBySalesConnectors.grossSalesChangePercentage, dataBySalesConnectors.netSales, dataBySalesConnectors.netSalesPeriodAgo, dataBySalesConnectors.netSalesChangePercentage, customerAqCostPercentageChange, totalSalesGeneralAdministrativeExpenses, totalSalesGeneralAdministrativeExpensesChangePercentage. Percentage metrics include: totalOrdersChangePercentage, contributionMarginPercentage, netMERGrowthPercentage, burnRates, contributionMarginPercentages, aMerGrowthPercentage, newCustomerAOVPercentageChange, burnRate. Count metrics include: totalDiscounts, totalOrders, orders, totalNewCustomerOrders, totalReturningCustomerOrders, totalNewCustomersCount, totalFreight. Data appears to be from 2025. Use 2025 for date ranges unless user specifies otherwise. "
+  },
+  "metadata": {
+    "dataSource": "Iris Finance API",
+    "responseTimeMs": 47177,
+    "metricsCount": 3
+  }
+}

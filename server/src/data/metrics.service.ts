@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { DataAnalysisService, MetricInfo } from './data-analysis.service';
-import { IrisApiService } from './iris-api.service';
-import { ChartDataSlicer, ChartData } from './data/chart-data-slicer';
-import { DateFilterUtil } from './utils/date-filter.util';
-import { ErrorHandlerService } from './common/error-handler.service';
+import { IrisApiService } from '../api/iris-api.service';
+import { ChartDataSlicerService, ChartData } from './chart-data-slicer.service';
+import { DateFilterUtil } from '../utils/date-filter.util';
+import { ErrorHandlerService } from '../common/error-handler.service';
 
 /**
  * Service for handling metrics data operations with caching
@@ -17,7 +17,7 @@ export class MetricsService {
     constructor(
         private dataAnalysisService: DataAnalysisService,
         private irisApiService: IrisApiService,
-        private chartDataSlicer: ChartDataSlicer,
+        private chartDataSlicer: ChartDataSlicerService,
         private errorHandler: ErrorHandlerService
     ) { }
 
@@ -36,12 +36,12 @@ export class MetricsService {
                     component: 'MetricsService',
                     metadata: { dateRange }
                 });
-                
+
                 const data = await this.irisApiService.fetchMetrics(dateRange);
 
                 this.cache.set(cacheKey, data);
                 this.dataAnalysis = this.dataAnalysisService.analyzeData(data);
-                
+
                 this.errorHandler.logInfo('data_analysis', `Detected ${this.dataAnalysis.availableMetrics.length} metrics in the dataset`, {
                     component: 'MetricsService',
                     metadata: { metricsCount: this.dataAnalysis.availableMetrics.length, dateRange }

@@ -1,7 +1,7 @@
 import { START, END, StateGraph, Annotation } from "@langchain/langgraph";
-import { DashboardDto, DashboardChartDto } from "./chat.dto";
-import { MetricsService } from "./metrics.service";
-import { MetricInfo } from "./data-analysis.service";
+import { DashboardDto, DashboardChartDto } from "./dto/chat.dto";
+import { MetricsService } from "./data/metrics.service";
+import { MetricInfo } from "./data/data-analysis.service";
 
 export type DashboardGraphDeps = {
     metricsService: MetricsService;

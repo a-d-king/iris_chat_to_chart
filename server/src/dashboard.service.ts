@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { OpenAiService } from './openai.service';
-import { MetricsService } from './metrics.service';
-import { MetricInfo } from './data-analysis.service';
+import { MetricsService } from './data/metrics.service';
+import { MetricInfo } from './data/data-analysis.service';
 import { ReasoningService } from './reasoning.service';
-import { DashboardDto, DashboardChartDto } from './chat.dto';
+import { DashboardDto, DashboardChartDto } from './dto/chat.dto';
 import { runDashboardGraph } from './dashboard.graph';
 
 interface DashboardResponse {
