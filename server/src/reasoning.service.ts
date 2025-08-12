@@ -4,9 +4,7 @@ import { IntentAnalyzerService, IntentAnalysis } from './reasoning/intent-analyz
 import { ChartRankerService, TopKChartsAnalysis, ChartRanking } from './reasoning/chart-ranker.service';
 import { ErrorHandlerService } from './common/error-handler.service';
 
-// Re-export interfaces from extracted services for backward compatibility
-export { IntentAnalysis, IntentType, TemporalSignal, ComparisonSignal } from './reasoning/intent-analyzer.service';
-export { ChartRanking, TopKChartsAnalysis } from './reasoning/chart-ranker.service';
+
 
 /**
  * Interface for reasoning step information
@@ -427,17 +425,7 @@ export class ReasoningService {
         };
     }
 
-    /**
-     * Generate top K chart recommendations with systematic ranking
-     */
-    generateTopKCharts(
-        prompt: string,
-        dataAnalysis: DataAnalysis,
-        k: number = 5,
-        intentAnalysis?: IntentAnalysis
-    ): TopKChartsAnalysis {
-        return this.chartRanker.generateTopKCharts(prompt, dataAnalysis, k, intentAnalysis);
-    }
+
 
     /**
      * Comprehensive metric analysis and ranking for dashboards and charts
@@ -460,7 +448,7 @@ export class ReasoningService {
 
             // Analyze data quality
             const qualityIssues: { metric: MetricInfo; issues: string[]; severity: 'low' | 'medium' | 'high' }[] = [];
-            
+
             const rankedMetrics = scoredMetrics
                 .sort((a, b) => b.score - a.score)
                 .slice(0, maxMetrics);
