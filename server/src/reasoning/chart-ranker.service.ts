@@ -32,7 +32,6 @@ export interface TopKChartsAnalysis {
 
 /**
  * Service responsible for ranking and selecting optimal chart types
- * Extracted from ReasoningService for better separation of concerns
  */
 @Injectable()
 export class ChartRankerService {

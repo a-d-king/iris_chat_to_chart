@@ -65,7 +65,7 @@ export class ErrorHandlerService {
      */
     handleValidationError(field: string, value: any, requirement: string, context?: ErrorContext): never {
         const message = `Invalid ${field}: "${value}". ${requirement}`;
-        
+
         const logContext = {
             operation: 'validation',
             field,
@@ -89,7 +89,7 @@ export class ErrorHandlerService {
      */
     handleDataProcessingError(operation: string, dataType: string, error: any, context?: ErrorContext): never {
         const errorMessage = error instanceof Error ? error.message : String(error);
-        
+
         const logContext = {
             operation: `data_processing_${operation}`,
             dataType,
@@ -112,7 +112,7 @@ export class ErrorHandlerService {
     }
 
     /**
-     * Handle external API errors (like OpenAI, Iris API)
+     * Handle external API errors (OpenAI, Iris API)
      * @param apiName - Name of the external API
      * @param operation - Operation that was attempted
      * @param error - The error that occurred
@@ -121,7 +121,7 @@ export class ErrorHandlerService {
      */
     handleExternalApiError(apiName: string, operation: string, error: any, context?: ErrorContext): never {
         const errorMessage = error instanceof Error ? error.message : String(error);
-        
+
         const logContext = {
             operation: `external_api_${apiName}_${operation}`,
             apiName,
@@ -188,8 +188,8 @@ export class ErrorHandlerService {
      */
     private isNotFoundError(errorMessage: string): boolean {
         return errorMessage.toLowerCase().includes('not found') ||
-               errorMessage.toLowerCase().includes('does not exist') ||
-               errorMessage.toLowerCase().includes('missing');
+            errorMessage.toLowerCase().includes('does not exist') ||
+            errorMessage.toLowerCase().includes('missing');
     }
 
     /**
@@ -197,8 +197,8 @@ export class ErrorHandlerService {
      */
     private isBadRequestError(errorMessage: string): boolean {
         return errorMessage.toLowerCase().includes('required') ||
-               errorMessage.toLowerCase().includes('invalid') ||
-               errorMessage.toLowerCase().includes('malformed');
+            errorMessage.toLowerCase().includes('invalid') ||
+            errorMessage.toLowerCase().includes('malformed');
     }
 
     /**
@@ -206,8 +206,8 @@ export class ErrorHandlerService {
      */
     private isValidationError(errorMessage: string): boolean {
         return errorMessage.toLowerCase().includes('validation') ||
-               errorMessage.toLowerCase().includes('format') ||
-               errorMessage.toLowerCase().includes('must be');
+            errorMessage.toLowerCase().includes('format') ||
+            errorMessage.toLowerCase().includes('must be');
     }
 
     /**
@@ -215,8 +215,8 @@ export class ErrorHandlerService {
      */
     private isDataNotFoundError(errorMessage: string): boolean {
         return errorMessage.toLowerCase().includes('metric') && errorMessage.toLowerCase().includes('not found') ||
-               errorMessage.toLowerCase().includes('data not available') ||
-               errorMessage.toLowerCase().includes('no data');
+            errorMessage.toLowerCase().includes('data not available') ||
+            errorMessage.toLowerCase().includes('no data');
     }
 
     /**
@@ -224,8 +224,8 @@ export class ErrorHandlerService {
      */
     private isDataFormatError(errorMessage: string): boolean {
         return errorMessage.toLowerCase().includes('format') ||
-               errorMessage.toLowerCase().includes('structure') ||
-               errorMessage.toLowerCase().includes('schema');
+            errorMessage.toLowerCase().includes('structure') ||
+            errorMessage.toLowerCase().includes('schema');
     }
 
     /**
@@ -233,9 +233,9 @@ export class ErrorHandlerService {
      */
     private isAuthenticationError(errorMessage: string): boolean {
         return errorMessage.toLowerCase().includes('authentication') ||
-               errorMessage.toLowerCase().includes('unauthorized') ||
-               errorMessage.toLowerCase().includes('api key') ||
-               errorMessage.toLowerCase().includes('token');
+            errorMessage.toLowerCase().includes('unauthorized') ||
+            errorMessage.toLowerCase().includes('api key') ||
+            errorMessage.toLowerCase().includes('token');
     }
 
     /**
@@ -243,8 +243,8 @@ export class ErrorHandlerService {
      */
     private isRateLimitError(errorMessage: string): boolean {
         return errorMessage.toLowerCase().includes('rate limit') ||
-               errorMessage.toLowerCase().includes('too many requests') ||
-               errorMessage.toLowerCase().includes('quota');
+            errorMessage.toLowerCase().includes('too many requests') ||
+            errorMessage.toLowerCase().includes('quota');
     }
 
     /**
@@ -252,9 +252,9 @@ export class ErrorHandlerService {
      */
     private isTimeoutError(errorMessage: string): boolean {
         return errorMessage.toLowerCase().includes('timeout') ||
-               errorMessage.toLowerCase().includes('timed out') ||
-               errorMessage.toLowerCase().includes('connection') ||
-               errorMessage.toLowerCase().includes('network');
+            errorMessage.toLowerCase().includes('timed out') ||
+            errorMessage.toLowerCase().includes('connection') ||
+            errorMessage.toLowerCase().includes('network');
     }
 
     /**

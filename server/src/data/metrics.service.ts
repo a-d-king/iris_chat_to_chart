@@ -7,7 +7,6 @@ import { ErrorHandlerService } from '../common/error-handler.service';
 
 /**
  * Service for handling metrics data operations with caching
- * Refactored to use specialized utilities for data slicing and error handling
  */
 @Injectable()
 export class MetricsService {

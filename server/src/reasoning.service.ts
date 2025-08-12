@@ -57,7 +57,6 @@ export interface MetricsAndChartsSelection {
 
 /**
  * Service for providing transparent reasoning about chart and data selection decisions
- * Refactored to use specialized services for intent analysis and chart ranking
  */
 @Injectable()
 export class ReasoningService {
@@ -151,7 +150,7 @@ export class ReasoningService {
             // Extract key factors
             const keyFactors = steps
                 .flatMap(step => step.factors)
-                .filter((factor, index, arr) => arr.indexOf(factor) === index) // Remove duplicates
+                .filter((factor, index, arr) => arr.indexOf(factor) === index)
                 .slice(0, 5); // Top 5 factors
 
             return {

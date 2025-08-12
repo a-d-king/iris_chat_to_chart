@@ -18,7 +18,7 @@ interface DashboardResponse {
 }
 
 /**
- * Primary Dashboard generation service with built-in deduplication to prevent duplicate charts
+ * Primary dashboard generation service with built-in deduplication
  */
 @Injectable()
 export class DashboardService {
@@ -44,7 +44,7 @@ export class DashboardService {
     }
 
     public async identifyRelatedMetrics(prompt: string, dataAnalysis: any, maxCharts: number = 5): Promise<MetricInfo[]> {
-        // Filter out scalar metrics for dashboards - they don't visualize well as charts
+        // Filter out scalar metrics for dashboards - need system to handle in future
         const visualizableMetrics = dataAnalysis.availableMetrics.filter((m: MetricInfo) =>
             m.type !== 'scalar'
         );

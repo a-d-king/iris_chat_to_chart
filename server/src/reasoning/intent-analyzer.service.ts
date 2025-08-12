@@ -36,11 +36,10 @@ export interface ComparisonSignal {
 
 /**
  * Service responsible for analyzing user intent from natural language prompts
- * Extracted from ReasoningService for better separation of concerns
  */
 @Injectable()
 export class IntentAnalyzerService {
-    
+
     /**
      * Perform comprehensive intent analysis using semantic understanding
      * @param prompt - User's natural language prompt
