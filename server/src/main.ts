@@ -12,13 +12,29 @@ import { AuditService } from './audit.service';
 import { DashboardService } from './dashboard.service';
 import { IrisApiService } from './iris-api.service';
 import { ReasoningService } from './reasoning.service';
+import { IntentAnalyzerService } from './reasoning/intent-analyzer.service';
+import { ChartRankerService } from './reasoning/chart-ranker.service';
+import { ErrorHandlerService } from './common/error-handler.service';
+import { ChartDataSlicerProvider } from './providers';
 import { VersioningType } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 @Module({
     imports: [HttpModule],
     controllers: [AppController],
-    providers: [OpenAiService, MetricsService, DataAnalysisService, AuditService, DashboardService, IrisApiService, ReasoningService]
+    providers: [
+        OpenAiService,
+        MetricsService,
+        DataAnalysisService,
+        AuditService,
+        DashboardService,
+        IrisApiService,
+        ReasoningService,
+        IntentAnalyzerService,
+        ChartRankerService,
+        ErrorHandlerService,
+        ChartDataSlicerProvider
+    ]
 })
 class AppModule { }
 async function bootstrap() {
