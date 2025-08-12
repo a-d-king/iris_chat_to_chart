@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { OpenAiService } from './openai.service';
-import { MetricsService } from './metrics.service';
-import { MetricInfo } from './data-analysis.service';
+import { MetricsService } from './data/metrics.service';
+import { MetricInfo } from './data/data-analysis.service';
 import { ReasoningService } from './reasoning.service';
-import { DashboardDto, DashboardChartDto } from './chat.dto';
+import { DashboardDto, DashboardChartDto } from './dto/chat.dto';
 import { runDashboardGraph } from './dashboard.graph';
 
 interface DashboardResponse {
@@ -17,6 +17,9 @@ interface DashboardResponse {
     requestId: string;
 }
 
+/**
+ * Primary dashboard generation service with built-in deduplication
+ */
 @Injectable()
 export class DashboardService {
     constructor(
@@ -41,7 +44,7 @@ export class DashboardService {
     }
 
     public async identifyRelatedMetrics(prompt: string, dataAnalysis: any, maxCharts: number = 5): Promise<MetricInfo[]> {
-        // Filter out scalar metrics for dashboards - they don't visualize well as charts
+        // Filter out scalar metrics for dashboards - need system to handle in future
         const visualizableMetrics = dataAnalysis.availableMetrics.filter((m: MetricInfo) =>
             m.type !== 'scalar'
         );
@@ -59,7 +62,13 @@ export class DashboardService {
             console.log('=== END QUALITY ISSUES ===');
         }
 
-        return analysis.rankedMetrics.map(ranked => ranked.metric);
+        // Deduplicate metrics by name (in case reasoning service returns duplicates)
+        const metrics = analysis.rankedMetrics.map(ranked => ranked.metric);
+        const uniqueMetrics = metrics.filter((metric, index) =>
+            metrics.findIndex(m => m.name === metric.name) === index
+        );
+
+        return uniqueMetrics;
     }
 
     public async generateChartSpecs(request: DashboardDto, metrics: MetricInfo[], dataAnalysis: any): Promise<any[]> {
@@ -88,7 +97,8 @@ export class DashboardService {
             }
         }
 
-        return specs;
+        // Remove duplicates based on metric + chart type + date range combination
+        return this.deduplicateChartSpecs(specs);
     }
 
     public generateChartTitle(metricName: string, chartType: string): string {
@@ -140,5 +150,39 @@ export class DashboardService {
 
     public generateDashboardId(): string {
         return `dashboard_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    }
+
+    /**
+     * Create a unique key for chart deduplication based on metric, chart type, and date range
+     * @param spec - Chart specification object
+     * @returns Unique string key for the chart
+     */
+    private createChartKey(spec: any): string {
+        // Handle cases where spec properties might be undefined
+        const metric = spec?.metric || 'unknown';
+        const chartType = spec?.chartType || 'unknown';
+        const dateRange = spec?.dateRange || 'default';
+        return `${metric}|${chartType}|${dateRange}`;
+    }
+
+    /**
+ * Remove duplicate charts based on metric, chart type, and date range combination
+ * @param specs - Array of chart specifications
+ * @returns Deduplicated array of chart specifications
+ */
+    private deduplicateChartSpecs(specs: any[]): any[] {
+        const seenKeys = new Set<string>();
+        const deduplicated: any[] = [];
+
+        for (const spec of specs) {
+            const key = this.createChartKey(spec);
+
+            if (!seenKeys.has(key)) {
+                seenKeys.add(key);
+                deduplicated.push(spec);
+            }
+        }
+
+        return deduplicated;
     }
 } 

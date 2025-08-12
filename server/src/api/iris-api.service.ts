@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
-import { buildIrisHeaders } from './config/iris.config';
+import { buildIrisHeaders } from '../config/iris.config';
 
 interface IrisApiFilters {
     startDate: string;

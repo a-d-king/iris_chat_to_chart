@@ -50,7 +50,7 @@ export interface DashboardAuditData {
  */
 @Injectable()
 export class AuditService {
-    private auditDir = path.join(__dirname, '..', 'audit-logs');
+    private auditDir = path.join(__dirname, '..', '..', 'audit-logs');
 
     constructor() {
         this.ensureAuditDirectoryExists();

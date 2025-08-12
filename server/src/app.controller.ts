@@ -1,9 +1,9 @@
 import { Body, Controller, Post, Get, ValidationPipe, Version } from '@nestjs/common';
-import { ChatDto, DashboardDto, FeedbackDto, ChatResponseDto, DashboardResponseDto } from './chat.dto';
+import { ChatDto, DashboardDto, FeedbackDto, ChatResponseDto, DashboardResponseDto } from './dto/chat.dto';
 import { ApiBody, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { OpenAiService } from './openai.service';
-import { MetricsService } from './metrics.service';
-import { AuditService } from './audit.service';
+import { MetricsService } from './data/metrics.service';
+import { AuditService } from './audit/audit.service';
 import { DashboardService } from './dashboard.service';
 import { ReasoningService } from './reasoning.service';
 import { startTrace } from './observability/langfuse';
