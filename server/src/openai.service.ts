@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import OpenAI from 'openai';
 import { DataAnalysis } from './data/data-analysis.service';
 import { startTrace } from './observability/langfuse';
+import { EcommerceSemanticService } from './semantic/ecommerce-semantic.service';
 
 const openai = new OpenAI();
 
@@ -46,6 +47,7 @@ const TOOL_SCHEMA = [{
  */
 @Injectable()
 export class OpenAiService {
+    constructor(private ecommerceSemantic: EcommerceSemanticService) {}
     /**
      * Send a prompt to GPT and get back a structured chart specification with explicit reasoning
      * @param prompt - Natural language description of the desired chart
@@ -74,17 +76,24 @@ export class OpenAiService {
             metrics: dataAnalysis?.availableMetrics?.length
         });
         const span = trace?.span({ name: 'openai.chat.completions', metadata: { model: 'gpt-4o' } });
-        let reasoningPrompt = `You are a data visualization expert. Think step-by-step about this visualization request.
+        // Get semantic context for enhanced prompting
+        const semanticContext = dataAnalysis ? 
+            this.ecommerceSemantic.getSemanticContextForQuery(prompt, dataAnalysis) : 
+            null;
+
+        let reasoningPrompt = `You are an ecommerce data visualization expert with deep knowledge of business metrics and KPIs. Think step-by-step about this visualization request.
 
 USER REQUEST: "${prompt}"
 
 Think through this systematically:
 
-STEP 1 - ANALYZE USER INTENT:
+STEP 1 - ANALYZE USER INTENT & BUSINESS CONTEXT:
 - What is the user trying to understand or discover?
 - Are they looking for trends, comparisons, compositions, or patterns?
 - What specific keywords indicate their analytical intent?
 - Are they asking for temporal analysis, categorical comparison, or compositional breakdown?
+- What business domain does this relate to (sales, marketing, profitability, unit economics, cash flow)?
+- What business decisions might this analysis support?
 
 STEP 2 - EVALUATE AVAILABLE DATA:
 - What types of metrics are available?
@@ -125,9 +134,66 @@ Please provide your reasoning for each step clearly and explicitly.`;
         if (dataAnalysis) {
             reasoningPrompt += `\n\nAVAILABLE DATA:\n${dataAnalysis.dataContext}`;
 
+            // Add semantic context and business intelligence
+            if (semanticContext) {
+                reasoningPrompt += `\n\nBUSINESS CONTEXT & DOMAIN KNOWLEDGE:`;
+                
+                if (semanticContext.suggestedMetrics && semanticContext.suggestedMetrics.length > 0) {
+                    reasoningPrompt += `\n\nSEMANTIC METRIC SUGGESTIONS:`;
+                    semanticContext.suggestedMetrics.slice(0, 5).forEach(suggestion => {
+                        reasoningPrompt += `\n- ${suggestion.metricId}: ${suggestion.reason} (relevance: ${Math.round(suggestion.relevanceScore * 100)}%)`;
+                        if (suggestion.businessContext) {
+                            reasoningPrompt += `\n  Business Context: ${suggestion.businessContext}`;
+                        }
+                    });
+                }
+
+                if (semanticContext.domainContext) {
+                    reasoningPrompt += `\n\nDOMAIN INSIGHTS:`;
+                    if (semanticContext.domainContext.category) {
+                        reasoningPrompt += `\n- Primary business domain: ${semanticContext.domainContext.category}`;
+                    }
+                    if (semanticContext.domainContext.relatedMetrics && semanticContext.domainContext.relatedMetrics.length > 0) {
+                        reasoningPrompt += `\n- Related ecommerce metrics: ${semanticContext.domainContext.relatedMetrics.slice(0, 5).join(', ')}`;
+                    }
+                    if (semanticContext.domainContext.businessQuestions && semanticContext.domainContext.businessQuestions.length > 0) {
+                        reasoningPrompt += `\n- Key business questions this analysis might answer:`;
+                        semanticContext.domainContext.businessQuestions.slice(0, 3).forEach(question => {
+                            reasoningPrompt += `\n  • ${question}`;
+                        });
+                    }
+                }
+
+                if (semanticContext.analysisEnrichment) {
+                    if (semanticContext.analysisEnrichment.benchmarkContext) {
+                        reasoningPrompt += `\n\nINDUSTRY BENCHMARKS:`;
+                        reasoningPrompt += `\n- ${semanticContext.analysisEnrichment.benchmarkContext}`;
+                    }
+                    if (semanticContext.analysisEnrichment.businessInsights && semanticContext.analysisEnrichment.businessInsights.length > 0) {
+                        reasoningPrompt += `\n\nBUSINESS INSIGHTS:`;
+                        semanticContext.analysisEnrichment.businessInsights.forEach(insight => {
+                            reasoningPrompt += `\n- ${insight}`;
+                        });
+                    }
+                }
+            }
+
             reasoningPrompt += `\n\nMETRICS:`;
             dataAnalysis.availableMetrics.slice(0, 10).forEach(metric => {
-                reasoningPrompt += `\n- ${metric.name}: ${metric.description} (${metric.type}, ${metric.valueType})`;
+                let metricLine = `\n- ${metric.name}: ${metric.description} (${metric.type}, ${metric.valueType})`;
+                
+                // Add semantic enhancements if available
+                if (metric.semanticCategory) {
+                    metricLine += ` [${metric.semanticCategory}]`;
+                }
+                if (metric.isBusinessKPI) {
+                    metricLine += ` ⭐ Key Business KPI`;
+                }
+                if (metric.businessContext) {
+                    metricLine += `\n  Business Context: ${metric.businessContext}`;
+                }
+                
+                reasoningPrompt += metricLine;
             });
 
             // Add chart suggestions to help guide reasoning
@@ -137,7 +203,7 @@ Please provide your reasoning for each step clearly and explicitly.`;
                     reasoningPrompt += `\n- ${suggestion.chartType}: ${suggestion.reason} (confidence: ${suggestion.confidence})`;
                     reasoningPrompt += `\n  Best for: ${suggestion.bestForMetrics.join(', ')}`;
                 });
-                reasoningPrompt += `\n\nNote: These are suggestions based on data characteristics. Consider them alongside user intent.`;
+                reasoningPrompt += `\n\nNote: These are suggestions based on data characteristics. Consider them alongside user intent and business context.`;
             }
 
             // Add data quality warnings for reasoning
@@ -177,29 +243,70 @@ Please provide your reasoning for each step clearly and explicitly.`;
     private async makeReasonedDecision(prompt: string, dataAnalysis?: DataAnalysis, reasoning?: string) {
         const trace = startTrace('openai.makeReasonedDecision', { prompt });
         const span = trace?.span({ name: 'openai.chat.completions', metadata: { model: 'gpt-4o', tools: true } });
-        let decisionPrompt = `Based on the following reasoning, create a precise chart specification.
+        
+        // Get semantic context for enhanced decision making
+        const semanticContext = dataAnalysis ? 
+            this.ecommerceSemantic.getSemanticContextForQuery(prompt, dataAnalysis) : 
+            null;
+            
+        let decisionPrompt = `Based on the following reasoning, create a precise chart specification that leverages ecommerce domain knowledge.
 
 ORIGINAL REQUEST: "${prompt}"
 
 MY REASONING:
 ${reasoning}
 
-Now, create a structured chart specification that implements the decision from your reasoning.
+Now, create a structured chart specification that implements the decision from your reasoning while considering business context.
 
-CHART TYPE OPTIONS:
-- line: Time series trends
-- bar: Categorical comparisons  
-- stacked-bar: Composition analysis
-- heatmap: Pattern visualization
-- waterfall: Sequential changes
+CHART TYPE OPTIONS WITH BUSINESS USE CASES:
+- line: Time series trends (perfect for revenue growth, customer acquisition trends, marketing performance over time)
+- bar: Categorical comparisons (ideal for channel performance, product comparisons, regional analysis)
+- stacked-bar: Composition analysis (excellent for revenue breakdown by product, cost composition, marketing spend allocation)
+- heatmap: Pattern visualization (great for seasonal patterns, customer behavior across segments, performance correlations)
+- waterfall: Sequential changes (perfect for profit & loss analysis, cash flow changes, conversion funnel analysis)
+
+BUSINESS DECISION CRITERIA:
+- Prioritize metrics that directly impact business decisions
+- Consider the audience: executive summary vs operational deep-dive
+- Ensure the visualization answers key business questions
+- Select timeframes that align with business planning cycles
 
 Select the chart type, metric, and date range that best implements your reasoning above.`;
 
         if (dataAnalysis) {
+            // Add semantic insights to decision making
+            if (semanticContext && semanticContext.suggestedMetrics && semanticContext.suggestedMetrics.length > 0) {
+                decisionPrompt += `\n\nRECOMMENDED BUSINESS METRICS (in priority order):`;
+                semanticContext.suggestedMetrics.slice(0, 5).forEach((suggestion, index) => {
+                    decisionPrompt += `\n${index + 1}. ${suggestion.metricId} (${Math.round(suggestion.relevanceScore * 100)}% relevance)`;
+                    if (suggestion.businessContext) {
+                        decisionPrompt += ` - ${suggestion.businessContext}`;
+                    }
+                });
+            }
+
             decisionPrompt += `\n\nAVAILABLE METRICS:`;
             dataAnalysis.availableMetrics.forEach(metric => {
-                decisionPrompt += `\n- ${metric.name}: ${metric.description}`;
+                let metricDescription = `\n- ${metric.name}: ${metric.description}`;
+                
+                // Highlight business-critical metrics
+                if (metric.isBusinessKPI) {
+                    metricDescription += ` ⭐ CRITICAL BUSINESS KPI`;
+                }
+                if (metric.semanticCategory) {
+                    metricDescription += ` [${metric.semanticCategory}]`;
+                }
+                
+                decisionPrompt += metricDescription;
             });
+
+            // Add business context considerations
+            if (semanticContext && semanticContext.analysisEnrichment && semanticContext.analysisEnrichment.businessInsights) {
+                decisionPrompt += `\n\nBUSINESS CONTEXT CONSIDERATIONS:`;
+                semanticContext.analysisEnrichment.businessInsights.forEach(insight => {
+                    decisionPrompt += `\n- ${insight}`;
+                });
+            }
         }
 
         const response = await openai.chat.completions.create({

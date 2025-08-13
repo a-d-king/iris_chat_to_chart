@@ -16,6 +16,9 @@ import { IntentAnalyzerService } from './reasoning/intent-analyzer.service';
 import { ChartRankerService } from './reasoning/chart-ranker.service';
 import { ErrorHandlerService } from './common/error-handler.service';
 import { ChartDataSlicerService } from './data/chart-data-slicer.service';
+import { EcommerceSemanticService } from './semantic/ecommerce-semantic.service';
+import { MetricDefinitionRegistry } from './semantic/metric-definition.registry';
+import { BusinessContextService } from './semantic/business-context.service';
 import { VersioningType } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
@@ -33,7 +36,11 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
         IntentAnalyzerService,
         ChartRankerService,
         ErrorHandlerService,
-        ChartDataSlicerService
+        ChartDataSlicerService,
+        // Semantic layer services
+        EcommerceSemanticService,
+        MetricDefinitionRegistry,
+        BusinessContextService
     ]
 })
 class AppModule { }
