@@ -450,76 +450,131 @@ export class DataAnalysisService {
 
     /**
      * Generate chart type suggestions based on available metrics to help GPT-4o make better decisions
+     * Enhanced with sophisticated scoring, cross-metric analysis, and deduplication
      */
     private generateChartSuggestions(metrics: MetricInfo[]): ChartSuggestion[] {
+        const chartCandidates = new Map<string, ChartSuggestion>();
+
+        // 1. Generate metric-specific suggestions with enhanced scoring
+        for (const metric of metrics) {
+            const metricSuggestions = this.generateMetricSpecificSuggestions(metric);
+            metricSuggestions.forEach(suggestion => {
+                const existing = chartCandidates.get(suggestion.chartType);
+                if (!existing || suggestion.confidence > existing.confidence) {
+                    chartCandidates.set(suggestion.chartType, suggestion);
+                }
+            });
+        }
+
+        // 2. Generate cross-metric combination suggestions
+        const combinationSuggestions = this.generateCombinationSuggestions(metrics);
+        combinationSuggestions.forEach(suggestion => {
+            const existing = chartCandidates.get(suggestion.chartType);
+            if (!existing || suggestion.confidence > existing.confidence) {
+                chartCandidates.set(suggestion.chartType, suggestion);
+            }
+        });
+
+        // 3. Apply quality filtering and sort
+        const qualityThreshold = 0.4;
+        const filteredSuggestions = Array.from(chartCandidates.values())
+            .filter(s => s.confidence >= qualityThreshold)
+            .sort((a, b) => b.confidence - a.confidence)
+            .slice(0, 5); // Limit to top 5 suggestions
+
+        return filteredSuggestions;
+    }
+
+    /**
+     * Generate suggestions for individual metrics with enhanced data compatibility scoring
+     */
+    private generateMetricSpecificSuggestions(metric: MetricInfo): ChartSuggestion[] {
+        const suggestions: ChartSuggestion[] = [];
+        const chartTypes: Array<'line' | 'bar' | 'stacked-bar' | 'heatmap' | 'waterfall'> =
+            ['line', 'bar', 'stacked-bar', 'heatmap', 'waterfall'];
+
+        for (const chartType of chartTypes) {
+            const dataScore = this.scoreMetricDataCompatibility(chartType, metric);
+            const visualScore = this.scoreVisualEffectiveness(chartType, metric);
+
+            // Weighted scoring: prioritize data compatibility
+            const confidence = Math.round((dataScore * 0.7 + visualScore * 0.3) * 100) / 100;
+
+            if (confidence > 0.3) { // Only include viable options
+                suggestions.push({
+                    chartType,
+                    confidence,
+                    reason: this.generateEnhancedReason(chartType, metric, dataScore, visualScore),
+                    bestForMetrics: [metric.name]
+                });
+            }
+        }
+
+        return suggestions;
+    }
+
+    /**
+     * Generate suggestions for metric combinations and cross-metric analysis
+     */
+    private generateCombinationSuggestions(metrics: MetricInfo[]): ChartSuggestion[] {
         const suggestions: ChartSuggestion[] = [];
 
-        // Analyze metric characteristics and suggest appropriate chart types
-        for (const metric of metrics) {
-            // Line charts for temporal data
-            if (metric.hasTimeData && metric.type === 'timeSeries') {
-                suggestions.push({
-                    chartType: 'line',
-                    confidence: 0.9,
-                    reason: 'Time series data is ideal for showing trends and patterns over time',
-                    bestForMetrics: [metric.name]
-                });
-            }
-
-            // Stacked bar for grouped series with good categories
-            if (metric.hasGrouping && metric.type === 'groupedSeries' &&
-                (metric.groupingDimensions?.length || 0) > 1 && (metric.groupingDimensions?.length || 0) <= 8) {
-                suggestions.push({
-                    chartType: 'stacked-bar',
-                    confidence: 0.85,
-                    reason: 'Grouped data with multiple categories shows composition well in stacked bars',
-                    bestForMetrics: [metric.name]
-                });
-            }
-
-            // Bar charts for categorical comparisons
-            if (metric.type === 'scalar' || metric.type === 'dynamicKeyObject' || metric.type === 'embeddedMetrics') {
-                suggestions.push({
-                    chartType: 'bar',
-                    confidence: 0.8,
-                    reason: 'Categorical or scalar data is excellent for side-by-side comparisons',
-                    bestForMetrics: [metric.name]
-                });
-            }
-        }
-
-        // Add general suggestions based on data patterns
         const timeSeriesMetrics = metrics.filter(m => m.hasTimeData);
-        if (timeSeriesMetrics.length > 0) {
-            suggestions.push({
-                chartType: 'line',
-                confidence: 0.85,
-                reason: 'Multiple time series metrics available for trend analysis',
-                bestForMetrics: timeSeriesMetrics.map(m => m.name).slice(0, 3)
-            });
-        }
-
-        const categoricalMetrics = metrics.filter(m => m.hasGrouping);
-        if (categoricalMetrics.length > 0) {
-            suggestions.push({
-                chartType: 'bar',
-                confidence: 0.75,
-                reason: 'Categorical data available for comparison analysis',
-                bestForMetrics: categoricalMetrics.map(m => m.name).slice(0, 3)
-            });
-        }
-
-        // Waterfall for change/delta metrics
+        const groupedMetrics = metrics.filter(m => m.hasGrouping);
+        const currencyMetrics = metrics.filter(m => m.valueType === 'currency');
         const changeMetrics = metrics.filter(m =>
             m.name.toLowerCase().includes('change') ||
             m.name.toLowerCase().includes('delta') ||
             m.name.toLowerCase().includes('diff')
         );
+
+        // Multi-metric line chart for compatible time series
+        if (timeSeriesMetrics.length >= 2) {
+            const compatibleMetrics = timeSeriesMetrics.filter(m =>
+                m.valueType === 'currency' || m.valueType === 'count'
+            ).slice(0, 4); // Limit to avoid clutter
+
+            if (compatibleMetrics.length >= 2) {
+                let confidence = 0.75;
+
+                // Boost if all metrics are same value type (better visual coherence)
+                const valueTypes = new Set(compatibleMetrics.map(m => m.valueType));
+                if (valueTypes.size === 1) {
+                    confidence += 0.1;
+                }
+
+                suggestions.push({
+                    chartType: 'line',
+                    confidence: Math.min(confidence, 0.95),
+                    reason: `Multiple time-series metrics (${compatibleMetrics.length}) with ${valueTypes.size === 1 ? 'consistent' : 'mixed'} value types - excellent for trend comparison`,
+                    bestForMetrics: compatibleMetrics.map(m => m.name)
+                });
+            }
+        }
+
+        // Stacked bar for grouped financial metrics
+        if (groupedMetrics.length >= 2 && currencyMetrics.length >= 2) {
+            const relevantMetrics = metrics.filter(m =>
+                m.hasGrouping && m.valueType === 'currency' &&
+                (m.groupingDimensions?.length || 0) <= 8
+            ).slice(0, 3);
+
+            if (relevantMetrics.length >= 2) {
+                suggestions.push({
+                    chartType: 'stacked-bar',
+                    confidence: 0.82,
+                    reason: `Multiple grouped currency metrics showing composition and comparison across categories`,
+                    bestForMetrics: relevantMetrics.map(m => m.name)
+                });
+            }
+        }
+
+        // Waterfall for change/delta metrics
         if (changeMetrics.length > 0) {
             suggestions.push({
                 chartType: 'waterfall',
-                confidence: 0.7,
-                reason: 'Change/delta metrics are perfect for showing cumulative effects',
+                confidence: 0.78,
+                reason: 'Change/delta metrics are perfect for showing cumulative effects and sequential impact',
                 bestForMetrics: changeMetrics.map(m => m.name)
             });
         }
@@ -531,13 +586,142 @@ export class DataAnalysisService {
         if (complexMetrics.length > 0) {
             suggestions.push({
                 chartType: 'heatmap',
-                confidence: 0.65,
-                reason: 'Multi-dimensional data with many categories works well as heatmaps',
+                confidence: 0.68,
+                reason: 'Multi-dimensional data with many categories reveals patterns and correlations in heatmaps',
                 bestForMetrics: complexMetrics.map(m => m.name).slice(0, 2)
             });
         }
 
-        return suggestions.sort((a, b) => b.confidence - a.confidence);
+        return suggestions;
+    }
+
+    /**
+     * Score how well a chart type fits individual metric data characteristics
+     */
+    private scoreMetricDataCompatibility(chartType: string, metric: MetricInfo): number {
+        let score = 0.5; // Base score
+
+        switch (chartType) {
+            case 'line':
+                if (metric.hasTimeData && metric.type === 'timeSeries') score += 0.4;
+                if (metric.hasTimeData && metric.type === 'groupedSeries') score += 0.3;
+                if (!metric.hasTimeData) score -= 0.3; // Lines need temporal data
+                break;
+
+            case 'bar':
+                if (metric.type === 'scalar' || metric.type === 'dynamicKeyObject' || metric.type === 'embeddedMetrics') score += 0.3;
+                if (metric.hasGrouping && (metric.groupingDimensions?.length || 0) <= 10) score += 0.2;
+                if (metric.hasGrouping && (metric.groupingDimensions?.length || 0) > 15) score -= 0.2; // Too many categories
+                break;
+
+            case 'stacked-bar':
+                if (metric.hasGrouping && metric.type === 'groupedSeries') score += 0.4;
+                if (metric.hasGrouping && (metric.groupingDimensions?.length || 0) >= 2 && (metric.groupingDimensions?.length || 0) <= 8) score += 0.2;
+                if (metric.hasGrouping && (metric.groupingDimensions?.length || 0) > 10) score -= 0.3; // Too cluttered
+                if (!metric.hasGrouping) score -= 0.4; // Needs grouping for stacking
+                break;
+
+            case 'heatmap':
+                if (metric.hasGrouping && metric.hasTimeData) score += 0.3;
+                if (metric.hasGrouping && (metric.groupingDimensions?.length || 0) > 5) score += 0.2;
+                if (!metric.hasGrouping || !metric.hasTimeData) score -= 0.3; // Needs both dimensions
+                break;
+
+            case 'waterfall':
+                if (metric.name.toLowerCase().includes('change') || metric.name.toLowerCase().includes('delta')) score += 0.4;
+                if (metric.hasTimeData) score += 0.1;
+                if (metric.type === 'scalar') score += 0.1;
+                if (!metric.hasTimeData && !metric.name.toLowerCase().includes('change')) score -= 0.2;
+                break;
+        }
+
+        // Boost score based on value type compatibility
+        if (metric.valueType === 'currency' && (chartType === 'line' || chartType === 'bar' || chartType === 'stacked-bar')) {
+            score += 0.1;
+        }
+        if (metric.valueType === 'percentage' && chartType === 'line') {
+            score += 0.1;
+        }
+
+        return Math.max(0, Math.min(1, score));
+    }
+
+    /**
+     * Score visual effectiveness of chart type for given metric
+     */
+    private scoreVisualEffectiveness(chartType: string, metric: MetricInfo): number {
+        let score = 0.6; // Base effectiveness score
+
+        switch (chartType) {
+            case 'line':
+                if (metric.hasTimeData) score += 0.3;
+                if (metric.valueType === 'currency' || metric.valueType === 'count') score += 0.1;
+                break;
+
+            case 'bar':
+                score += 0.2; // Generally effective
+                if (metric.hasGrouping && (metric.groupingDimensions?.length || 0) <= 10) score += 0.1;
+                break;
+
+            case 'stacked-bar':
+                if (metric.hasGrouping && (metric.groupingDimensions?.length || 0) >= 2) score += 0.2;
+                if (metric.hasGrouping && (metric.groupingDimensions?.length || 0) > 6) score -= 0.2; // Can be cluttered
+                break;
+
+            case 'heatmap':
+                if (metric.hasGrouping && metric.hasTimeData) score += 0.2;
+                if ((metric.groupingDimensions?.length || 0) < 3) score -= 0.3; // Insufficient for heatmap
+                break;
+
+            case 'waterfall':
+                if (metric.name.toLowerCase().includes('change')) score += 0.3;
+                else score -= 0.1; // Less effective without change context
+                break;
+        }
+
+        return Math.max(0, Math.min(1, score));
+    }
+
+    /**
+     * Generate enhanced reasoning with contextual details
+     */
+    private generateEnhancedReason(chartType: string, metric: MetricInfo, dataScore: number, visualScore: number): string {
+        const baseReasons = {
+            'line': 'Ideal for showing trends and patterns over time',
+            'bar': 'Excellent for categorical comparisons and discrete values',
+            'stacked-bar': 'Perfect for showing composition and part-to-whole relationships',
+            'heatmap': 'Great for revealing patterns across multiple dimensions',
+            'waterfall': 'Specialized for showing cumulative changes and impact analysis'
+        };
+
+        let reason = baseReasons[chartType as keyof typeof baseReasons] || 'Good fit for this data type';
+
+        // Add data-specific context
+        if (metric.hasTimeData && chartType === 'line') {
+            reason += ` - ${metric.name} contains temporal data`;
+        }
+
+        if (metric.hasGrouping && (chartType === 'bar' || chartType === 'stacked-bar')) {
+            const groupCount = metric.groupingDimensions?.length || 0;
+            reason += ` - ${groupCount} categories for comparison`;
+        }
+
+        if (metric.valueType === 'currency') {
+            reason += ' (financial data)';
+        } else if (metric.valueType === 'percentage') {
+            reason += ' (percentage data)';
+        } else if (metric.valueType === 'count') {
+            reason += ' (count data)';
+        }
+
+        // Add quality indicators
+        if (dataScore > 0.8) {
+            reason += ' [Excellent data fit]';
+        } else if (dataScore > 0.6) {
+            reason += ' [Good data fit]';
+        }
+
+        return reason;
     }
 
 
@@ -628,56 +812,5 @@ export class DataAnalysisService {
         }
 
         return context;
-    }
-
-    /**
-     * Find the best metric match for a given prompt
-     */
-    findBestMetricMatch(prompt: string, metrics: MetricInfo[]): MetricInfo | null {
-        const promptLower = prompt.toLowerCase();
-
-        // Direct name matches (including nested paths)
-        for (const metric of metrics) {
-            const metricNameLower = metric.name.toLowerCase();
-            if (promptLower.includes(metricNameLower)) {
-                return metric;
-            }
-
-            // Check if prompt matches the base name (without path)
-            const baseName = metric.name.split('.').pop()?.toLowerCase();
-            if (baseName && promptLower.includes(baseName)) {
-                return metric;
-            }
-        }
-
-        // Keyword matching
-        const keywords = promptLower.split(' ');
-        let bestMatch: MetricInfo | null = null;
-        let bestScore = 0;
-
-        for (const metric of metrics) {
-            const metricKeywords = metric.name.toLowerCase().split(/(?=[A-Z])|[\s_.-]+/);
-            let score = 0;
-
-            for (const keyword of keywords) {
-                if (metricKeywords.some(mk => mk.includes(keyword) || keyword.includes(mk))) {
-                    score++;
-                }
-            }
-
-            // Handle embedded metrics
-            if (metric.embeddedMetrics && metric.embeddedMetrics.some(em =>
-                keywords.some(kw => em.toLowerCase().includes(kw) || kw.includes(em.toLowerCase()))
-            )) {
-                score += 2;
-            }
-
-            if (score > bestScore) {
-                bestScore = score;
-                bestMatch = metric;
-            }
-        }
-
-        return bestMatch;
     }
 } 

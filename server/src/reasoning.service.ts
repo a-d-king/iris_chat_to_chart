@@ -384,6 +384,32 @@ export class ReasoningService {
         const factors: string[] = [];
         let reasoning = "Final decision synthesis: ";
 
+        // Connect back to original user request
+        const promptKeywords = prompt.toLowerCase().split(/\s+/).filter(word => word.length > 3);
+        const metricKeywords = finalChartSpec.metric?.toLowerCase().split(/[._\s]+/) || [];
+        const keywordMatches = promptKeywords.filter(word =>
+            metricKeywords.some((metricWord: string) => word.includes(metricWord) || metricWord.includes(word))
+        );
+
+        // Provide specific chart selection justification
+        reasoning += `Selected ${finalChartSpec.chartType} chart for '${finalChartSpec.metric}' `;
+        factors.push(`Chart type: ${finalChartSpec.chartType}`);
+        factors.push(`Target metric: ${finalChartSpec.metric}`);
+
+        if (finalChartSpec.groupBy) {
+            reasoning += `with ${finalChartSpec.groupBy} grouping `;
+            factors.push(`Grouped by: ${finalChartSpec.groupBy}`);
+        }
+
+        reasoning += `over ${finalChartSpec.dateRange} timeframe. `;
+        factors.push(`Date range: ${finalChartSpec.dateRange}`);
+
+        // Assess prompt alignment
+        if (keywordMatches.length > 0) {
+            reasoning += `Direct alignment with user request through keywords: ${keywordMatches.slice(0, 2).join(', ')}. `;
+            factors.push(`Keyword alignment: ${keywordMatches.length} matches`);
+        }
+
         // Extract key decision factors from previous steps
         const keyFactors = previousSteps
             .flatMap(step => step.factors)
@@ -393,24 +419,43 @@ export class ReasoningService {
                 factor.includes('keyword match') ||
                 factor.includes('confidence')
             )
-            .slice(0, 3);
+            .slice(0, 2);
 
         factors.push(...keyFactors);
 
-        reasoning += `Combining user intent analysis, data characteristics, and AI recommendations. `;
+        // Assess decision quality based on step alignment
+        const chartStepConfidence = previousSteps.find(s => s.category === 'chart_selection')?.confidence || 0.5;
+        const metricStepConfidence = previousSteps.find(s => s.category === 'metric_selection')?.confidence || 0.5;
+        const alignmentBonus = keywordMatches.length > 0 ? 0.1 : 0;
 
-        // Confidence assessment
-        const avgConfidence = previousSteps.reduce((sum, step) => sum + step.confidence, 0) / previousSteps.length;
+        const finalConfidence = Math.min(0.95, (chartStepConfidence + metricStepConfidence) / 2 + alignmentBonus);
 
-        if (avgConfidence > 0.8) {
-            reasoning += "High confidence in this decision based on clear user intent and suitable data. ";
+        // Provide context-aware confidence assessment
+        if (finalConfidence > 0.85) {
+            reasoning += "High confidence: strong alignment between user intent, data characteristics, and AI analysis. ";
             factors.push('High confidence decision');
-        } else if (avgConfidence > 0.6) {
-            reasoning += "Moderate confidence - some ambiguity in requirements. ";
+        } else if (finalConfidence > 0.65) {
+            reasoning += "Moderate confidence: good match with some uncertainty in requirements. ";
             factors.push('Moderate confidence decision');
         } else {
-            reasoning += "Lower confidence - may benefit from user clarification. ";
+            reasoning += "Lower confidence: limited alignment suggests user clarification could improve results. ";
             factors.push('Lower confidence decision');
+        }
+
+        // Generate specific alternatives based on the final spec
+        const alternatives: string[] = [];
+        if (finalChartSpec.chartType === 'line' && !prompt.toLowerCase().includes('trend')) {
+            alternatives.push('Bar chart for categorical comparison instead of trends');
+        } else if (finalChartSpec.chartType === 'bar' && prompt.toLowerCase().includes('trend')) {
+            alternatives.push('Line chart for better trend visualization');
+        }
+
+        if (keywordMatches.length === 0) {
+            alternatives.push('Consider different metric if user intent unclear');
+        }
+
+        if (alternatives.length === 0) {
+            alternatives.push('Chart configuration optimized for user request');
         }
 
         return {
@@ -419,8 +464,8 @@ export class ReasoningService {
             title: 'Decision Synthesis',
             reasoning: reasoning.trim(),
             factors,
-            confidence: avgConfidence,
-            alternatives: ['Could refine based on user feedback', 'Alternative chart types available if needed']
+            confidence: Math.round(finalConfidence * 100) / 100,
+            alternatives
         };
     }
 
@@ -434,9 +479,10 @@ export class ReasoningService {
         availableMetrics: MetricInfo[],
         maxMetrics: number = 5
     ): {
-        rankedMetrics: { metric: MetricInfo; score: number; reasons: string[] }[];
+        rankedMetrics: { metric: MetricInfo; score: number; reasons: string[]; confidence: number }[];
         qualityIssues: { metric: MetricInfo; issues: string[]; severity: 'low' | 'medium' | 'high' }[];
         intentAnalysis: IntentAnalysis;
+        diversityInfo: { selectedTypes: string[]; coverage: number };
     } {
         try {
             // Perform intent analysis
@@ -445,17 +491,29 @@ export class ReasoningService {
             // Score all metrics based on prompt relevance and intent
             const scoredMetrics = this.scoreMetricsForRelevance(prompt, availableMetrics, intentAnalysis);
 
-            // Analyze data quality
-            const qualityIssues: { metric: MetricInfo; issues: string[]; severity: 'low' | 'medium' | 'high' }[] = [];
+            // 1: Implement comprehensive data quality analysis
+            const qualityIssues = this.analyzeMetricQuality(availableMetrics);
 
-            const rankedMetrics = scoredMetrics
-                .sort((a, b) => b.score - a.score)
-                .slice(0, maxMetrics);
+            // 2: Apply business context and domain knowledge
+            const businessBoostedMetrics = this.applyBusinessContextBoosts(scoredMetrics, intentAnalysis);
+
+            // 3: Ensure diversity in metric selection
+            const diverseMetrics = this.selectDiverseMetrics(businessBoostedMetrics, maxMetrics, intentAnalysis);
+
+            // 4: Calculate confidence scores per metric
+            const rankedMetricsWithConfidence = diverseMetrics.map(item => ({
+                ...item,
+                confidence: this.calculateMetricConfidence(item, intentAnalysis, qualityIssues)
+            }));
+
+            // 5: Calculate diversity metrics for transparency
+            const diversityInfo = this.calculateDiversityInfo(rankedMetricsWithConfidence);
 
             return {
-                rankedMetrics,
+                rankedMetrics: rankedMetricsWithConfidence,
                 qualityIssues,
-                intentAnalysis
+                intentAnalysis,
+                diversityInfo
             };
         } catch (error) {
             this.errorHandler.handleApiError('metric_analysis', error, {
@@ -466,7 +524,7 @@ export class ReasoningService {
     }
 
     /**
-     * Score metrics for relevance to prompt and intent
+     * Enhanced relevance scoring with fuzzy matching and comprehensive intent handling
      */
     private scoreMetricsForRelevance(
         prompt: string,
@@ -483,39 +541,298 @@ export class ReasoningService {
             const metricName = metric.name.toLowerCase();
             const metricWords = metricName.split(/[._\s]+/);
 
-            // Direct name matching
+            // Enhanced text matching with fuzzy logic
             if (promptLower.includes(metricName)) {
-                score += 2.0;
+                score += 2.5; // Increased from 2.0
                 reasons.push('Direct name match');
             }
 
-            // Word-level matching
+            // Improved word-level matching with stemming consideration
             for (const promptWord of promptWords) {
                 if (promptWord.length < 3) continue;
                 for (const metricWord of metricWords) {
                     if (promptWord === metricWord) {
-                        score += 1.5;
-                        reasons.push(`Word match: ${promptWord}`);
+                        score += 1.8; // Increased from 1.5
+                        reasons.push(`Exact word match: ${promptWord}`);
                     } else if (promptWord.includes(metricWord) || metricWord.includes(promptWord)) {
-                        score += 1.0;
+                        score += 1.2; // Increased from 1.0
                         reasons.push(`Partial match: ${promptWord}/${metricWord}`);
+                    } else if (this.calculateLevenshteinSimilarity(promptWord, metricWord) > 0.8) {
+                        score += 0.8;
+                        reasons.push(`Similar word: ${promptWord}~${metricWord}`);
                     }
                 }
             }
 
-            // Intent-based boosting
+            // Enhanced intent-based scoring for all intent types
             const primaryIntent = intentAnalysis.primaryIntent.type;
-            if (primaryIntent === 'temporal_trend' && metric.hasTimeData) {
-                score += 1.0;
-                reasons.push('Perfect for temporal analysis');
+
+            switch (primaryIntent) {
+                case 'temporal_trend':
+                    if (metric.hasTimeData) {
+                        score += 1.2;
+                        reasons.push('Perfect for temporal analysis');
+                    }
+                    break;
+                case 'categorical_comparison':
+                    if (metric.hasGrouping) {
+                        score += 1.0;
+                        reasons.push('Ideal for categorical comparison');
+                    }
+                    break;
+                case 'compositional_breakdown':
+                    if (metric.type === 'embeddedMetrics' || metric.hasGrouping) {
+                        score += 1.1;
+                        reasons.push('Good for compositional analysis');
+                    }
+                    break;
+                case 'performance_overview':
+                    if (metric.valueType === 'percentage' || metric.valueType === 'currency') {
+                        score += 0.9;
+                        reasons.push('Suitable for performance metrics');
+                    }
+                    break;
+                case 'correlation_analysis':
+                    if (metric.type === 'timeSeries' && metric.hasTimeData) {
+                        score += 1.0;
+                        reasons.push('Time series enables correlation analysis');
+                    }
+                    break;
             }
-            if (primaryIntent === 'categorical_comparison' && metric.hasGrouping) {
-                score += 0.8;
-                reasons.push('Good for categorical comparison');
+
+            // Description and metadata matching
+            if (metric.description) {
+                const descriptionWords = metric.description.toLowerCase().split(/\s+/);
+                for (const promptWord of promptWords) {
+                    if (promptWord.length > 3 && descriptionWords.includes(promptWord)) {
+                        score += 0.5;
+                        reasons.push(`Description match: ${promptWord}`);
+                    }
+                }
+            }
+
+            // Chart recommendation alignment
+            if (metric.chartRecommendations.length > 0) {
+                score += 0.2;
+                reasons.push('Has chart recommendations');
             }
 
             return { metric, score, reasons };
         });
+    }
+
+    /**
+     * Comprehensive quality analysis
+     */
+    private analyzeMetricQuality(metrics: MetricInfo[]): { metric: MetricInfo; issues: string[]; severity: 'low' | 'medium' | 'high' }[] {
+        return metrics.map(metric => {
+            const issues: string[] = [];
+            let severity: 'low' | 'medium' | 'high' = 'low';
+
+            // Check for missing temporal data when expected
+            if (metric.type === 'timeSeries' && !metric.hasTimeData) {
+                issues.push('Marked as time series but missing temporal data');
+                severity = 'high';
+            }
+
+            // Check grouping dimension quality
+            if (metric.hasGrouping && metric.groupingDimensions) {
+                const unknownRatio = metric.groupingDimensions.filter(d =>
+                    d.toLowerCase().includes('unknown') ||
+                    d.toLowerCase().includes('undefined') ||
+                    d.toLowerCase().includes('null') ||
+                    d.trim() === ''
+                ).length / metric.groupingDimensions.length;
+
+                if (unknownRatio > 0.5) {
+                    issues.push(`${Math.round(unknownRatio * 100)}% unknown/unlabeled categories`);
+                    severity = 'high';
+                } else if (unknownRatio > 0.3) {
+                    issues.push(`${Math.round(unknownRatio * 100)}% unknown categories`);
+                    severity = severity === 'high' ? 'high' : 'medium';
+                }
+
+                if (metric.groupingDimensions.length === 1) {
+                    issues.push('Only one category - limited grouping value');
+                    severity = severity === 'high' ? 'high' : 'medium';
+                }
+
+                if (metric.groupingDimensions.length > 12) {
+                    issues.push(`Too many categories (${metric.groupingDimensions.length}) for effective visualization`);
+                    severity = severity === 'high' ? 'high' : 'medium';
+                }
+            }
+
+            // Check value type consistency
+            if (metric.sampleValues && metric.sampleValues.length > 0) {
+                const valueTypes = new Set(metric.sampleValues.map(v => typeof v));
+                if (valueTypes.size > 1) {
+                    issues.push('Inconsistent value types in sample data');
+                    severity = severity === 'high' ? 'high' : 'medium';
+                }
+            }
+
+            // Check for embedded metrics without proper metadata
+            if (metric.type === 'embeddedMetrics' && (!metric.embeddedMetrics || metric.embeddedMetrics.length === 0)) {
+                issues.push('Marked as embedded metrics but no embedded metric names provided');
+                severity = 'high';
+            }
+
+            return { metric, issues, severity };
+        }).filter(item => item.issues.length > 0);
+    }
+
+    /**
+     * Business context and domain knowledge
+     */
+    private applyBusinessContextBoosts(
+        scoredMetrics: { metric: MetricInfo; score: number; reasons: string[] }[],
+        intentAnalysis: IntentAnalysis
+    ): { metric: MetricInfo; score: number; reasons: string[] }[] {
+        return scoredMetrics.map(item => {
+            let boostedScore = item.score;
+            const newReasons = [...item.reasons];
+
+            // Financial metrics prioritization for finance platform
+            const metricName = item.metric.name.toLowerCase();
+            if (metricName.includes('revenue') || metricName.includes('profit') ||
+                metricName.includes('cost') || metricName.includes('margin')) {
+                boostedScore += 0.5;
+                newReasons.push('Core financial metric');
+            }
+
+            // Time-sensitive data gets priority for temporal queries
+            if (intentAnalysis.temporalSignals.length > 0 && item.metric.hasTimeData) {
+                const temporalBoost = intentAnalysis.temporalSignals.length * 0.3;
+                boostedScore += temporalBoost;
+                newReasons.push(`Strong temporal match (${intentAnalysis.temporalSignals.length} signals)`);
+            }
+
+            // Value type alignment with intent
+            if (intentAnalysis.primaryIntent.type === 'performance_overview' &&
+                item.metric.valueType === 'percentage') {
+                boostedScore += 0.4;
+                newReasons.push('Percentage metrics ideal for performance overview');
+            }
+
+            // Penalize overly complex metrics for simple queries
+            if (intentAnalysis.confidence > 0.8 &&
+                item.metric.type === 'dynamicKeyObject' &&
+                intentAnalysis.primaryIntent.type !== 'drill_down') {
+                boostedScore -= 0.3;
+                newReasons.push('Complex metric may not match simple query intent');
+            }
+
+            return { ...item, score: boostedScore, reasons: newReasons };
+        });
+    }
+
+    /**
+     * Diversity-aware selection
+     */
+    private selectDiverseMetrics(
+        scoredMetrics: { metric: MetricInfo; score: number; reasons: string[] }[],
+        maxMetrics: number,
+        intentAnalysis: IntentAnalysis
+    ): { metric: MetricInfo; score: number; reasons: string[] }[] {
+        const sortedMetrics = scoredMetrics.sort((a, b) => b.score - a.score);
+        const selectedMetrics: typeof sortedMetrics = [];
+        const selectedTypes = new Set<string>();
+        const selectedValueTypes = new Set<string>();
+
+        for (const metric of sortedMetrics) {
+            if (selectedMetrics.length >= maxMetrics) break;
+
+            // Always include the top scorer
+            if (selectedMetrics.length === 0) {
+                selectedMetrics.push(metric);
+                selectedTypes.add(metric.metric.type);
+                selectedValueTypes.add(metric.metric.valueType);
+                continue;
+            }
+
+            // Diversity scoring
+            let diversityBonus = 0;
+
+            // Prefer different metric types
+            if (!selectedTypes.has(metric.metric.type)) {
+                diversityBonus += 0.2;
+            }
+
+            // Prefer different value types
+            if (!selectedValueTypes.has(metric.metric.valueType)) {
+                diversityBonus += 0.1;
+            }
+
+            // Apply diversity threshold - only skip if very similar and score difference is small
+            const scoreDifference = selectedMetrics[0].score - metric.score;
+            const diversityThreshold = 0.15;
+
+            if (diversityBonus > diversityThreshold || scoreDifference < 1.0) {
+                selectedMetrics.push({
+                    ...metric,
+                    score: metric.score + diversityBonus,
+                    reasons: [...metric.reasons, ...(diversityBonus > 0 ? ['Adds metric diversity'] : [])]
+                });
+                selectedTypes.add(metric.metric.type);
+                selectedValueTypes.add(metric.metric.valueType);
+            }
+        }
+
+        return selectedMetrics;
+    }
+
+    /**
+     * Sophisticated confidence calculation
+     */
+    private calculateMetricConfidence(
+        metricScore: { metric: MetricInfo; score: number; reasons: string[] },
+        intentAnalysis: IntentAnalysis,
+        qualityIssues: { metric: MetricInfo; issues: string[]; severity: 'low' | 'medium' | 'high' }[]
+    ): number {
+        let confidence = Math.min(0.95, metricScore.score / 5.0); // Normalize score to confidence
+
+        // Boost confidence for high intent alignment
+        confidence += intentAnalysis.confidence * 0.1;
+
+        // Reduce confidence for quality issues
+        const metricQualityIssue = qualityIssues.find(qi => qi.metric.name === metricScore.metric.name);
+        if (metricQualityIssue) {
+            const qualityPenalty = metricQualityIssue.severity === 'high' ? 0.3 :
+                metricQualityIssue.severity === 'medium' ? 0.15 : 0.05;
+            confidence -= qualityPenalty;
+        }
+
+        // Boost confidence for metrics with rich metadata
+        if (metricScore.metric.chartRecommendations.length > 0) {
+            confidence += 0.05;
+        }
+
+        if (metricScore.metric.description && metricScore.metric.description.length > 10) {
+            confidence += 0.05;
+        }
+
+        return Math.max(0.1, Math.min(0.95, confidence));
+    }
+
+    /**
+     * Diversity information calculation
+     */
+    private calculateDiversityInfo(
+        rankedMetrics: { metric: MetricInfo; score: number; reasons: string[]; confidence: number }[]
+    ): { selectedTypes: string[]; coverage: number } {
+        const selectedTypes = [...new Set(rankedMetrics.map(rm => rm.metric.type))];
+        const selectedValueTypes = [...new Set(rankedMetrics.map(rm => rm.metric.valueType))];
+
+        // Calculate coverage as a combination of type diversity and value type diversity
+        const typeCoverage = selectedTypes.length / Math.min(5, rankedMetrics.length); // Normalize by possible types
+        const valueCoverage = selectedValueTypes.length / Math.min(4, rankedMetrics.length); // 4 value types
+        const coverage = (typeCoverage + valueCoverage) / 2;
+
+        return {
+            selectedTypes,
+            coverage: Math.round(coverage * 100) / 100
+        };
     }
 
     /**
@@ -620,5 +937,41 @@ export class ReasoningService {
         console.log(`Selected Metric: ${reasoning.summary.selectedMetric}`);
         console.log(`Key Factors: ${reasoning.summary.keyFactors.join(', ')}`);
         console.log('=== END REASONING ===\n');
+    }
+
+    /**
+     * Helper method for fuzzy string matching
+     */
+    private calculateLevenshteinSimilarity(str1: string, str2: string): number {
+        const longer = str1.length > str2.length ? str1 : str2;
+        const shorter = str1.length > str2.length ? str2 : str1;
+
+        if (longer.length === 0) return 1.0;
+
+        const editDistance = this.levenshteinDistance(longer, shorter);
+        return (longer.length - editDistance) / longer.length;
+    }
+
+    /**
+     * Helper method to calculate Levenshtein distance between two strings
+     */
+    private levenshteinDistance(str1: string, str2: string): number {
+        const matrix = Array(str2.length + 1).fill(null).map(() => Array(str1.length + 1).fill(null));
+
+        for (let i = 0; i <= str1.length; i++) matrix[0][i] = i;
+        for (let j = 0; j <= str2.length; j++) matrix[j][0] = j;
+
+        for (let j = 1; j <= str2.length; j++) {
+            for (let i = 1; i <= str1.length; i++) {
+                const substitutionCost = str1[i - 1] === str2[j - 1] ? 0 : 1;
+                matrix[j][i] = Math.min(
+                    matrix[j][i - 1] + 1, // insertion
+                    matrix[j - 1][i] + 1, // deletion
+                    matrix[j - 1][i - 1] + substitutionCost // substitution
+                );
+            }
+        }
+
+        return matrix[str2.length][str1.length];
     }
 }
