@@ -346,21 +346,4 @@ export class ChartDataSlicerService {
 
         return strategy.slice(data, metricInfo, dateRange);
     }
-
-    /**
-     * Add or update a slicing strategy for a metric type
-     * @param metricType - The metric type to register strategy for
-     * @param strategy - The slicing strategy implementation
-     */
-    registerStrategy(metricType: string, strategy: SlicingStrategy): void {
-        this.strategies.set(metricType, strategy);
-    }
-
-    /**
-     * Get available metric types that can be sliced
-     * @returns Array of supported metric types
-     */
-    getSupportedMetricTypes(): string[] {
-        return Array.from(this.strategies.keys());
-    }
 }
