@@ -491,22 +491,22 @@ export class ReasoningService {
             // Score all metrics based on prompt relevance and intent
             const scoredMetrics = this.scoreMetricsForRelevance(prompt, availableMetrics, intentAnalysis);
 
-            // IMPROVEMENT 1: Implement comprehensive data quality analysis
+            // 1: Implement comprehensive data quality analysis
             const qualityIssues = this.analyzeMetricQuality(availableMetrics);
 
-            // IMPROVEMENT 2: Apply business context and domain knowledge
+            // 2: Apply business context and domain knowledge
             const businessBoostedMetrics = this.applyBusinessContextBoosts(scoredMetrics, intentAnalysis);
 
-            // IMPROVEMENT 3: Ensure diversity in metric selection
+            // 3: Ensure diversity in metric selection
             const diverseMetrics = this.selectDiverseMetrics(businessBoostedMetrics, maxMetrics, intentAnalysis);
 
-            // IMPROVEMENT 4: Calculate confidence scores per metric
+            // 4: Calculate confidence scores per metric
             const rankedMetricsWithConfidence = diverseMetrics.map(item => ({
                 ...item,
                 confidence: this.calculateMetricConfidence(item, intentAnalysis, qualityIssues)
             }));
 
-            // IMPROVEMENT 5: Calculate diversity metrics for transparency
+            // 5: Calculate diversity metrics for transparency
             const diversityInfo = this.calculateDiversityInfo(rankedMetricsWithConfidence);
 
             return {
@@ -524,7 +524,7 @@ export class ReasoningService {
     }
 
     /**
-     * IMPROVEMENT 6: Enhanced relevance scoring with fuzzy matching and comprehensive intent handling
+     * Enhanced relevance scoring with fuzzy matching and comprehensive intent handling
      */
     private scoreMetricsForRelevance(
         prompt: string,
@@ -622,7 +622,7 @@ export class ReasoningService {
     }
 
     /**
-     * IMPROVEMENT 1: Comprehensive quality analysis
+     * Comprehensive quality analysis
      */
     private analyzeMetricQuality(metrics: MetricInfo[]): { metric: MetricInfo; issues: string[]; severity: 'low' | 'medium' | 'high' }[] {
         return metrics.map(metric => {
@@ -683,7 +683,7 @@ export class ReasoningService {
     }
 
     /**
-     * IMPROVEMENT 2: Business context and domain knowledge
+     * Business context and domain knowledge
      */
     private applyBusinessContextBoosts(
         scoredMetrics: { metric: MetricInfo; score: number; reasons: string[] }[],
@@ -728,7 +728,7 @@ export class ReasoningService {
     }
 
     /**
-     * IMPROVEMENT 3: Diversity-aware selection
+     * Diversity-aware selection
      */
     private selectDiverseMetrics(
         scoredMetrics: { metric: MetricInfo; score: number; reasons: string[] }[],
@@ -783,7 +783,7 @@ export class ReasoningService {
     }
 
     /**
-     * IMPROVEMENT 4: Sophisticated confidence calculation
+     * Sophisticated confidence calculation
      */
     private calculateMetricConfidence(
         metricScore: { metric: MetricInfo; score: number; reasons: string[] },
@@ -816,7 +816,7 @@ export class ReasoningService {
     }
 
     /**
-     * IMPROVEMENT 5: Diversity information calculation
+     * Diversity information calculation
      */
     private calculateDiversityInfo(
         rankedMetrics: { metric: MetricInfo; score: number; reasons: string[]; confidence: number }[]

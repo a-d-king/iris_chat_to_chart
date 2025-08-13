@@ -133,11 +133,7 @@ export class DashboardService {
             insights.push(...compositionInsights);
 
         } catch (error) {
-            console.warn('Enhanced insights generation failed, falling back to basic insights:', error);
-
-            // Fallback to improved basic insights
-            const basicInsights = this.generateImprovedBasicInsights(charts, originalPrompt);
-            insights.push(...basicInsights);
+            console.warn('Enhanced insights generation failed:', error);
         }
 
         // Prioritize and limit to top 3 insights
@@ -250,30 +246,7 @@ Respond in this format:
         return insights;
     }
 
-    private generateImprovedBasicInsights(charts: any[], originalPrompt: string): string[] {
-        const insights = [];
-        const promptLower = originalPrompt.toLowerCase();
 
-        if (charts.length > 3) {
-            const contextualPhrase = promptLower.includes('overview') ? 'executive overview' :
-                promptLower.includes('analysis') ? 'detailed analysis' : 'comprehensive analysis';
-            insights.push(`Generated ${charts.length} charts for ${contextualPhrase}`);
-        }
-
-        const chartTypes = [...new Set(charts.map(c => c.chartType))];
-        if (chartTypes.length > 2) {
-            insights.push('Multiple visualization types provide different analytical perspectives');
-        }
-
-        const hasTimeSeries = charts.some(c => c.chartType === 'line');
-        const hasComparison = charts.some(c => c.chartType === 'bar' || c.chartType === 'stacked-bar');
-
-        if (hasTimeSeries && hasComparison) {
-            insights.push('Dashboard combines trend analysis with comparative metrics');
-        }
-
-        return insights;
-    }
 
     private prioritizeInsights(insights: string[], originalPrompt: string): string[] {
         const promptLower = originalPrompt.toLowerCase();
