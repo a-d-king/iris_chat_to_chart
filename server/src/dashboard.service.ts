@@ -5,6 +5,7 @@ import { MetricInfo } from './data/data-analysis.service';
 import { ReasoningService } from './reasoning.service';
 import { DashboardDto, DashboardChartDto } from './dto/chat.dto';
 import { runDashboardGraph } from './dashboard.graph';
+import { EcommerceSemanticService } from './semantic/ecommerce-semantic.service';
 
 interface DashboardResponse {
     dashboardId: string;
@@ -25,7 +26,8 @@ export class DashboardService {
     constructor(
         private openAiService: OpenAiService,
         private metricsService: MetricsService,
-        private reasoningService: ReasoningService
+        private reasoningService: ReasoningService,
+        private ecommerceSemantic: EcommerceSemanticService
     ) { }
 
     async generateDashboard(request: DashboardDto): Promise<DashboardResponse> {
@@ -120,15 +122,19 @@ export class DashboardService {
             // 1. Analyze the original prompt for user intent
             const intentAnalysis = this.reasoningService['intentAnalyzer']?.performIntentAnalysis(originalPrompt);
 
-            // 2. Generate AI-powered contextual insights
+            // 2. Generate semantic business insights using ecommerce domain knowledge
+            const semanticInsights = await this.generateSemanticBusinessInsights(charts, originalPrompt, intentAnalysis);
+            insights.push(...semanticInsights);
+
+            // 3. Generate AI-powered contextual insights
             const aiInsights = await this.generateAIContextualInsights(charts, originalPrompt, intentAnalysis);
             insights.push(...aiInsights);
 
-            // 3. Add domain-specific financial insights
+            // 4. Add domain-specific financial insights
             const domainInsights = this.generateFinancialDomainInsights(charts, originalPrompt, intentAnalysis);
             insights.push(...domainInsights);
 
-            // 4. Add chart composition insights that reference the original intent
+            // 5. Add chart composition insights that reference the original intent
             const compositionInsights = this.generateSmartCompositionInsights(charts, originalPrompt, intentAnalysis);
             insights.push(...compositionInsights);
 
@@ -138,6 +144,168 @@ export class DashboardService {
 
         // Prioritize and limit to top 3 insights
         return this.prioritizeInsights(insights, originalPrompt).slice(0, 3);
+    }
+
+    /**
+     * Generate semantic business insights using ecommerce domain knowledge
+     */
+    private async generateSemanticBusinessInsights(charts: any[], originalPrompt: string, intentAnalysis?: any): Promise<string[]> {
+        const insights: string[] = [];
+
+        try {
+            // Extract metrics from charts
+            const chartMetrics: MetricInfo[] = charts.map(chart => ({
+                name: chart.metric,
+                type: chart.type || 'unknown',
+                description: chart.title || chart.metric,
+                hasTimeData: chart.chartType === 'line',
+                hasGrouping: chart.chartType === 'bar' || chart.chartType === 'stacked-bar',
+                valueType: 'generic',
+                chartRecommendations: [],
+                semanticCategory: this.inferSemanticCategory(chart.metric),
+                isBusinessKPI: this.isBusinessKPI(chart.metric)
+            }));
+
+            // Get semantic context for the dashboard
+            const mockDataAnalysis = { availableMetrics: chartMetrics, suggestedChartTypes: [], dataContext: '' };
+            const semanticContext = this.ecommerceSemantic.getSemanticContextForQuery(originalPrompt, mockDataAnalysis);
+
+            // Generate domain-specific insights
+            if (semanticContext.enrichment && semanticContext.enrichment.businessInsights) {
+                insights.push(...semanticContext.enrichment.businessInsights.slice(0, 2));
+            }
+
+            // Generate metric-specific business insights
+            const categoryInsights = this.generateCategorySpecificInsights(chartMetrics, originalPrompt);
+            insights.push(...categoryInsights);
+
+            // Generate strategic insights based on metric combinations
+            const strategicInsights = this.generateStrategicDashboardInsights(chartMetrics, originalPrompt);
+            insights.push(...strategicInsights);
+
+        } catch (error) {
+            console.warn('Semantic insights generation failed:', error);
+        }
+
+        return insights;
+    }
+
+    /**
+     * Generate category-specific business insights
+     */
+    private generateCategorySpecificInsights(metrics: MetricInfo[], prompt: string): string[] {
+        const insights: string[] = [];
+        const promptLower = prompt.toLowerCase();
+
+        // Group metrics by semantic category
+        const categoryGroups = metrics.reduce((acc, metric) => {
+            const category = metric.semanticCategory || 'Operational';
+            if (!acc[category]) acc[category] = [];
+            acc[category].push(metric);
+            return acc;
+        }, {} as Record<string, MetricInfo[]>);
+
+        // Generate insights for each category
+        Object.entries(categoryGroups).forEach(([category, categoryMetrics]) => {
+            switch (category) {
+                case 'Sales':
+                    if (categoryMetrics.length > 0) {
+                        insights.push('Revenue metrics reveal growth patterns and market performance - track velocity and seasonal trends for forecasting');
+                    }
+                    break;
+                case 'Profitability':
+                    if (categoryMetrics.length > 0) {
+                        insights.push('Profitability analysis identifies margin optimization opportunities and cost efficiency improvements');
+                    }
+                    break;
+                case 'Marketing':
+                    if (categoryMetrics.length > 0) {
+                        insights.push('Marketing performance metrics guide budget allocation and channel optimization for maximum ROI');
+                    }
+                    break;
+                case 'Unit Economics':
+                    if (categoryMetrics.length > 0) {
+                        insights.push('Unit economics dashboard tracks customer acquisition efficiency and lifetime value optimization');
+                    }
+                    break;
+                case 'Cash Flow':
+                    if (categoryMetrics.length > 0) {
+                        insights.push('Cash flow monitoring ensures operational sustainability and identifies liquidity patterns');
+                    }
+                    break;
+            }
+        });
+
+        return insights;
+    }
+
+    /**
+     * Generate strategic insights based on metric combinations
+     */
+    private generateStrategicDashboardInsights(metrics: MetricInfo[], prompt: string): string[] {
+        const insights: string[] = [];
+        const promptLower = prompt.toLowerCase();
+
+        const categories = new Set(metrics.map(m => m.semanticCategory).filter(Boolean));
+        const kpiCount = metrics.filter(m => m.isBusinessKPI).length;
+        const timeSeriesCount = metrics.filter(m => m.hasTimeData).length;
+
+        // Multi-category analysis insights
+        if (categories.has('Sales') && categories.has('Marketing')) {
+            insights.push('Sales and marketing alignment analysis reveals customer acquisition effectiveness and revenue attribution');
+        }
+
+        if (categories.has('Sales') && categories.has('Profitability')) {
+            insights.push('Revenue-to-profit analysis identifies pricing strategy effectiveness and operational efficiency opportunities');
+        }
+
+        if (categories.has('Unit Economics') && categories.has('Marketing')) {
+            insights.push('Customer economics combined with marketing data optimizes acquisition spend and channel performance');
+        }
+
+        // Executive vs operational insights
+        if (promptLower.includes('executive') || promptLower.includes('overview')) {
+            if (kpiCount >= 2) {
+                insights.push(`Executive dashboard focuses on ${kpiCount} critical KPIs for strategic decision-making and business performance monitoring`);
+            }
+        }
+
+        // Time-based analysis insights
+        if (timeSeriesCount >= 2) {
+            insights.push('Time-series analysis reveals business momentum, seasonal patterns, and trend correlations across key metrics');
+        }
+
+        // Comprehensive business health insight
+        if (categories.size >= 3) {
+            insights.push('Multi-dimensional business analysis provides 360-degree view of operational performance and growth drivers');
+        }
+
+        return insights;
+    }
+
+    /**
+     * Infer semantic category from metric name
+     */
+    private inferSemanticCategory(metricName: string): string {
+        const name = metricName.toLowerCase();
+        
+        if (name.includes('sales') || name.includes('revenue')) return 'Sales';
+        if (name.includes('profit') || name.includes('margin')) return 'Profitability';
+        if (name.includes('cost') || name.includes('cogs')) return 'COGS';
+        if (name.includes('marketing') || name.includes('ad')) return 'Marketing';
+        if (name.includes('cash') || name.includes('balance')) return 'Cash Flow';
+        if (name.includes('customer') || name.includes('aov') || name.includes('cac')) return 'Unit Economics';
+        
+        return 'Operational';
+    }
+
+    /**
+     * Determine if metric is a business KPI
+     */
+    private isBusinessKPI(metricName: string): boolean {
+        const name = metricName.toLowerCase();
+        const kpiTerms = ['revenue', 'profit', 'margin', 'cac', 'ltv', 'aov', 'roas', 'cash', 'runway'];
+        return kpiTerms.some(term => name.includes(term));
     }
 
     private async generateAIContextualInsights(charts: any[], originalPrompt: string, intentAnalysis?: any): Promise<string[]> {

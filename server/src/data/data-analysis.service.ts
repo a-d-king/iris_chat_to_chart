@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { EcommerceSemanticService } from '../semantic/ecommerce-semantic.service';
 
 /**
  * Interface for data analysis results
@@ -28,6 +29,10 @@ export interface MetricInfo {
     chartRecommendations: string[];
     keyPath?: string;
     embeddedMetrics?: string[];
+    // Semantic enhancements (optional, non-breaking)
+    semanticCategory?: string;
+    businessContext?: string;
+    isBusinessKPI?: boolean;
 }
 
 
@@ -37,19 +42,121 @@ export interface MetricInfo {
  */
 @Injectable()
 export class DataAnalysisService {
+    constructor(private ecommerceSemantic: EcommerceSemanticService) {}
 
     /**
      * Analyze the loaded data and provide context for chart generation
      */
     analyzeData(data: any): DataAnalysis {
         const metrics = this.extractMetricsRecursively(data);
-        const suggestions = this.generateChartSuggestions(metrics);
-        const context = this.generateDataContext(metrics, data);
+        
+        // Enhance metrics with semantic information
+        const enrichedMetrics = this.enrichMetricsWithSemanticContext(metrics);
+        
+        const suggestions = this.generateChartSuggestions(enrichedMetrics);
+        const context = this.generateDataContext(enrichedMetrics, data);
 
         return {
-            availableMetrics: metrics,
+            availableMetrics: enrichedMetrics,
             suggestedChartTypes: suggestions,
             dataContext: context
+        };
+    }
+
+    /**
+     * Enhance metrics with semantic context from the ecommerce domain
+     */
+    private enrichMetricsWithSemanticContext(metrics: MetricInfo[]): MetricInfo[] {
+        return metrics.map(metric => {
+            // Try to find semantic definition for this metric
+            const semanticMetric = this.ecommerceSemantic.findMetricByName(metric.name);
+            
+            if (semanticMetric) {
+                return {
+                    ...metric,
+                    semanticCategory: semanticMetric.category,
+                    businessContext: semanticMetric.businessContext.description,
+                    isBusinessKPI: semanticMetric.businessContext.isKPI
+                };
+            }
+
+            // Try fuzzy matching for partial matches
+            const fuzzyMatch = this.ecommerceSemantic.findSimilarMetrics(metric.name, 1);
+            if (fuzzyMatch.length > 0 && fuzzyMatch[0].similarity > 0.7) {
+                const similarMetric = fuzzyMatch[0].metric;
+                return {
+                    ...metric,
+                    semanticCategory: similarMetric.category,
+                    businessContext: `Similar to ${similarMetric.name}: ${similarMetric.businessContext.description}`,
+                    isBusinessKPI: similarMetric.businessContext.isKPI
+                };
+            }
+
+            // Apply heuristic categorization based on metric name and type
+            const heuristicContext = this.applyHeuristicSemanticClassification(metric);
+            return {
+                ...metric,
+                ...heuristicContext
+            };
+        });
+    }
+
+    /**
+     * Apply heuristic semantic classification for metrics not found in registry
+     */
+    private applyHeuristicSemanticClassification(metric: MetricInfo): Partial<MetricInfo> {
+        const name = metric.name.toLowerCase();
+        
+        // Revenue/Sales metrics
+        if (name.includes('sales') || name.includes('revenue') || name.includes('income')) {
+            return {
+                semanticCategory: 'Sales',
+                businessContext: 'Revenue generation metric critical for business performance',
+                isBusinessKPI: true
+            };
+        }
+        
+        // Cost metrics
+        if (name.includes('cost') || name.includes('expense') || name.includes('cogs')) {
+            return {
+                semanticCategory: 'COGS',
+                businessContext: 'Cost metric that impacts profitability',
+                isBusinessKPI: true
+            };
+        }
+        
+        // Customer metrics
+        if (name.includes('customer') || name.includes('user') || name.includes('order')) {
+            return {
+                semanticCategory: 'Unit Economics',
+                businessContext: 'Customer or transaction volume metric',
+                isBusinessKPI: name.includes('customer')
+            };
+        }
+        
+        // Marketing metrics
+        if (name.includes('ad') || name.includes('marketing') || name.includes('campaign')) {
+            return {
+                semanticCategory: 'Marketing',
+                businessContext: 'Marketing performance and efficiency metric',
+                isBusinessKPI: name.includes('roas') || name.includes('cac')
+            };
+        }
+        
+        // Cash flow metrics
+        if (name.includes('cash') || name.includes('balance') || name.includes('payment')) {
+            return {
+                semanticCategory: 'Cash Flow',
+                businessContext: 'Financial liquidity and cash management metric',
+                isBusinessKPI: true
+            };
+        }
+
+        // Default classification
+        return {
+            semanticCategory: 'Operational',
+            businessContext: 'Operational metric supporting business analysis',
+            isBusinessKPI: false
         };
     }
 
@@ -450,7 +557,7 @@ export class DataAnalysisService {
 
     /**
      * Generate chart type suggestions based on available metrics to help GPT-4o make better decisions
-     * Enhanced with sophisticated scoring, cross-metric analysis, and deduplication
+     * Enhanced with sophisticated scoring, cross-metric analysis, semantic context, and business intelligence
      */
     private generateChartSuggestions(metrics: MetricInfo[]): ChartSuggestion[] {
         const chartCandidates = new Map<string, ChartSuggestion>();
@@ -475,7 +582,16 @@ export class DataAnalysisService {
             }
         });
 
-        // 3. Apply quality filtering and sort
+        // 3. Generate business-context aware suggestions
+        const businessSuggestions = this.generateBusinessContextSuggestions(metrics);
+        businessSuggestions.forEach(suggestion => {
+            const existing = chartCandidates.get(suggestion.chartType);
+            if (!existing || suggestion.confidence > existing.confidence) {
+                chartCandidates.set(suggestion.chartType, suggestion);
+            }
+        });
+
+        // 4. Apply quality filtering and sort
         const qualityThreshold = 0.4;
         const filteredSuggestions = Array.from(chartCandidates.values())
             .filter(s => s.confidence >= qualityThreshold)
@@ -483,6 +599,97 @@ export class DataAnalysisService {
             .slice(0, 5); // Limit to top 5 suggestions
 
         return filteredSuggestions;
+    }
+
+    /**
+     * Generate suggestions based on business context and domain knowledge
+     */
+    private generateBusinessContextSuggestions(metrics: MetricInfo[]): ChartSuggestion[] {
+        const suggestions: ChartSuggestion[] = [];
+
+        // Business KPI dashboard suggestion
+        const kpiMetrics = metrics.filter(m => m.isBusinessKPI);
+        if (kpiMetrics.length >= 2) {
+            const timeSeriesKPIs = kpiMetrics.filter(m => m.hasTimeData);
+            if (timeSeriesKPIs.length >= 2) {
+                suggestions.push({
+                    chartType: 'line',
+                    confidence: 0.88,
+                    reason: 'Multiple business KPIs with time data - perfect for executive dashboard trend monitoring',
+                    bestForMetrics: timeSeriesKPIs.slice(0, 3).map(m => m.name)
+                });
+            }
+        }
+
+        // Revenue composition analysis
+        const salesMetrics = metrics.filter(m => 
+            m.semanticCategory === 'Sales' && m.hasGrouping
+        );
+        if (salesMetrics.length > 0) {
+            suggestions.push({
+                chartType: 'stacked-bar',
+                confidence: 0.85,
+                reason: 'Sales metrics with category breakdown - ideal for revenue composition analysis',
+                bestForMetrics: salesMetrics.map(m => m.name)
+            });
+        }
+
+        // Profitability waterfall analysis
+        const profitabilityMetrics = metrics.filter(m => 
+            m.semanticCategory === 'Profitability' || 
+            (m.semanticCategory === 'Sales' && m.name.toLowerCase().includes('profit'))
+        );
+        const costMetrics = metrics.filter(m => m.semanticCategory === 'COGS');
+        
+        if (profitabilityMetrics.length > 0 && costMetrics.length > 0) {
+            suggestions.push({
+                chartType: 'waterfall',
+                confidence: 0.82,
+                reason: 'Profitability and cost metrics detected - waterfall chart perfect for P&L analysis',
+                bestForMetrics: [...profitabilityMetrics.slice(0, 2), ...costMetrics.slice(0, 2)].map(m => m.name)
+            });
+        }
+
+        // Marketing performance comparison
+        const marketingMetrics = metrics.filter(m => 
+            m.semanticCategory === 'Marketing' && m.hasGrouping
+        );
+        if (marketingMetrics.length > 0) {
+            suggestions.push({
+                chartType: 'bar',
+                confidence: 0.80,
+                reason: 'Marketing metrics with category breakdown - bar chart optimal for channel/campaign comparison',
+                bestForMetrics: marketingMetrics.map(m => m.name)
+            });
+        }
+
+        // Unit economics trend analysis
+        const unitEconomicsMetrics = metrics.filter(m => 
+            m.semanticCategory === 'Unit Economics' && m.hasTimeData
+        );
+        if (unitEconomicsMetrics.length >= 2) {
+            suggestions.push({
+                chartType: 'line',
+                confidence: 0.84,
+                reason: 'Unit economics metrics over time - line chart shows business efficiency trends',
+                bestForMetrics: unitEconomicsMetrics.map(m => m.name)
+            });
+        }
+
+        // Cash flow trend monitoring
+        const cashFlowMetrics = metrics.filter(m => 
+            m.semanticCategory === 'Cash Flow' && m.hasTimeData
+        );
+        if (cashFlowMetrics.length > 0) {
+            suggestions.push({
+                chartType: 'line',
+                confidence: 0.86,
+                reason: 'Cash flow metrics over time - critical for financial health monitoring',
+                bestForMetrics: cashFlowMetrics.map(m => m.name)
+            });
+        }
+
+        return suggestions;
     }
 
     /**

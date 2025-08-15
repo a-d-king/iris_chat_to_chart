@@ -3,6 +3,7 @@ import { DataAnalysis, MetricInfo } from './data/data-analysis.service';
 import { IntentAnalyzerService, IntentAnalysis } from './reasoning/intent-analyzer.service';
 import { ChartRankerService, TopKChartsAnalysis, ChartRanking } from './reasoning/chart-ranker.service';
 import { ErrorHandlerService } from './common/error-handler.service';
+import { EcommerceSemanticService } from './semantic/ecommerce-semantic.service';
 
 
 
@@ -65,7 +66,8 @@ export class ReasoningService {
     constructor(
         private intentAnalyzer: IntentAnalyzerService,
         private chartRanker: ChartRankerService,
-        private errorHandler: ErrorHandlerService
+        private errorHandler: ErrorHandlerService,
+        private ecommerceSemantic: EcommerceSemanticService
     ) {
         // Check environment variable for reasoning enablement
         this.isEnabled = process.env.ENABLE_REASONING === 'true';
@@ -178,6 +180,48 @@ export class ReasoningService {
                 }
             }
 
+            // Semantic category matching - new enhancement
+            if (metric.semanticCategory) {
+                const categoryLower = metric.semanticCategory.toLowerCase();
+                if (promptLower.includes(categoryLower)) {
+                    score += 1.5;
+                    reasons.push(`Semantic category match: ${metric.semanticCategory}`);
+                }
+                
+                // Category-specific keyword matching
+                if (this.promptMatchesSemanticCategory(promptLower, metric.semanticCategory)) {
+                    score += 1.0;
+                    reasons.push(`Business domain relevance: ${metric.semanticCategory}`);
+                }
+            }
+
+            // Business KPI prioritization
+            if (metric.isBusinessKPI) {
+                score += 1.3;
+                reasons.push('Critical business KPI');
+                
+                // Extra boost for executive/dashboard queries
+                if (promptLower.includes('executive') || promptLower.includes('dashboard') || promptLower.includes('kpi')) {
+                    score += 0.5;
+                    reasons.push('Executive-level KPI for dashboard');
+                }
+            }
+
+            // Business context matching
+            if (metric.businessContext) {
+                const contextWords = metric.businessContext.toLowerCase().split(/\s+/);
+                let contextMatches = 0;
+                for (const promptWord of promptWords) {
+                    if (promptWord.length > 3 && contextWords.includes(promptWord)) {
+                        contextMatches++;
+                    }
+                }
+                if (contextMatches > 0) {
+                    score += contextMatches * 0.4;
+                    reasons.push(`Business context relevance: ${contextMatches} matches`);
+                }
+            }
+
             // Enhanced intent-based scoring for all intent types
             const primaryIntent = intentAnalysis.primaryIntent.type;
 
@@ -187,11 +231,21 @@ export class ReasoningService {
                         score += 1.2;
                         reasons.push('Perfect for temporal analysis');
                     }
+                    // Boost for revenue/growth metrics in trend analysis
+                    if (metric.semanticCategory === 'Sales' || metric.name.toLowerCase().includes('growth')) {
+                        score += 0.6;
+                        reasons.push('Revenue metrics ideal for trend analysis');
+                    }
                     break;
                 case 'categorical_comparison':
                     if (metric.hasGrouping) {
                         score += 1.0;
                         reasons.push('Ideal for categorical comparison');
+                    }
+                    // Boost for marketing/channel metrics
+                    if (metric.semanticCategory === 'Marketing') {
+                        score += 0.5;
+                        reasons.push('Marketing metrics excel in comparisons');
                     }
                     break;
                 case 'compositional_breakdown':
@@ -199,11 +253,21 @@ export class ReasoningService {
                         score += 1.1;
                         reasons.push('Good for compositional analysis');
                     }
+                    // Boost for profitability/cost breakdown
+                    if (metric.semanticCategory === 'Profitability' || metric.semanticCategory === 'COGS') {
+                        score += 0.7;
+                        reasons.push('Financial metrics perfect for breakdown analysis');
+                    }
                     break;
                 case 'performance_overview':
                     if (metric.valueType === 'percentage' || metric.valueType === 'currency') {
                         score += 0.9;
                         reasons.push('Suitable for performance metrics');
+                    }
+                    // Prioritize KPIs for overview
+                    if (metric.isBusinessKPI) {
+                        score += 0.8;
+                        reasons.push('Key performance indicator for overview');
                     }
                     break;
                 case 'correlation_analysis':
@@ -563,5 +627,23 @@ export class ReasoningService {
         }
 
         return matrix[str2.length][str1.length];
+    }
+
+    /**
+     * Check if prompt context matches semantic category for business relevance
+     */
+    private promptMatchesSemanticCategory(promptLower: string, semanticCategory: string): boolean {
+        const categoryKeywords = {
+            'Sales': ['revenue', 'sales', 'income', 'earnings', 'gross', 'net sales'],
+            'Profitability': ['profit', 'margin', 'profitability', 'earnings', 'bottom line'],
+            'COGS': ['cost', 'cogs', 'expense', 'spending', 'costs'],
+            'Unit Economics': ['aov', 'cac', 'ltv', 'clv', 'customer', 'unit', 'economics'],
+            'Marketing': ['marketing', 'ads', 'advertising', 'campaign', 'roas', 'acquisition'],
+            'Cash Flow': ['cash', 'flow', 'runway', 'burn', 'balance', 'liquidity'],
+            'Quantities': ['orders', 'customers', 'users', 'volume', 'count', 'quantity']
+        };
+
+        const keywords = categoryKeywords[semanticCategory as keyof typeof categoryKeywords] || [];
+        return keywords.some(keyword => promptLower.includes(keyword));
     }
 }

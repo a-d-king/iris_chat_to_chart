@@ -54,26 +54,26 @@ export class IntentAnalyzerService {
         const negationContext = this.analyzeNegations(promptLower);
         const temporalContext = this.analyzeTemporalPatterns(promptLower);
 
-        // Define intent patterns with semantic understanding
+        // Define intent patterns with semantic understanding (enhanced with ecommerce terms)
         const intentPatterns = {
             temporal_trend: {
-                keywords: ['trend', 'over time', 'growth', 'decline', 'change', 'progression', 'evolution', 'trajectory', 'movement', 'pattern'],
-                semanticSignals: ['month', 'year', 'quarter', 'week', 'daily', 'annual', 'seasonal', 'historical'],
+                keywords: ['trend', 'over time', 'growth', 'decline', 'change', 'progression', 'evolution', 'trajectory', 'movement', 'pattern', 'trajectory', 'runway', 'burn rate'],
+                semanticSignals: ['month', 'year', 'quarter', 'week', 'daily', 'annual', 'seasonal', 'historical', 'yoy', 'mom', 'qoq'],
                 weight: 1.0
             },
             categorical_comparison: {
-                keywords: ['compare', 'vs', 'versus', 'against', 'between', 'difference', 'contrast', 'relative to'],
-                semanticSignals: ['better', 'worse', 'higher', 'lower', 'best', 'worst', 'top', 'bottom'],
+                keywords: ['compare', 'vs', 'versus', 'against', 'between', 'difference', 'contrast', 'relative to', 'channel', 'segment', 'cohort'],
+                semanticSignals: ['better', 'worse', 'higher', 'lower', 'best', 'worst', 'top', 'bottom', 'efficient', 'effective', 'performing'],
                 weight: 1.0
             },
             compositional_breakdown: {
-                keywords: ['breakdown', 'composition', 'parts', 'segments', 'by', 'split', 'divide', 'portion'],
-                semanticSignals: ['category', 'type', 'group', 'segment', 'component', 'part', 'share'],
+                keywords: ['breakdown', 'composition', 'parts', 'segments', 'by', 'split', 'divide', 'portion', 'waterfall', 'attribution'],
+                semanticSignals: ['category', 'type', 'group', 'segment', 'component', 'part', 'share', 'contribution', 'allocation'],
                 weight: 1.0
             },
             performance_overview: {
-                keywords: ['overview', 'dashboard', 'summary', 'performance', 'status', 'snapshot', 'overall'],
-                semanticSignals: ['key', 'main', 'primary', 'important', 'critical', 'total', 'overall'],
+                keywords: ['overview', 'dashboard', 'summary', 'performance', 'status', 'snapshot', 'overall', 'kpi', 'metrics', 'health'],
+                semanticSignals: ['key', 'main', 'primary', 'important', 'critical', 'total', 'overall', 'executive', 'strategic'],
                 weight: 1.2
             },
             correlation_analysis: {
@@ -465,17 +465,68 @@ export class IntentAnalyzerService {
     }
 
     /**
-     * Extract explicitly mentioned metrics from the prompt
+     * Extract explicitly mentioned metrics from the prompt (enhanced with ecommerce metrics and semantic matching)
      */
     private extractExplicitMetrics(prompt: string): string[] {
         const metricPatterns = [
+            // Core business metrics
             'sales', 'revenue', 'profit', 'margin', 'cost', 'expenses', 'income',
             'customers', 'users', 'orders', 'transactions', 'conversion',
             'growth', 'decline', 'performance', 'efficiency', 'productivity',
-            'cash', 'balance', 'debt', 'assets', 'liabilities'
+            'cash', 'balance', 'debt', 'assets', 'liabilities',
+            
+            // Ecommerce-specific metrics
+            'aov', 'average order value', 'cac', 'customer acquisition cost',
+            'ltv', 'lifetime value', 'clv', 'customer lifetime value',
+            'roas', 'return on ad spend', 'mer', 'marketing efficiency',
+            'cogs', 'cost of goods sold', 'gross profit', 'contribution margin',
+            'net income', 'runway', 'burn rate', 'churn', 'retention',
+            
+            // Marketing metrics
+            'cpc', 'cost per click', 'cpm', 'cost per mille', 'ctr', 'click through rate',
+            'facebook ads', 'google ads', 'amazon ads', 'ad spend',
+            
+            // Operational metrics
+            'fulfillment', 'shipping', 'freight', '3pl', 'logistics',
+            'refunds', 'discounts', 'returns', 'chargebacks',
+            
+            // Financial metrics
+            'cash flow', 'operating expenses', 'op ex', 'credit card balance',
+            'payment fees', 'merchant fees', 'processor fees',
+
+            // Business intelligence terms
+            'kpi', 'key performance indicator', 'metrics', 'dashboard',
+            'benchmarks', 'targets', 'goals', 'performance indicators',
+            
+            // Analytical terms that suggest metric focus
+            'measure', 'track', 'monitor', 'analyze', 'evaluate', 'assess'
         ];
 
-        return metricPatterns.filter(metric => prompt.includes(metric));
+        const explicitMetrics = metricPatterns.filter(metric => 
+            prompt.toLowerCase().includes(metric.toLowerCase())
+        );
+
+        // Add semantic analysis for business domains
+        const promptLower = prompt.toLowerCase();
+        
+        // Detect business domain mentions that imply specific metrics
+        if (promptLower.includes('unit economics') || promptLower.includes('customer economics')) {
+            explicitMetrics.push('unit economics', 'aov', 'cac', 'ltv');
+        }
+        
+        if (promptLower.includes('profitability') || promptLower.includes('p&l') || promptLower.includes('profit and loss')) {
+            explicitMetrics.push('profitability', 'gross profit', 'net income', 'margins');
+        }
+        
+        if (promptLower.includes('marketing performance') || promptLower.includes('marketing roi')) {
+            explicitMetrics.push('marketing', 'roas', 'cac', 'ad spend');
+        }
+        
+        if (promptLower.includes('financial health') || promptLower.includes('cash position')) {
+            explicitMetrics.push('cash flow', 'runway', 'burn rate');
+        }
+
+        return [...new Set(explicitMetrics)]; // Remove duplicates
     }
 
     /**
