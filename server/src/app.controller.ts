@@ -220,6 +220,48 @@ export class AppController {
                 }
             );
 
+            // Return combined dashboard spec and data for the frontend from live Iris Finance API
+            // 
+            // DATA SHAPE SPECIFICATION:
+            // {
+            //   // Dashboard identification
+            //   dashboardId: string,               // e.g., "dashboard_1703123456789_abc123def"
+            //   
+            //   // Array of charts with specifications and data
+            //   charts: Array<{
+            //     // Chart specification (from OpenAI service)
+            //     chartType: 'line' | 'bar' | 'stacked-bar' | 'heatmap' | 'waterfall',
+            //     metric: string,                  // e.g., "sales", "totalGrossSales"
+            //     dateRange: string,               // YYYY or YYYY-MM format, e.g., "2025" or "2025-06"
+            //     groupBy?: string,                // Optional grouping dimension, e.g., "connector"
+            //     
+            //     // Dashboard layout properties
+            //     id: string,                      // Unique chart identifier
+            //     title: string,                   // Generated chart title
+            //     row: number,                     // Grid row position
+            //     col: number,                     // Grid column position
+            //     span: number,                    // Chart width span (1-4)
+            //     
+            //     // Processed chart data (from metrics service)
+            //     data: Array<{
+            //       [key: string]: any             // Chart-ready data points
+            //     }>,
+            //     
+            //     // Optional chart-specific insights
+            //     insights?: string[]              // Array of chart-specific insights
+            //   }>,
+            //   
+            //   // Dashboard metadata
+            //   metadata: {
+            //     totalCharts: number,             // Total number of charts in dashboard
+            //     responseTimeMs: number,          // Generation time in milliseconds
+            //     suggestedInsights: string[]      // Array of dashboard-level insights
+            //   },
+            //   
+            //   // Audit and tracking information
+            //   requestId: string,                 // Unique ID like "1703123456789-abc123def"
+            //   originalPrompt: string             // User's original input
+            // }
             const response = {
                 ...result,
                 requestId,
