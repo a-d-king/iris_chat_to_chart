@@ -156,11 +156,7 @@ export class ChatResponseDto {
     dataAnalysis: {
         totalMetrics: number;
         suggestedChartTypes: string[];
-        runtimeReasoning: boolean;
     };
-
-    @ApiPropertyOptional()
-    reasoning?: any;
 }
 
 export class DashboardResponseDto {
