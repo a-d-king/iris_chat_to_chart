@@ -127,6 +127,21 @@ export class DashboardChartDto extends ChartSpecDto {
     @IsString({ each: true })
     @ApiPropertyOptional({ type: [String] })
     insights?: string[];
+
+    @ApiPropertyOptional()
+    reasoning_summary?: ReasoningSummary;
+}
+
+// Interface for condensed reasoning summary
+export interface ReasoningSummary {
+    intent: string;
+    rationale_points: string[];
+    confidence: number;
+    decisions: Array<{
+        name: string;
+        choice: string;
+        why: string;
+    }>;
 }
 
 // Response DTOs for documentation of responses
@@ -157,6 +172,9 @@ export class ChatResponseDto {
         totalMetrics: number;
         suggestedChartTypes: string[];
     };
+
+    @ApiPropertyOptional()
+    reasoning_summary?: ReasoningSummary;
 }
 
 export class DashboardResponseDto {

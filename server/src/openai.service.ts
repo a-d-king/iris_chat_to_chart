@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import OpenAI from 'openai';
 import { DataAnalysis } from './data/data-analysis.service';
+import { ReasoningSummary } from './dto/chat.dto';
 import { startTrace } from './observability/langfuse';
 
 const openai = new OpenAI();
@@ -59,9 +60,18 @@ export class OpenAiService {
         // Step 2: Use reasoning to make final decision
         const chartSpec = await this.makeReasonedDecision(prompt, dataAnalysis, reasoningResponse);
 
+        // Step 3: Generate condensed reasoning summary
+        const reasoningSummary = this.generateReasoningSummary(
+            prompt,
+            chartSpec,
+            reasoningResponse,
+            dataAnalysis
+        );
+
         return {
             ...chartSpec,
-            aiReasoning: reasoningResponse
+            aiReasoning: reasoningResponse,
+            reasoning_summary: reasoningSummary
         };
     }
 
@@ -262,5 +272,187 @@ Select the chart type, metric, and date range that best implements your reasonin
         });
 
         return issues;
+    }
+
+    /**
+     * Generate condensed reasoning summary from verbose reasoning
+     */
+    private generateReasoningSummary(
+        prompt: string,
+        chartSpec: any,
+        verboseReasoning: string,
+        dataAnalysis?: DataAnalysis
+    ): ReasoningSummary {
+        // Extract intent from reasoning or prompt
+        const intent = this.extractIntent(prompt, verboseReasoning);
+
+        // Extract key rationale points from verbose reasoning
+        const rationalePoints = this.extractRationalePoints(verboseReasoning, dataAnalysis);
+
+        // Calculate confidence from reasoning
+        const confidence = this.extractConfidence(verboseReasoning, dataAnalysis);
+
+        // Structure key decisions
+        const decisions = [
+            {
+                name: "chart_type",
+                choice: chartSpec.chartType,
+                why: this.getChartTypeRationale(chartSpec.chartType, verboseReasoning)
+            },
+            {
+                name: "metric_selection",
+                choice: chartSpec.metric,
+                why: "best match for user intent"
+            }
+        ];
+
+        if (chartSpec.groupBy) {
+            decisions.push({
+                name: "grouping",
+                choice: chartSpec.groupBy,
+                why: "enables comparison analysis"
+            });
+        }
+
+        return {
+            intent,
+            rationale_points: rationalePoints,
+            confidence: Math.round(confidence * 100) / 100,
+            decisions
+        };
+    }
+
+    private extractIntent(prompt: string, reasoning: string): string {
+        const promptLower = prompt.toLowerCase();
+
+        // Check for temporal patterns
+        if (/trend|over time|timeline|growth|decline|progression/.test(promptLower)) {
+            return "trend_comparison";
+        }
+
+        // Check for comparison patterns  
+        if (/compare|vs|versus|difference|between/.test(promptLower)) {
+            return "categorical_comparison";
+        }
+
+        // Check for composition patterns
+        if (/breakdown|composition|parts|segments|split/.test(promptLower)) {
+            return "compositional_breakdown";
+        }
+
+        // Check for overview patterns
+        if (/overview|summary|dashboard|insights/.test(promptLower)) {
+            return "performance_overview";
+        }
+
+        // Default based on reasoning content
+        if (reasoning.includes('time series') || reasoning.includes('temporal')) {
+            return "trend_comparison";
+        }
+
+        return "data_exploration";
+    }
+
+    private extractRationalePoints(reasoning: string, dataAnalysis?: DataAnalysis): string[] {
+        const points = [];
+
+        // Check for temporal signals
+        if (/time series|temporal|trends over time/.test(reasoning)) {
+            points.push("time series patterns detected");
+        }
+
+        // Check for data quality mentions
+        if (reasoning.includes('data quality') || reasoning.includes('complete')) {
+            points.push("high data completeness");
+        }
+
+        // Check for granularity mentions
+        if (/monthly|daily|weekly/.test(reasoning)) {
+            const granularity = reasoning.match(/(monthly|daily|weekly)/)?.[0];
+            if (granularity) {
+                points.push(`${granularity} granularity available`);
+            }
+        }
+
+        // Check for comparison signals
+        if (/comparison|compare|categories/.test(reasoning)) {
+            points.push("categorical comparison needed");
+        }
+
+        // Check for composition signals  
+        if (/composition|breakdown|stacked/.test(reasoning)) {
+            points.push("composition analysis required");
+        }
+
+        // Add data-driven points
+        if (dataAnalysis?.availableMetrics) {
+            const metricCount = dataAnalysis.availableMetrics.length;
+            if (metricCount > 10) {
+                points.push("rich metric set available");
+            }
+        }
+
+        // Ensure we have at least 2-3 points
+        if (points.length < 2) {
+            points.push("data characteristics analyzed");
+            points.push("visualization requirements assessed");
+        }
+
+        return points.slice(0, 4); // Keep it concise
+    }
+
+    private extractConfidence(reasoning: string, dataAnalysis?: DataAnalysis): number {
+        let confidence = 0.7; // Base confidence
+
+        // Boost for data quality indicators
+        if (reasoning.includes('high quality') || reasoning.includes('complete data')) {
+            confidence += 0.1;
+        }
+
+        // Boost for clear intent
+        if (reasoning.includes('clear') || reasoning.includes('obvious')) {
+            confidence += 0.1;
+        }
+
+        // Boost for good data match
+        if (reasoning.includes('perfect match') || reasoning.includes('ideal')) {
+            confidence += 0.15;
+        }
+
+        // Reduce for uncertainty indicators
+        if (reasoning.includes('uncertain') || reasoning.includes('unclear')) {
+            confidence -= 0.15;
+        }
+
+        // Data-driven adjustments
+        if (dataAnalysis?.availableMetrics) {
+            // Use a simple heuristic for data quality since completeness may not be available
+            const qualityScore = dataAnalysis.availableMetrics.length > 5 ? 0.8 : 0.6;
+            confidence += (qualityScore - 0.5) * 0.2;
+        }
+
+        return Math.max(0.3, Math.min(0.95, confidence));
+    }
+
+    private getChartTypeRationale(chartType: string, reasoning: string): string {
+        // Extract specific rationale from reasoning if available
+        if (reasoning.includes('temporal') || reasoning.includes('time series')) {
+            return "temporal data structure";
+        }
+
+        if (reasoning.includes('comparison') || reasoning.includes('categories')) {
+            return "categorical comparison";
+        }
+
+        // Default rationales by chart type
+        const rationales: Record<string, string> = {
+            'line': 'optimal for temporal trends',
+            'bar': 'best for categorical comparison',
+            'stacked-bar': 'shows composition breakdown',
+            'heatmap': 'reveals pattern relationships',
+            'waterfall': 'displays sequential changes'
+        };
+
+        return rationales[chartType] || 'matched to data characteristics';
     }
 } 
