@@ -37,7 +37,6 @@ export interface DashboardAuditData {
     request_id: string;
     timestamp: Date;
     user_prompt: string;
-    request_type: string;
     chart_schemas: any[]; // JSONB
     total_charts: number;
     response_time_ms: number;
@@ -286,7 +285,6 @@ export class AuditService {
             request_id: requestId,
             timestamp: new Date(),
             user_prompt: userPrompt,
-            request_type: dashboardType === 'enhanced' ? 'enhanced-dashboard' : 'dashboard',
             chart_schemas: chartSchemas,
             total_charts: chartSchemas.length,
             response_time_ms: metadata.responseTimeMs,
