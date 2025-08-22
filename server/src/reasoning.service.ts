@@ -4,8 +4,6 @@ import { IntentAnalyzerService, IntentAnalysis } from './reasoning/intent-analyz
 import { ChartRankerService, TopKChartsAnalysis, ChartRanking } from './reasoning/chart-ranker.service';
 import { ErrorHandlerService } from './common/error-handler.service';
 
-
-
 /**
  * Interface for reasoning step information
  */
@@ -70,20 +68,6 @@ export class ReasoningService {
         // Check environment variable for reasoning enablement
         this.isEnabled = process.env.ENABLE_REASONING === 'true';
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     /**
      * Comprehensive metric analysis and ranking for dashboards and charts
