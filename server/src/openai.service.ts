@@ -509,4 +509,81 @@ IMPORTANT: When selecting a metric, use the TECHNICAL name (shown in brackets) f
 
         return rationales[chartType] || 'matched to data characteristics';
     }
+
+    /**
+     * AI-driven metric selection for optimal dashboard composition
+     * @param prompt - User's natural language prompt
+     * @param candidateMetrics - Pre-filtered metrics from algorithmic ranking
+     * @param dataAnalysis - Complete data analysis context
+     * @param maxMetrics - Maximum number of metrics to select
+     * @returns Promise<MetricInfo[]> - AI-selected optimal metrics
+     */
+    async selectOptimalMetrics(
+        prompt: string,
+        candidateMetrics: { metric: any; score: number; reasons: string[] }[],
+        dataAnalysis: DataAnalysis,
+        maxMetrics: number = 5
+    ): Promise<any[]> {
+        const trace = startTrace('openai.selectOptimalMetrics', {
+            prompt,
+            candidateCount: candidateMetrics.length,
+            maxMetrics
+        });
+
+        try {
+            const selectionPrompt = `You are a business intelligence expert. Select the ${maxMetrics} most relevant metrics for this user request.
+
+USER REQUEST: "${prompt}"
+
+CANDIDATE METRICS (ranked by algorithmic analysis):
+${candidateMetrics.map((item, index) => {
+                const metric = item.metric;
+                const displayName = metric.businessName || metric.displayName || metric.name;
+                return `${index + 1}. ${displayName}: ${metric.description} 
+   - Type: ${metric.type}, Value: ${metric.valueType}
+   - Score: ${item.score.toFixed(2)} | Reasons: ${item.reasons.join(', ')}
+   - Technical name: ${metric.name}`;
+            }).join('\n\n')}
+
+Select exactly ${maxMetrics} metrics that:
+1. Best answer the user's specific question
+2. Provide diverse analytical perspectives
+3. Enable actionable business insights
+4. Work well together in a dashboard
+
+Respond with only the technical names (from "Technical name:" field), one per line, in priority order.`;
+
+            const response = await openai.chat.completions.create({
+                model: 'gpt-4o',
+                temperature: 0.1,
+                messages: [{ role: 'user', content: selectionPrompt }]
+            });
+
+            const selectedNames = response.choices[0].message.content?.trim()
+                .split('\n')
+                .map(line => line.trim())
+                .filter(line => line.length > 0)
+                .slice(0, maxMetrics) || [];
+
+            const selectedMetrics = selectedNames
+                .map(name => candidateMetrics.find(item => item.metric.name === name)?.metric)
+                .filter(Boolean);
+
+            console.log(`\n=== AI METRIC SELECTION ===`);
+            console.log(`Selected ${selectedMetrics.length}/${maxMetrics} metrics:`, selectedNames);
+            console.log('=== END AI SELECTION ===\n');
+
+            try {
+                (trace as any)?.end({ output: { selectedMetrics: selectedNames } });
+            } catch { }
+            return selectedMetrics;
+
+        } catch (error) {
+            console.warn('AI metric selection failed, using algorithmic fallback:', error);
+            try {
+                (trace as any)?.end({ level: 'ERROR', statusMessage: String(error) });
+            } catch { }
+            return candidateMetrics.slice(0, maxMetrics).map(item => item.metric);
+        }
+    }
 } 

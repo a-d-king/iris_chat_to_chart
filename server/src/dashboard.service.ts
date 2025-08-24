@@ -49,26 +49,50 @@ export class DashboardService {
             m.type !== 'scalar'
         );
 
-        // Use centralized reasoning service for comprehensive analysis
-        const analysis = this.reasoningService.analyzeAndRankMetrics(prompt, visualizableMetrics, maxCharts);
+        // Step 1: Algorithmic pre-filtering and ranking (existing robust logic)
+        const algorithmicAnalysis = this.reasoningService.analyzeAndRankMetrics(
+            prompt,
+            visualizableMetrics,
+            maxCharts * 2 // Get more candidates for AI refinement
+        );
 
         // Log quality issues if any
-        if (analysis.qualityIssues.length > 0) {
+        if (algorithmicAnalysis.qualityIssues.length > 0) {
             console.log('=== METRIC QUALITY ISSUES ===');
-            analysis.qualityIssues.forEach(issue => {
+            algorithmicAnalysis.qualityIssues.forEach(issue => {
                 console.log(`Metric: ${issue.metric.name}`);
                 console.log(`Issues: ${issue.issues.join(', ')} (${issue.severity} severity)`);
             });
             console.log('=== END QUALITY ISSUES ===');
         }
 
-        // Deduplicate metrics by name (in case reasoning service returns duplicates)
-        const metrics = analysis.rankedMetrics.map(ranked => ranked.metric);
-        const uniqueMetrics = metrics.filter((metric, index) =>
-            metrics.findIndex(m => m.name === metric.name) === index
-        );
+        // Step 2: AI-powered refinement and final selection
+        try {
+            const aiSelectedMetrics = await this.openAiService.selectOptimalMetrics(
+                prompt,
+                algorithmicAnalysis.rankedMetrics.slice(0, Math.min(10, maxCharts * 3)), // Top candidates only
+                dataAnalysis,
+                maxCharts
+            );
 
-        return uniqueMetrics;
+            // Deduplicate by name (safety check)
+            const uniqueMetrics = aiSelectedMetrics.filter((metric, index) =>
+                aiSelectedMetrics.findIndex(m => m.name === metric.name) === index
+            );
+
+            return uniqueMetrics;
+
+        } catch (error) {
+            console.warn('AI metric selection failed, using algorithmic fallback:', error);
+
+            // Fallback to original algorithmic selection
+            const metrics = algorithmicAnalysis.rankedMetrics.map(ranked => ranked.metric);
+            const uniqueMetrics = metrics.filter((metric, index) =>
+                metrics.findIndex(m => m.name === metric.name) === index
+            );
+
+            return uniqueMetrics;
+        }
     }
 
     public async generateChartSpecs(request: DashboardDto, metrics: MetricInfo[], dataAnalysis: any): Promise<any[]> {
