@@ -47,14 +47,25 @@ Complete Data Flow: User Prompt → Dashboard JSON
   │       ├── [Step 3: Chart Specification Generation]
   │       │   └── DashboardService.generateChartSpecs() →
   │       │       └── [For Each Selected Metric] →
+  │       │           ├── DashboardService.buildContextualMetricPrompt() →
+  │       │           │   ├── [Include metric details, type, value type]
+  │       │           │   ├── [Add categories, embedded metrics if available]
+  │       │           │   ├── [Incorporate original user prompt context]
+  │       │           │   └── [Include chart recommendations for guidance]
   │       │           ├── OpenAiService.prompt() →
   │       │           │   ├── generateReasoning() →
   │       │           │   │   ├── startTrace('openai.generateReasoning')
   │       │           │   │   ├── identifyDataQualityIssues()
+  │       │           │   │   ├── [Enhanced confidence level names: Excellent/Good/Acceptable/Poor/Unsuitable]
   │       │           │   │   └── openai.chat.completions.create() [GPT-4o Reasoning]
-  │       │           │   └── makeReasonedDecision() →
-  │       │           │       ├── startTrace('openai.makeReasonedDecision')
-  │       │           │       └── openai.chat.completions.create() [Tool Calling]
+  │       │           │   ├── makeReasonedDecision() →
+  │       │           │   │   ├── startTrace('openai.makeReasonedDecision')
+  │       │           │   │   └── openai.chat.completions.create() [Tool Calling]
+  │       │           │   └── generateReasoningSummary() →
+  │       │           │       ├── extractIntent() [Intent classification]
+  │       │           │       ├── extractRationalePoints() [Key reasoning points]
+  │       │           │       ├── extractConfidence() [Evidence-based confidence]
+  │       │           │       └── [Structure decisions with explanations]
   │       │           ├── DashboardService.generateChartTitle() [Title Formatting]
   │       │           └── [Apply Request DateRange Override]
   │       │       └── DashboardService.deduplicateChartSpecs() →
@@ -408,7 +419,8 @@ Complete Data Flow: User Prompt → Dashboard JSON
   5.1 Individual Chart Generation
 
   For dataBySalesChannels:
-  const metricPrompt = "Show dataBySalesChannels breakdown";
+  const metricPrompt = this.buildContextualMetricPrompt(metric, originalPrompt, dataAnalysis);
+  // Results in contextual prompt with metric details, categories, and user intent
   const spec = await this.openAiService.prompt(metricPrompt,
   dataAnalysis);
 
@@ -457,10 +469,19 @@ Complete Data Flow: User Prompt → Dashboard JSON
   Final Chart Spec:
   {
     chartType: "stacked-bar",
-    metric: "dataBySalesChannels",
+    metric: "dataBySalesChannels", 
     dateRange: "2025",
     title: "Data By Sales Channels Breakdown",
-    aiReasoning: "..." // Full reasoning text
+    aiReasoning: "...", // Full reasoning text
+    reasoning_summary: { // Condensed structured summary
+      intent: "compositional_breakdown",
+      rationale_points: ["categorical comparison needed", "composition analysis required"],
+      confidence: 0.85,
+      decisions: [
+        {"name": "chart_type", "choice": "stacked-bar", "why": "shows composition breakdown"},
+        {"name": "metric_selection", "choice": "dataBySalesChannels", "why": "best match for user intent"}
+      ]
+    }
   }
 
   5.2 Deduplication
@@ -709,12 +730,13 @@ Complete Data Flow: User Prompt → Dashboard JSON
   2025",
     "chartSpec": {"chartType": "dashboard", "metric": "multiple",
   "dateRange": "2025"},
-    "dataUsed": "...", // Full chart data
-    "dataAnalysis": "...", // Complete analysis
+    "dataUsed": "...", // Full chart data with reasoning summaries
+    "dataAnalysis": "...", // Complete analysis with confidence levels
     "metadata": {
       "dataSource": "Iris Finance API",
       "responseTimeMs": 1247,
-      "metricsCount": 2
+      "metricsCount": 2,
+      "enhancedReasoning": true // Indicates condensed reasoning included
     }
   }
 
@@ -791,11 +813,18 @@ Complete Data Flow: User Prompt → Dashboard JSON
   Total Processing Time: ~1.2 seconds
   - External API call: ~400ms
   - Data analysis: ~150ms
-  - AI reasoning: ~500ms
-  - Data slicing: ~100ms
+  - AI reasoning: ~500ms (now includes condensed reasoning generation)
+  - Data slicing: ~100ms (enhanced with semantic search)
   - Insight generation: ~97ms
 
   This complete flow demonstrates how the system transforms a simple
   natural language request into a sophisticated, multi-chart dashboard
-  with business intelligence insights, all while maintaining full audit
-  trails and performance monitoring.
+  with business intelligence insights and structured reasoning summaries,
+  all while maintaining full audit trails and performance monitoring.
+  
+  Key Improvements in this Branch:
+  - Enhanced contextual prompts for better AI chart generation
+  - Condensed reasoning summaries for structured decision explanations
+  - Evidence-based confidence scoring with descriptive levels
+  - Semantic metric search with tokenized relevance scoring
+  - Streamlined audit data structure for better compliance tracking

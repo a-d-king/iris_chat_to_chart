@@ -50,6 +50,8 @@ This app converts plain-English questions into visual insights. Users ask questi
 
 ### Advanced AI and Reasoning
 - **OpenAI-assisted decisions** in `OpenAiService` with explicit step-by-step chain-of-thought output captured as `aiReasoning`
+- **Condensed Reasoning Summaries** with structured intent analysis, rationale points, confidence scoring, and decision explanations in response format
+- **Enhanced Metric Selection** with semantic mapping, tokenized search, and contextual prompts for improved AI chart generation
 - **Sophisticated Intent Analysis** in `IntentAnalyzerService` for advanced natural language understanding including:
   - Complex query processing with conditional statements and multiple clauses
   - Advanced temporal pattern recognition and periodicity detection
@@ -57,6 +59,7 @@ This app converts plain-English questions into visual insights. Users ask questi
   - Semantic understanding with contextual analysis and confidence scoring
 - **Advanced Chart Ranking** in `ChartRankerService` for systematic chart type selection with:
   - Weighted evaluation based on data compatibility, intent alignment, and visual effectiveness
+  - Evidence-based confidence levels with descriptive ratings (Excellent, Good, Acceptable, Poor, Unsuitable)
   - Top-K selection with detailed reasoning and explainable results
   - Data-driven decisions considering metric types and temporal availability
 - **Comprehensive Reasoning** in `ReasoningService` for final decision synthesis with:
@@ -74,7 +77,8 @@ This app converts plain-English questions into visual insights. Users ask questi
 ### Data and Dashboards
 - **Data types**: `scalar`, `timeSeries`, `groupedSeries`, `embeddedMetrics`, `dynamicKeyObject`, `array`
 - **Flexible date ranges**: Year, month, single day, ISO range, and custom range support
-- **Smart Dashboard ranking**: Prompt-driven, quality-aware metric selection with deduplication
+- **Smart Dashboard ranking**: Prompt-driven, quality-aware metric selection with deduplication and semantic matching
+- **Contextual Chart Generation**: Metrics analyzed with original user intent, value types, categories, and recommended chart types
 - **Enhanced Insights Generation**: AI-powered contextual insights, financial domain knowledge, and composition analysis
 
 ### Enterprise & Observability
@@ -326,6 +330,15 @@ Response (with advanced reasoning):
   "data": { "dates": [...], "values": [...] },
   "requestId": "...",
   "originalPrompt": "...",
+  "reasoning_summary": {
+    "intent": "categorical_comparison",
+    "rationale_points": ["categorical comparison needed", "high data completeness"],
+    "confidence": 0.82,
+    "decisions": [
+      {"name": "chart_type", "choice": "bar", "why": "categorical comparison"},
+      {"name": "metric_selection", "choice": "dataBySalesConnectors.grossSales", "why": "best match for user intent"}
+    ]
+  },
   "dataAnalysis": { 
     "totalMetrics": 99, 
     "suggestedChartTypes": ["bar","line"], 
@@ -446,8 +459,9 @@ Quality issues identified:
   - Fuzzy matching algorithms and business context boosts
   - Diversity-aware selection and quality issue logging
   - Advanced confidence calculation and metric analysis ranking
-- Generates chart specs through `OpenAiService` with robust fallbacks and enhanced titles
+- Generates chart specs through `OpenAiService` with contextual prompts including metric details, categories, and user intent
 - **AI-powered insights generation** with contextual analysis, domain knowledge, and composition insights
+- **Condensed reasoning summaries** provide structured decision rationale in API responses
 
 ---
 
@@ -466,15 +480,18 @@ Quality issues identified:
 
 ### Chart Ranking Features:
 - **Systematic Scoring**: Weighted evaluation based on data compatibility, intent alignment, visual effectiveness, and usability
+- **Evidence-Based Confidence**: Descriptive confidence levels (Excellent, Good, Acceptable, Poor, Unsuitable) with numerical scores
 - **Top-K Selection**: Returns ranked list of chart recommendations with detailed reasoning and explainable results
 - **Data-Driven Decisions**: Considers metric types, grouping dimensions, temporal data availability, and comprehensive data quality assessment
 - **Explainable Results**: Provides strengths, weaknesses, and detailed reasoning for each chart type recommendation
 
 ### Reasoning Capabilities:
 - **Business Context Integration**: Domain knowledge boosts for financial metrics and performance indicators
+- **Enhanced Metric Selection**: Semantic mapping with tokenized search and contextual relevance scoring
 - **Diversity-Aware Selection**: Intelligent metric selection with type and value diversity optimization
 - **Quality Issue Detection**: Comprehensive analysis of metric quality with severity assessment
-- **Sophisticated Confidence Calculation**: Multi-factor confidence scoring with intent alignment and quality penalties
+- **Sophisticated Confidence Calculation**: Evidence-based confidence scoring with multi-factor analysis and conservative baseline
+- **Condensed Reasoning Output**: Structured summaries with intent classification, rationale points, and decision explanations
 - **Final Decision Synthesis**: Advanced synthesis with confidence assessment and keyword alignment analysis
 - **Comprehensive Metric Analysis**: Enhanced relevance scoring with fuzzy logic and business context
 
@@ -537,6 +554,7 @@ Features:
 
 `MetricsService` features:
 - Caches responses by date range with improved invalidation
+- **Enhanced metric search** with semantic mappings, tokenized search, and relevance scoring for improved AI matching
 - Normalized chart shape conversion via type-specific slicers:
   - `sliceTimeSeries`, `sliceGroupedSeries`, `sliceNestedGroupedSeries`, `sliceScalar`, `sliceDynamicKeyObject`, `sliceEmbeddedMetrics`, `sliceArray`
 - Data quality validation and issue reporting
