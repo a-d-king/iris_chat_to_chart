@@ -49,61 +49,34 @@ export class DashboardService {
             m.type !== 'scalar'
         );
 
-        // Step 1: Algorithmic pre-filtering and ranking (existing robust logic)
-        const algorithmicAnalysis = this.reasoningService.analyzeAndRankMetrics(
-            prompt,
-            visualizableMetrics,
-            maxCharts * 2 // Get more candidates for AI refinement
-        );
+        // Use centralized reasoning service for comprehensive analysis
+        const analysis = this.reasoningService.analyzeAndRankMetrics(prompt, visualizableMetrics, maxCharts);
 
         // Log quality issues if any
-        if (algorithmicAnalysis.qualityIssues.length > 0) {
+        if (analysis.qualityIssues.length > 0) {
             console.log('=== METRIC QUALITY ISSUES ===');
-            algorithmicAnalysis.qualityIssues.forEach(issue => {
+            analysis.qualityIssues.forEach(issue => {
                 console.log(`Metric: ${issue.metric.name}`);
                 console.log(`Issues: ${issue.issues.join(', ')} (${issue.severity} severity)`);
             });
             console.log('=== END QUALITY ISSUES ===');
         }
 
-        // Step 2: AI-powered refinement and final selection
-        try {
-            const aiSelectedMetrics = await this.openAiService.selectOptimalMetrics(
-                prompt,
-                algorithmicAnalysis.rankedMetrics.slice(0, Math.min(10, maxCharts * 3)), // Top candidates only
-                dataAnalysis,
-                maxCharts
-            );
+        // Deduplicate metrics by name (in case reasoning service returns duplicates)
+        const metrics = analysis.rankedMetrics.map(ranked => ranked.metric);
+        const uniqueMetrics = metrics.filter((metric, index) =>
+            metrics.findIndex(m => m.name === metric.name) === index
+        );
 
-            // Deduplicate by name (safety check)
-            const uniqueMetrics = aiSelectedMetrics.filter((metric, index) =>
-                aiSelectedMetrics.findIndex(m => m.name === metric.name) === index
-            );
-
-            return uniqueMetrics;
-
-        } catch (error) {
-            console.warn('AI metric selection failed, using algorithmic fallback:', error);
-
-            // Fallback to original algorithmic selection
-            const metrics = algorithmicAnalysis.rankedMetrics.map(ranked => ranked.metric);
-            const uniqueMetrics = metrics.filter((metric, index) =>
-                metrics.findIndex(m => m.name === metric.name) === index
-            );
-
-            return uniqueMetrics;
-        }
+        return uniqueMetrics;
     }
 
     public async generateChartSpecs(request: DashboardDto, metrics: MetricInfo[], dataAnalysis: any): Promise<any[]> {
         const specs = [];
 
-        // Leverage existing intent analysis from reasoning service
-        const intentAnalysis = this.reasoningService['intentAnalyzer']?.performIntentAnalysis(request.prompt);
-
         for (const metric of metrics) {
-            // Create context-aware prompt using existing intent analysis
-            const metricPrompt = this.buildContextAwarePrompt(request.prompt, metric, intentAnalysis);
+            // Create a focused prompt for this specific metric
+            const metricPrompt = `Show ${metric.name} ${metric.hasTimeData ? 'trends over time' : 'breakdown'}`;
 
             const spec = await this.openAiService.prompt(metricPrompt, dataAnalysis);
             specs.push({
@@ -117,44 +90,6 @@ export class DashboardService {
         return this.deduplicateChartSpecs(specs);
     }
 
-    /**
- * Build context-aware prompts leveraging existing intent analysis and confidence evidence
- */
-    private buildContextAwarePrompt(originalPrompt: string, metric: MetricInfo, intentAnalysis: any): string {
-        const metricDisplayName = metric.businessName || metric.displayName || metric.name;
-        const promptLower = originalPrompt.toLowerCase();
-
-        // Base prompt with user context
-        let prompt = `Based on the user's request: "${originalPrompt}"\n\nCreate a chart for "${metricDisplayName}" that helps answer their question.\n\n`;
-
-        // Add intent-based guidance using existing analysis
-        if (intentAnalysis?.primaryIntent?.type === 'temporal_trend') {
-            prompt += 'Focus on trends, patterns, and changes over time. Prioritize time-based visualizations. ';
-        } else if (intentAnalysis?.primaryIntent?.type === 'categorical_comparison') {
-            prompt += 'Focus on comparisons and identifying top performers. Emphasize clear categorical distinctions. ';
-        } else if (intentAnalysis?.primaryIntent?.type === 'performance_overview') {
-            prompt += 'Focus on key performance indicators and overview metrics. Highlight actionable insights. ';
-        } else if (intentAnalysis?.primaryIntent?.type === 'compositional_breakdown') {
-            prompt += 'Focus on composition and part-to-whole relationships. Show how components contribute. ';
-        }
-
-        // Add confidence-based guidance
-        if (intentAnalysis?.confidence > 0.8) {
-            prompt += 'User intent is very clear - align closely with their specific analytical goals. ';
-        } else if (intentAnalysis?.confidence < 0.5) {
-            prompt += 'User intent is somewhat ambiguous - choose the most generally useful visualization. ';
-        }
-
-        // Add metric-specific context
-        if (promptLower.includes(metric.name.toLowerCase()) ||
-            promptLower.includes(metricDisplayName.toLowerCase())) {
-            prompt += 'This metric was specifically mentioned - make it central to addressing their request. ';
-        }
-
-        prompt += 'Choose the chart type that best serves the user\'s analytical intent and enables actionable decisions, not just the data structure.';
-
-        return prompt;
-    }
 
     public generateChartTitle(metricName: string, chartType: string): string {
         const cleanName = metricName.split('.').pop() || metricName;

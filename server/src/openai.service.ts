@@ -137,12 +137,7 @@ Please provide your reasoning for each step clearly and explicitly.`;
 
             reasoningPrompt += `\n\nMETRICS:`;
             dataAnalysis.availableMetrics.slice(0, 10).forEach(metric => {
-                const displayName = metric.businessName || metric.displayName || metric.name;
-                reasoningPrompt += `\n- ${displayName}: ${metric.description} (${metric.type}, ${metric.valueType})`;
-                // Include technical name for reference if different from display name
-                if (displayName !== metric.name) {
-                    reasoningPrompt += ` [Technical: ${metric.name}]`;
-                }
+                reasoningPrompt += `\n- ${metric.name}: ${metric.description} (${metric.type}, ${metric.valueType})`;
             });
 
             // Add chart suggestions with evidence-based confidence to help guide reasoning
@@ -153,17 +148,9 @@ Please provide your reasoning for each step clearly and explicitly.`;
                     reasoningPrompt += `\n- ${suggestion.chartType}: ${suggestion.reason}`;
                     reasoningPrompt += `\n  Confidence: ${confidenceLevel} (${suggestion.confidence.toFixed(2)})`;
 
-                    // Add evidence details if available
-                    if (suggestion.evidence) {
-                        reasoningPrompt += `\n  Evidence: Intent alignment ${(suggestion.evidence.intentAlignment * 100).toFixed(0)}%, Data fit ${(suggestion.evidence.dataCompatibility * 100).toFixed(0)}%`;
-                    }
 
                     // Convert technical metric names to business names for better readability
-                    const businessMetricNames = suggestion.bestForMetrics.map(metricName => {
-                        const metric = dataAnalysis.availableMetrics.find(m => m.name === metricName);
-                        return metric?.businessName || metric?.displayName || metricName;
-                    });
-                    reasoningPrompt += `\n  Best for: ${businessMetricNames.join(', ')}`;
+                    reasoningPrompt += `\n  Best for: ${suggestion.bestForMetrics.join(', ')}`;
                 });
                 reasoningPrompt += `\n\nNote: These suggestions balance data characteristics with user intent. Higher intent alignment indicates better fit for your analytical goals.`;
             }
@@ -228,12 +215,7 @@ IMPORTANT: When selecting a metric, use the TECHNICAL name (shown in brackets) f
         if (dataAnalysis) {
             decisionPrompt += `\n\nAVAILABLE METRICS:`;
             dataAnalysis.availableMetrics.forEach(metric => {
-                const displayName = metric.businessName || metric.displayName || metric.name;
-                decisionPrompt += `\n- ${displayName}: ${metric.description}`;
-                // Include technical name for reference if different from display name
-                if (displayName !== metric.name) {
-                    decisionPrompt += ` [Technical: ${metric.name}]`;
-                }
+                decisionPrompt += `\n- ${metric.name}: ${metric.description}`;
             });
         }
 
@@ -518,72 +500,4 @@ IMPORTANT: When selecting a metric, use the TECHNICAL name (shown in brackets) f
      * @param maxMetrics - Maximum number of metrics to select
      * @returns Promise<MetricInfo[]> - AI-selected optimal metrics
      */
-    async selectOptimalMetrics(
-        prompt: string,
-        candidateMetrics: { metric: any; score: number; reasons: string[] }[],
-        dataAnalysis: DataAnalysis,
-        maxMetrics: number = 5
-    ): Promise<any[]> {
-        const trace = startTrace('openai.selectOptimalMetrics', {
-            prompt,
-            candidateCount: candidateMetrics.length,
-            maxMetrics
-        });
-
-        try {
-            const selectionPrompt = `You are a business intelligence expert. Select the ${maxMetrics} most relevant metrics for this user request.
-
-USER REQUEST: "${prompt}"
-
-CANDIDATE METRICS (ranked by algorithmic analysis):
-${candidateMetrics.map((item, index) => {
-                const metric = item.metric;
-                const displayName = metric.businessName || metric.displayName || metric.name;
-                return `${index + 1}. ${displayName}: ${metric.description} 
-   - Type: ${metric.type}, Value: ${metric.valueType}
-   - Score: ${item.score.toFixed(2)} | Reasons: ${item.reasons.join(', ')}
-   - Technical name: ${metric.name}`;
-            }).join('\n\n')}
-
-Select exactly ${maxMetrics} metrics that:
-1. Best answer the user's specific question
-2. Provide diverse analytical perspectives
-3. Enable actionable business insights
-4. Work well together in a dashboard
-
-Respond with only the technical names (from "Technical name:" field), one per line, in priority order.`;
-
-            const response = await openai.chat.completions.create({
-                model: 'gpt-4o',
-                temperature: 0.1,
-                messages: [{ role: 'user', content: selectionPrompt }]
-            });
-
-            const selectedNames = response.choices[0].message.content?.trim()
-                .split('\n')
-                .map(line => line.trim())
-                .filter(line => line.length > 0)
-                .slice(0, maxMetrics) || [];
-
-            const selectedMetrics = selectedNames
-                .map(name => candidateMetrics.find(item => item.metric.name === name)?.metric)
-                .filter(Boolean);
-
-            console.log(`\n=== AI METRIC SELECTION ===`);
-            console.log(`Selected ${selectedMetrics.length}/${maxMetrics} metrics:`, selectedNames);
-            console.log('=== END AI SELECTION ===\n');
-
-            try {
-                (trace as any)?.end({ output: { selectedMetrics: selectedNames } });
-            } catch { }
-            return selectedMetrics;
-
-        } catch (error) {
-            console.warn('AI metric selection failed, using algorithmic fallback:', error);
-            try {
-                (trace as any)?.end({ level: 'ERROR', statusMessage: String(error) });
-            } catch { }
-            return candidateMetrics.slice(0, maxMetrics).map(item => item.metric);
-        }
-    }
 } 
