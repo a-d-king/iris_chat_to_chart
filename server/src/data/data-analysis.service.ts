@@ -14,10 +14,32 @@ export interface ChartSuggestion {
     confidence: number;
     reason: string;
     bestForMetrics: string[];
+    evidence?: ConfidenceEvidence;
+}
+
+export interface ConfidenceEvidence {
+    dataCompatibility: number;    // How well data structure fits chart type (0-1)
+    intentAlignment: number;      // How well chart serves user goals (0-1) 
+    visualClarity: number;        // How clear/readable the visualization will be (0-1)
+    actionability: number;        // How useful for decision-making (0-1)
+    reasoning: string[];          // Specific reasons for the confidence score
+}
+
+/**
+ * Structured confidence levels instead of arbitrary decimals
+ */
+export enum ConfidenceLevel {
+    EXCELLENT = 0.9,      // Perfect match: data + intent + clarity all strong
+    GOOD = 0.75,          // Strong fit: good data compatibility + decent intent alignment
+    ACCEPTABLE = 0.6,     // Usable: adequate fit but some limitations
+    POOR = 0.4,           // Weak fit: conflicts with intent or data limitations
+    UNSUITABLE = 0.2      // Should not be recommended
 }
 
 export interface MetricInfo {
     name: string;
+    displayName?: string;           // Human-readable name for UI/user presentation
+    businessName?: string;          // Business-friendly alias for AI model context
     type: 'scalar' | 'timeSeries' | 'groupedSeries' | 'array' | 'dynamicKeyObject' | 'embeddedMetrics';
     description: string;
     hasTimeData: boolean;
@@ -26,7 +48,7 @@ export interface MetricInfo {
     sampleValues?: any[];
     valueType: 'currency' | 'percentage' | 'count' | 'generic';
     chartRecommendations: string[];
-    keyPath?: string;
+    keyPath?: string;               // Technical path for data slicing operations
     embeddedMetrics?: string[];
 }
 
@@ -41,9 +63,9 @@ export class DataAnalysisService {
     /**
      * Analyze the loaded data and provide context for chart generation
      */
-    analyzeData(data: any): DataAnalysis {
+    analyzeData(data: any, userIntent?: any): DataAnalysis {
         const metrics = this.extractMetricsRecursively(data);
-        const suggestions = this.generateChartSuggestions(metrics);
+        const suggestions = this.generateChartSuggestions(metrics, userIntent);
         const context = this.generateDataContext(metrics, data);
 
         return {
@@ -136,6 +158,8 @@ export class DataAnalysisService {
 
             metrics.push({
                 name: basePath,
+                displayName: this.generateBusinessName(basePath.split('.').pop() || basePath),
+                businessName: this.generateBusinessName(basePath),
                 type: 'embeddedMetrics',
                 description: `${this.generateMetricDescription(basePath, 'embeddedMetrics')} containing ${numericKeys.length} metrics`,
                 hasTimeData: false,
@@ -155,6 +179,8 @@ export class DataAnalysisService {
 
                 metrics.push({
                     name: metricName,
+                    displayName: this.generateBusinessName(key),
+                    businessName: this.generateBusinessName(metricName),
                     type: 'groupedSeries',
                     description: `${this.generateMetricDescription(key, 'groupedSeries')} from ${basePath}`,
                     hasTimeData: false,
@@ -197,6 +223,8 @@ export class DataAnalysisService {
 
                 metrics.push({
                     name: basePath,
+                    displayName: this.generateBusinessName(containerKey),
+                    businessName: this.generateBusinessName(basePath),
                     type: 'dynamicKeyObject',
                     description: `${this.generateMetricDescription(containerKey, 'dynamicKeyObject')} with ${entries.length} accounts`,
                     hasTimeData: false,
@@ -216,6 +244,8 @@ export class DataAnalysisService {
 
                     metrics.push({
                         name: metricName,
+                        displayName: this.generateBusinessName(key),
+                        businessName: this.generateBusinessName(metricName),
                         type: 'groupedSeries',
                         description: `${this.generateMetricDescription(key, 'groupedSeries')} across ${containerKey}`,
                         hasTimeData: false,
@@ -302,8 +332,11 @@ export class DataAnalysisService {
 
         if (typeof value === 'number') {
             const valueType = this.detectValueType(key, value);
+            const metricName = fullPath || key;
             return {
-                name: fullPath || key,
+                name: metricName,
+                displayName: this.generateBusinessName(key),
+                businessName: this.generateBusinessName(metricName),
                 type: 'scalar',
                 description: this.generateMetricDescription(key, 'scalar'),
                 hasTimeData: false,
@@ -341,6 +374,8 @@ export class DataAnalysisService {
         if (firstItem && typeof firstItem === 'object' && 'date' in firstItem && 'value' in firstItem) {
             return {
                 name: metricName,
+                displayName: this.generateBusinessName(key),
+                businessName: this.generateBusinessName(metricName),
                 type: 'timeSeries',
                 description: this.generateMetricDescription(key, 'timeSeries'),
                 hasTimeData: true,
@@ -359,6 +394,8 @@ export class DataAnalysisService {
 
         return {
             name: metricName,
+            displayName: this.generateBusinessName(key),
+            businessName: this.generateBusinessName(metricName),
             type: 'array',
             description: this.generateMetricDescription(key, 'array'),
             hasTimeData: false,
@@ -381,6 +418,8 @@ export class DataAnalysisService {
 
             return {
                 name: metricName,
+                displayName: this.generateBusinessName(key),
+                businessName: this.generateBusinessName(metricName),
                 type: 'groupedSeries',
                 description: this.generateMetricDescription(key, 'groupedSeries'),
                 hasTimeData: true,
@@ -425,6 +464,64 @@ export class DataAnalysisService {
     }
 
     /**
+     * Generate business-friendly names from technical metric names
+     */
+    private generateBusinessName(key: string): string {
+        // Transform technical terms to business terms
+        return key
+            .replace(/\./g, ' ')                              // Replace dots with spaces
+            .replace(/([a-z])([A-Z])/g, '$1 $2')              // Add space before capital letters
+            .split(' ')
+            .map(word => {
+                // Apply business-friendly transformations
+                const lowerWord = word.toLowerCase();
+                switch (lowerWord) {
+                    case 'api': return 'API';
+                    case 'id': return 'ID';
+                    case 'url': return 'URL';
+                    case 'sql': return 'SQL';
+                    case 'json': return 'JSON';
+                    case 'xml': return 'XML';
+                    case 'html': return 'HTML';
+                    case 'css': return 'CSS';
+                    case 'js': return 'JavaScript';
+                    case 'ts': return 'TypeScript';
+                    case 'db': return 'Database';
+                    case 'avg': return 'Average';
+                    case 'min': return 'Minimum';
+                    case 'max': return 'Maximum';
+                    case 'qty': return 'Quantity';
+                    case 'amt': return 'Amount';
+                    case 'num': return 'Number';
+                    case 'pct': return 'Percentage';
+                    case 'perc': return 'Percentage';
+                    case 'rev': return 'Revenue';
+                    case 'exp': return 'Expenses';
+                    case 'bal': return 'Balance';
+                    case 'acct': return 'Account';
+                    case 'cust': return 'Customer';
+                    case 'prod': return 'Product';
+                    case 'cat': return 'Category';
+                    case 'desc': return 'Description';
+                    case 'temp': return 'Temporary';
+                    case 'prev': return 'Previous';
+                    case 'curr': return 'Current';
+                    case 'yr': return 'Year';
+                    case 'mo': return 'Month';
+                    case 'wk': return 'Week';
+                    case 'dy': return 'Day';
+                    case 'hr': return 'Hour';
+                    case 'min': return 'Minute';
+                    case 'sec': return 'Second';
+                    default:
+                        return word.charAt(0).toUpperCase() + word.slice(1);
+                }
+            })
+            .join(' ')
+            .trim();
+    }
+
+    /**
      * Generate human-readable descriptions for metrics
      */
     private generateMetricDescription(key: string, type: string): string {
@@ -450,14 +547,14 @@ export class DataAnalysisService {
 
     /**
      * Generate chart type suggestions based on available metrics to help GPT-4o make better decisions
-     * Enhanced with sophisticated scoring, cross-metric analysis, and deduplication
+     * Enhanced with evidence-based scoring and user intent integration
      */
-    private generateChartSuggestions(metrics: MetricInfo[]): ChartSuggestion[] {
+    private generateChartSuggestions(metrics: MetricInfo[], userIntent?: any): ChartSuggestion[] {
         const chartCandidates = new Map<string, ChartSuggestion>();
 
-        // 1. Generate metric-specific suggestions with enhanced scoring
+        // 1. Generate metric-specific suggestions with intent-aware scoring
         for (const metric of metrics) {
-            const metricSuggestions = this.generateMetricSpecificSuggestions(metric);
+            const metricSuggestions = this.generateMetricSpecificSuggestions(metric, userIntent);
             metricSuggestions.forEach(suggestion => {
                 const existing = chartCandidates.get(suggestion.chartType);
                 if (!existing || suggestion.confidence > existing.confidence) {
@@ -467,7 +564,7 @@ export class DataAnalysisService {
         }
 
         // 2. Generate cross-metric combination suggestions
-        const combinationSuggestions = this.generateCombinationSuggestions(metrics);
+        const combinationSuggestions = this.generateCombinationSuggestions(metrics, userIntent);
         combinationSuggestions.forEach(suggestion => {
             const existing = chartCandidates.get(suggestion.chartType);
             if (!existing || suggestion.confidence > existing.confidence) {
@@ -475,10 +572,9 @@ export class DataAnalysisService {
             }
         });
 
-        // 3. Apply quality filtering and sort
-        const qualityThreshold = 0.4;
+        // 3. Apply meaningful quality filtering and sort
         const filteredSuggestions = Array.from(chartCandidates.values())
-            .filter(s => s.confidence >= qualityThreshold)
+            .filter(s => s.confidence >= ConfidenceLevel.POOR)  // Only include viable options
             .sort((a, b) => b.confidence - a.confidence)
             .slice(0, 5); // Limit to top 5 suggestions
 
@@ -486,26 +582,24 @@ export class DataAnalysisService {
     }
 
     /**
-     * Generate suggestions for individual metrics with enhanced data compatibility scoring
+     * Generate suggestions for individual metrics with evidence-based confidence scoring
      */
-    private generateMetricSpecificSuggestions(metric: MetricInfo): ChartSuggestion[] {
+    private generateMetricSpecificSuggestions(metric: MetricInfo, userIntent?: any): ChartSuggestion[] {
         const suggestions: ChartSuggestion[] = [];
         const chartTypes: Array<'line' | 'bar' | 'stacked-bar' | 'heatmap' | 'waterfall'> =
             ['line', 'bar', 'stacked-bar', 'heatmap', 'waterfall'];
 
         for (const chartType of chartTypes) {
-            const dataScore = this.scoreMetricDataCompatibility(chartType, metric);
-            const visualScore = this.scoreVisualEffectiveness(chartType, metric);
+            const evidence = this.calculateConfidenceEvidence(chartType, metric, userIntent);
+            const confidence = this.calculateEvidenceBasedConfidence(evidence);
 
-            // Weighted scoring: prioritize data compatibility
-            const confidence = Math.round((dataScore * 0.7 + visualScore * 0.3) * 100) / 100;
-
-            if (confidence > 0.3) { // Only include viable options
+            if (confidence >= ConfidenceLevel.POOR) { // Only include viable options
                 suggestions.push({
                     chartType,
                     confidence,
-                    reason: this.generateEnhancedReason(chartType, metric, dataScore, visualScore),
-                    bestForMetrics: [metric.name]
+                    reason: this.generateEvidenceBasedReason(chartType, metric, evidence),
+                    bestForMetrics: [metric.name],
+                    evidence
                 });
             }
         }
@@ -514,9 +608,152 @@ export class DataAnalysisService {
     }
 
     /**
+     * Calculate evidence-based confidence using multiple factors
+     */
+    private calculateConfidenceEvidence(
+        chartType: string,
+        metric: MetricInfo,
+        userIntent?: any
+    ): ConfidenceEvidence {
+        const dataCompatibility = this.scoreMetricDataCompatibility(chartType, metric);
+        const visualClarity = this.scoreVisualEffectiveness(chartType, metric);
+        const intentAlignment = this.scoreIntentAlignment(chartType, userIntent);
+        const actionability = this.scoreActionability(chartType, metric, userIntent);
+
+        const reasoning: string[] = [];
+
+        // Document the reasoning
+        if (dataCompatibility > 0.7) {
+            reasoning.push(`Strong data fit: ${chartType} works well with ${metric.type} metrics`);
+        } else if (dataCompatibility < 0.4) {
+            reasoning.push(`Weak data fit: ${chartType} not ideal for ${metric.type} metrics`);
+        }
+
+        if (intentAlignment > 0.7) {
+            reasoning.push(`Aligns with user intent for ${userIntent?.primaryIntent?.type || 'analysis'}`);
+        } else if (intentAlignment < 0.4) {
+            reasoning.push(`May not serve user's analytical goals effectively`);
+        }
+
+        if (visualClarity > 0.7) {
+            reasoning.push(`Clear visualization with good readability`);
+        }
+
+        if (actionability > 0.7) {
+            reasoning.push(`Enables actionable insights for decision-making`);
+        }
+
+        return {
+            dataCompatibility,
+            intentAlignment,
+            visualClarity,
+            actionability,
+            reasoning
+        };
+    }
+
+    /**
+     * Calculate final confidence score from evidence with proper weighting
+     */
+    private calculateEvidenceBasedConfidence(evidence: ConfidenceEvidence): number {
+        // Weight user intent heavily, followed by data compatibility
+        const weights = {
+            intentAlignment: 0.4,      // User intent is most important
+            dataCompatibility: 0.3,    // Data fit is second priority  
+            actionability: 0.2,        // Business value matters
+            visualClarity: 0.1         // Visual quality is least critical
+        };
+
+        const weightedScore = (
+            evidence.intentAlignment * weights.intentAlignment +
+            evidence.dataCompatibility * weights.dataCompatibility +
+            evidence.actionability * weights.actionability +
+            evidence.visualClarity * weights.visualClarity
+        );
+
+        // Map to meaningful confidence levels
+        if (weightedScore >= 0.85) return ConfidenceLevel.EXCELLENT;
+        if (weightedScore >= 0.7) return ConfidenceLevel.GOOD;
+        if (weightedScore >= 0.55) return ConfidenceLevel.ACCEPTABLE;
+        if (weightedScore >= 0.35) return ConfidenceLevel.POOR;
+        return ConfidenceLevel.UNSUITABLE;
+    }
+
+    /**
+     * Score how well a chart type aligns with user intent
+     */
+    private scoreIntentAlignment(chartType: string, userIntent?: any): number {
+        if (!userIntent?.primaryIntent?.type) return 0.5; // Neutral if no intent
+
+        const intentType = userIntent.primaryIntent.type;
+
+        switch (chartType) {
+            case 'line':
+                if (intentType === 'temporal_trend') return 0.9;
+                if (intentType === 'performance_overview') return 0.7;
+                if (intentType === 'categorical_comparison') return 0.3;
+                break;
+
+            case 'bar':
+                if (intentType === 'categorical_comparison') return 0.9;
+                if (intentType === 'performance_overview') return 0.8;
+                if (intentType === 'temporal_trend') return 0.4;
+                break;
+
+            case 'stacked-bar':
+                if (intentType === 'compositional_breakdown') return 0.9;
+                if (intentType === 'categorical_comparison') return 0.7;
+                if (intentType === 'temporal_trend') return 0.3;
+                break;
+
+            case 'heatmap':
+                if (intentType === 'correlation_analysis') return 0.9;
+                if (intentType === 'anomaly_detection') return 0.8;
+                if (intentType === 'performance_overview') return 0.6;
+                break;
+
+            case 'waterfall':
+                if (intentType === 'drill_down') return 0.8;
+                if (intentType === 'compositional_breakdown') return 0.7;
+                if (intentType === 'categorical_comparison') return 0.4;
+                break;
+        }
+
+        return 0.5; // Default neutral score
+    }
+
+    /**
+     * Score how actionable insights this chart type will provide
+     */
+    private scoreActionability(chartType: string, metric: MetricInfo, userIntent?: any): number {
+        let score = 0.6; // Base actionability
+
+        // Financial metrics are generally more actionable
+        if (metric.valueType === 'currency') score += 0.2;
+
+        // Performance metrics enable action
+        if (metric.name.toLowerCase().includes('performance') ||
+            metric.name.toLowerCase().includes('profit')) {
+            score += 0.2;
+        }
+
+        // Chart types that enable comparison are more actionable
+        if (chartType === 'bar' || chartType === 'stacked-bar') {
+            score += 0.1;
+        }
+
+        // Time-based charts enable trend-based decisions
+        if (chartType === 'line' && metric.hasTimeData) {
+            score += 0.1;
+        }
+
+        return Math.min(1.0, score);
+    }
+
+    /**
      * Generate suggestions for metric combinations and cross-metric analysis
      */
-    private generateCombinationSuggestions(metrics: MetricInfo[]): ChartSuggestion[] {
+    private generateCombinationSuggestions(metrics: MetricInfo[], userIntent?: any): ChartSuggestion[] {
         const suggestions: ChartSuggestion[] = [];
 
         const timeSeriesMetrics = metrics.filter(m => m.hasTimeData);
@@ -535,19 +772,19 @@ export class DataAnalysisService {
             ).slice(0, 4); // Limit to avoid clutter
 
             if (compatibleMetrics.length >= 2) {
-                let confidence = 0.75;
-
-                // Boost if all metrics are same value type (better visual coherence)
-                const valueTypes = new Set(compatibleMetrics.map(m => m.valueType));
-                if (valueTypes.size === 1) {
-                    confidence += 0.1;
-                }
+                const evidence = this.calculateCombinationEvidence(
+                    'line',
+                    compatibleMetrics,
+                    userIntent,
+                    'Multiple time-series metrics with compatible value types'
+                );
 
                 suggestions.push({
                     chartType: 'line',
-                    confidence: Math.min(confidence, 0.95),
-                    reason: `Multiple time-series metrics (${compatibleMetrics.length}) with ${valueTypes.size === 1 ? 'consistent' : 'mixed'} value types - excellent for trend comparison`,
-                    bestForMetrics: compatibleMetrics.map(m => m.name)
+                    confidence: this.calculateEvidenceBasedConfidence(evidence),
+                    reason: `Multiple time-series metrics (${compatibleMetrics.length}) - excellent for trend comparison`,
+                    bestForMetrics: compatibleMetrics.map(m => m.name),
+                    evidence
                 });
             }
         }
@@ -560,22 +797,38 @@ export class DataAnalysisService {
             ).slice(0, 3);
 
             if (relevantMetrics.length >= 2) {
+                const evidence = this.calculateCombinationEvidence(
+                    'stacked-bar',
+                    relevantMetrics,
+                    userIntent,
+                    'Grouped financial metrics ideal for composition analysis'
+                );
+
                 suggestions.push({
                     chartType: 'stacked-bar',
-                    confidence: 0.82,
+                    confidence: this.calculateEvidenceBasedConfidence(evidence),
                     reason: `Multiple grouped currency metrics showing composition and comparison across categories`,
-                    bestForMetrics: relevantMetrics.map(m => m.name)
+                    bestForMetrics: relevantMetrics.map(m => m.name),
+                    evidence
                 });
             }
         }
 
         // Waterfall for change/delta metrics
         if (changeMetrics.length > 0) {
+            const evidence = this.calculateCombinationEvidence(
+                'waterfall',
+                changeMetrics,
+                userIntent,
+                'Change metrics are specifically designed for waterfall visualization'
+            );
+
             suggestions.push({
                 chartType: 'waterfall',
-                confidence: 0.78,
+                confidence: this.calculateEvidenceBasedConfidence(evidence),
                 reason: 'Change/delta metrics are perfect for showing cumulative effects and sequential impact',
-                bestForMetrics: changeMetrics.map(m => m.name)
+                bestForMetrics: changeMetrics.map(m => m.name),
+                evidence
             });
         }
 
@@ -584,15 +837,94 @@ export class DataAnalysisService {
             m.hasGrouping && m.hasTimeData && (m.groupingDimensions?.length || 0) > 3
         );
         if (complexMetrics.length > 0) {
+            const evidence = this.calculateCombinationEvidence(
+                'heatmap',
+                complexMetrics.slice(0, 2),
+                userIntent,
+                'Multi-dimensional data reveals patterns in heatmaps'
+            );
+
             suggestions.push({
                 chartType: 'heatmap',
-                confidence: 0.68,
+                confidence: this.calculateEvidenceBasedConfidence(evidence),
                 reason: 'Multi-dimensional data with many categories reveals patterns and correlations in heatmaps',
-                bestForMetrics: complexMetrics.map(m => m.name).slice(0, 2)
+                bestForMetrics: complexMetrics.map(m => m.name).slice(0, 2),
+                evidence
             });
         }
 
         return suggestions;
+    }
+
+    /**
+     * Calculate confidence evidence for metric combinations
+     */
+    private calculateCombinationEvidence(
+        chartType: string,
+        metrics: MetricInfo[],
+        userIntent?: any,
+        baseReason?: string
+    ): ConfidenceEvidence {
+        // Average data compatibility across metrics
+        const dataCompatibility = metrics.reduce((sum, metric) =>
+            sum + this.scoreMetricDataCompatibility(chartType, metric), 0
+        ) / metrics.length;
+
+        const visualClarity = this.scoreCombinationVisualClarity(chartType, metrics);
+        const intentAlignment = this.scoreIntentAlignment(chartType, userIntent);
+        const actionability = this.scoreCombinationActionability(chartType, metrics);
+
+        const reasoning: string[] = [];
+        if (baseReason) reasoning.push(baseReason);
+
+        return {
+            dataCompatibility,
+            intentAlignment,
+            visualClarity,
+            actionability,
+            reasoning
+        };
+    }
+
+    /**
+     * Score visual clarity for metric combinations
+     */
+    private scoreCombinationVisualClarity(chartType: string, metrics: MetricInfo[]): number {
+        let score = 0.7; // Base clarity
+
+        // Too many metrics reduce clarity
+        if (metrics.length > 4) score -= 0.2;
+        if (metrics.length > 6) score -= 0.3;
+
+        // Mixed value types reduce clarity
+        const valueTypes = new Set(metrics.map(m => m.valueType));
+        if (valueTypes.size > 2) score -= 0.2;
+
+        // Similar scale metrics improve clarity
+        if (valueTypes.size === 1) score += 0.2;
+
+        return Math.max(0.1, Math.min(1.0, score));
+    }
+
+    /**
+     * Score actionability for metric combinations
+     */
+    private scoreCombinationActionability(chartType: string, metrics: MetricInfo[]): number {
+        let score = 0.6;
+
+        // Financial metrics are more actionable
+        const financialMetrics = metrics.filter(m => m.valueType === 'currency');
+        score += (financialMetrics.length / metrics.length) * 0.3;
+
+        // Performance metrics enable action
+        const performanceMetrics = metrics.filter(m =>
+            m.name.toLowerCase().includes('performance') ||
+            m.name.toLowerCase().includes('profit') ||
+            m.name.toLowerCase().includes('revenue')
+        );
+        score += (performanceMetrics.length / metrics.length) * 0.2;
+
+        return Math.min(1.0, score);
     }
 
     /**
@@ -683,9 +1015,9 @@ export class DataAnalysisService {
     }
 
     /**
-     * Generate enhanced reasoning with contextual details
+     * Generate evidence-based reasoning with confidence justification
      */
-    private generateEnhancedReason(chartType: string, metric: MetricInfo, dataScore: number, visualScore: number): string {
+    private generateEvidenceBasedReason(chartType: string, metric: MetricInfo, evidence: ConfidenceEvidence): string {
         const baseReasons = {
             'line': 'Ideal for showing trends and patterns over time',
             'bar': 'Excellent for categorical comparisons and discrete values',
@@ -694,31 +1026,37 @@ export class DataAnalysisService {
             'waterfall': 'Specialized for showing cumulative changes and impact analysis'
         };
 
-        let reason = baseReasons[chartType as keyof typeof baseReasons] || 'Good fit for this data type';
+        let reason = baseReasons[chartType as keyof typeof baseReasons] || 'Suitable for this data type';
 
-        // Add data-specific context
+        // Add evidence-based context
+        if (evidence.intentAlignment > 0.7) {
+            reason += ` - Strongly aligns with analytical intent`;
+        } else if (evidence.intentAlignment < 0.4) {
+            reason += ` - May not fully serve analytical goals`;
+        }
+
+        if (evidence.dataCompatibility > 0.8) {
+            reason += ` - Excellent data structure fit`;
+        } else if (evidence.dataCompatibility < 0.4) {
+            reason += ` - Limited data compatibility`;
+        }
+
+        if (evidence.actionability > 0.7) {
+            reason += ` - Enables actionable insights`;
+        }
+
+        // Add specific context
         if (metric.hasTimeData && chartType === 'line') {
-            reason += ` - ${metric.name} contains temporal data`;
+            reason += ` for temporal ${metric.businessName || metric.name}`;
         }
 
         if (metric.hasGrouping && (chartType === 'bar' || chartType === 'stacked-bar')) {
             const groupCount = metric.groupingDimensions?.length || 0;
-            reason += ` - ${groupCount} categories for comparison`;
+            reason += ` across ${groupCount} categories`;
         }
 
         if (metric.valueType === 'currency') {
-            reason += ' (financial data)';
-        } else if (metric.valueType === 'percentage') {
-            reason += ' (percentage data)';
-        } else if (metric.valueType === 'count') {
-            reason += ' (count data)';
-        }
-
-        // Add quality indicators
-        if (dataScore > 0.8) {
-            reason += ' [Excellent data fit]';
-        } else if (dataScore > 0.6) {
-            reason += ' [Good data fit]';
+            reason += ' (financial metrics)';
         }
 
         return reason;
@@ -762,15 +1100,15 @@ export class DataAnalysisService {
         }
 
         if (currencyMetrics.length > 0) {
-            context += `Currency metrics include: ${currencyMetrics.map(m => m.name).join(', ')}. `;
+            context += `Currency metrics include: ${currencyMetrics.map(m => m.businessName || m.displayName || m.name).join(', ')}. `;
         }
 
         if (percentageMetrics.length > 0) {
-            context += `Percentage metrics include: ${percentageMetrics.map(m => m.name).join(', ')}. `;
+            context += `Percentage metrics include: ${percentageMetrics.map(m => m.businessName || m.displayName || m.name).join(', ')}. `;
         }
 
         if (countMetrics.length > 0) {
-            context += `Count metrics include: ${countMetrics.map(m => m.name).join(', ')}. `;
+            context += `Count metrics include: ${countMetrics.map(m => m.businessName || m.displayName || m.name).join(', ')}. `;
         }
 
         // Try to detect the year range from actual data

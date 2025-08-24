@@ -137,17 +137,35 @@ Please provide your reasoning for each step clearly and explicitly.`;
 
             reasoningPrompt += `\n\nMETRICS:`;
             dataAnalysis.availableMetrics.slice(0, 10).forEach(metric => {
-                reasoningPrompt += `\n- ${metric.name}: ${metric.description} (${metric.type}, ${metric.valueType})`;
+                const displayName = metric.businessName || metric.displayName || metric.name;
+                reasoningPrompt += `\n- ${displayName}: ${metric.description} (${metric.type}, ${metric.valueType})`;
+                // Include technical name for reference if different from display name
+                if (displayName !== metric.name) {
+                    reasoningPrompt += ` [Technical: ${metric.name}]`;
+                }
             });
 
-            // Add chart suggestions to help guide reasoning
+            // Add chart suggestions with evidence-based confidence to help guide reasoning
             if (dataAnalysis.suggestedChartTypes.length > 0) {
                 reasoningPrompt += `\n\nCHART SUGGESTIONS FROM DATA ANALYSIS:`;
                 dataAnalysis.suggestedChartTypes.forEach(suggestion => {
-                    reasoningPrompt += `\n- ${suggestion.chartType}: ${suggestion.reason} (confidence: ${suggestion.confidence})`;
-                    reasoningPrompt += `\n  Best for: ${suggestion.bestForMetrics.join(', ')}`;
+                    const confidenceLevel = this.getConfidenceLevelName(suggestion.confidence);
+                    reasoningPrompt += `\n- ${suggestion.chartType}: ${suggestion.reason}`;
+                    reasoningPrompt += `\n  Confidence: ${confidenceLevel} (${suggestion.confidence.toFixed(2)})`;
+
+                    // Add evidence details if available
+                    if (suggestion.evidence) {
+                        reasoningPrompt += `\n  Evidence: Intent alignment ${(suggestion.evidence.intentAlignment * 100).toFixed(0)}%, Data fit ${(suggestion.evidence.dataCompatibility * 100).toFixed(0)}%`;
+                    }
+
+                    // Convert technical metric names to business names for better readability
+                    const businessMetricNames = suggestion.bestForMetrics.map(metricName => {
+                        const metric = dataAnalysis.availableMetrics.find(m => m.name === metricName);
+                        return metric?.businessName || metric?.displayName || metricName;
+                    });
+                    reasoningPrompt += `\n  Best for: ${businessMetricNames.join(', ')}`;
                 });
-                reasoningPrompt += `\n\nNote: These are suggestions based on data characteristics. Consider them alongside user intent.`;
+                reasoningPrompt += `\n\nNote: These suggestions balance data characteristics with user intent. Higher intent alignment indicates better fit for your analytical goals.`;
             }
 
             // Add data quality warnings for reasoning
@@ -203,12 +221,19 @@ CHART TYPE OPTIONS:
 - heatmap: Pattern visualization
 - waterfall: Sequential changes
 
-Select the chart type, metric, and date range that best implements your reasoning above.`;
+Select the chart type, metric, and date range that best implements your reasoning above.
+
+IMPORTANT: When selecting a metric, use the TECHNICAL name (shown in brackets) for the "metric" field in your response, not the business name.`;
 
         if (dataAnalysis) {
             decisionPrompt += `\n\nAVAILABLE METRICS:`;
             dataAnalysis.availableMetrics.forEach(metric => {
-                decisionPrompt += `\n- ${metric.name}: ${metric.description}`;
+                const displayName = metric.businessName || metric.displayName || metric.name;
+                decisionPrompt += `\n- ${displayName}: ${metric.description}`;
+                // Include technical name for reference if different from display name
+                if (displayName !== metric.name) {
+                    decisionPrompt += ` [Technical: ${metric.name}]`;
+                }
             });
         }
 
@@ -401,37 +426,66 @@ Select the chart type, metric, and date range that best implements your reasonin
         return points.slice(0, 4); // Keep it concise
     }
 
+    /**
+     * Extract evidence-based confidence from reasoning and data analysis
+     */
     private extractConfidence(reasoning: string, dataAnalysis?: DataAnalysis): number {
-        let confidence = 0.7; // Base confidence
+        let confidence = 0.6; // Base confidence - more conservative
 
-        // Boost for data quality indicators
-        if (reasoning.includes('high quality') || reasoning.includes('complete data')) {
-            confidence += 0.1;
-        }
-
-        // Boost for clear intent
-        if (reasoning.includes('clear') || reasoning.includes('obvious')) {
-            confidence += 0.1;
-        }
-
-        // Boost for good data match
-        if (reasoning.includes('perfect match') || reasoning.includes('ideal')) {
+        // Intent clarity indicators
+        if (reasoning.includes('clear') || reasoning.includes('obvious') || reasoning.includes('specific')) {
             confidence += 0.15;
         }
+        if (reasoning.includes('aligns with') || reasoning.includes('serves the intent')) {
+            confidence += 0.1;
+        }
 
-        // Reduce for uncertainty indicators
-        if (reasoning.includes('uncertain') || reasoning.includes('unclear')) {
+        // Data quality and match indicators
+        if (reasoning.includes('perfect match') || reasoning.includes('ideal') || reasoning.includes('excellent fit')) {
+            confidence += 0.15;
+        }
+        if (reasoning.includes('good fit') || reasoning.includes('suitable')) {
+            confidence += 0.1;
+        }
+
+        // Uncertainty and conflict indicators
+        if (reasoning.includes('uncertain') || reasoning.includes('unclear') || reasoning.includes('ambiguous')) {
+            confidence -= 0.2;
+        }
+        if (reasoning.includes('limited') || reasoning.includes('may not') || reasoning.includes('might not')) {
             confidence -= 0.15;
         }
 
-        // Data-driven adjustments
-        if (dataAnalysis?.availableMetrics) {
-            // Use a simple heuristic for data quality since completeness may not be available
-            const qualityScore = dataAnalysis.availableMetrics.length > 5 ? 0.8 : 0.6;
-            confidence += (qualityScore - 0.5) * 0.2;
+        // Use data analysis suggestions as evidence
+        if (dataAnalysis?.suggestedChartTypes?.length > 0) {
+            const topSuggestion = dataAnalysis.suggestedChartTypes[0];
+            if (topSuggestion.confidence > 0.8) {
+                confidence += 0.1; // Boost for high-confidence data suggestions
+            }
         }
 
-        return Math.max(0.3, Math.min(0.95, confidence));
+        // Data quality based on metric richness
+        if (dataAnalysis) {
+            const richMetrics = dataAnalysis.availableMetrics.filter(m =>
+                m.hasTimeData || m.hasGrouping || m.description?.length > 20
+            );
+            const qualityScore = richMetrics.length / Math.max(1, dataAnalysis.availableMetrics.length);
+            confidence += qualityScore * 0.1;
+        }
+
+        // Clamp to meaningful confidence levels
+        return Math.max(0.2, Math.min(0.95, confidence));
+    }
+
+    /**
+     * Convert confidence score to human-readable level
+     */
+    private getConfidenceLevelName(confidence: number): string {
+        if (confidence >= 0.85) return 'Excellent';
+        if (confidence >= 0.7) return 'Good';
+        if (confidence >= 0.55) return 'Acceptable';
+        if (confidence >= 0.35) return 'Poor';
+        return 'Unsuitable';
     }
 
     private getChartTypeRationale(chartType: string, reasoning: string): string {

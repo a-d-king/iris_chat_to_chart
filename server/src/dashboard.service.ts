@@ -74,9 +74,12 @@ export class DashboardService {
     public async generateChartSpecs(request: DashboardDto, metrics: MetricInfo[], dataAnalysis: any): Promise<any[]> {
         const specs = [];
 
+        // Leverage existing intent analysis from reasoning service
+        const intentAnalysis = this.reasoningService['intentAnalyzer']?.performIntentAnalysis(request.prompt);
+
         for (const metric of metrics) {
-            // Create a focused prompt for this specific metric
-            const metricPrompt = `Show ${metric.name} ${metric.hasTimeData ? 'trends over time' : 'breakdown'}`;
+            // Create context-aware prompt using existing intent analysis
+            const metricPrompt = this.buildContextAwarePrompt(request.prompt, metric, intentAnalysis);
 
             const spec = await this.openAiService.prompt(metricPrompt, dataAnalysis);
             specs.push({
@@ -88,6 +91,45 @@ export class DashboardService {
 
         // Remove duplicates based on metric + chart type + date range combination
         return this.deduplicateChartSpecs(specs);
+    }
+
+    /**
+ * Build context-aware prompts leveraging existing intent analysis and confidence evidence
+ */
+    private buildContextAwarePrompt(originalPrompt: string, metric: MetricInfo, intentAnalysis: any): string {
+        const metricDisplayName = metric.businessName || metric.displayName || metric.name;
+        const promptLower = originalPrompt.toLowerCase();
+
+        // Base prompt with user context
+        let prompt = `Based on the user's request: "${originalPrompt}"\n\nCreate a chart for "${metricDisplayName}" that helps answer their question.\n\n`;
+
+        // Add intent-based guidance using existing analysis
+        if (intentAnalysis?.primaryIntent?.type === 'temporal_trend') {
+            prompt += 'Focus on trends, patterns, and changes over time. Prioritize time-based visualizations. ';
+        } else if (intentAnalysis?.primaryIntent?.type === 'categorical_comparison') {
+            prompt += 'Focus on comparisons and identifying top performers. Emphasize clear categorical distinctions. ';
+        } else if (intentAnalysis?.primaryIntent?.type === 'performance_overview') {
+            prompt += 'Focus on key performance indicators and overview metrics. Highlight actionable insights. ';
+        } else if (intentAnalysis?.primaryIntent?.type === 'compositional_breakdown') {
+            prompt += 'Focus on composition and part-to-whole relationships. Show how components contribute. ';
+        }
+
+        // Add confidence-based guidance
+        if (intentAnalysis?.confidence > 0.8) {
+            prompt += 'User intent is very clear - align closely with their specific analytical goals. ';
+        } else if (intentAnalysis?.confidence < 0.5) {
+            prompt += 'User intent is somewhat ambiguous - choose the most generally useful visualization. ';
+        }
+
+        // Add metric-specific context
+        if (promptLower.includes(metric.name.toLowerCase()) ||
+            promptLower.includes(metricDisplayName.toLowerCase())) {
+            prompt += 'This metric was specifically mentioned - make it central to addressing their request. ';
+        }
+
+        prompt += 'Choose the chart type that best serves the user\'s analytical intent and enables actionable decisions, not just the data structure.';
+
+        return prompt;
     }
 
     public generateChartTitle(metricName: string, chartType: string): string {
