@@ -12,6 +12,18 @@ import { ErrorHandlerService } from '../common/error-handler.service';
 export class MetricsService {
     private cache: Map<string, any> = new Map();
     private dataAnalysis: any;
+    
+    private readonly SEMANTIC_MAPPINGS: Record<string, string[]> = {
+        'revenue': ['sales', 'income', 'earnings', 'turnover'],
+        'sales': ['revenue', 'income', 'gross'],
+        'cost': ['expense', 'spending', 'outgoing'],
+        'expense': ['cost', 'spending', 'outgoing'],
+        'monthly': ['month', 'mo'],
+        'yearly': ['annual', 'year'],
+        'daily': ['day'],
+        'growth': ['increase', 'rise', 'up'],
+        'decline': ['decrease', 'drop', 'down']
+    };
 
     constructor(
         private dataAnalysisService: DataAnalysisService,
@@ -102,12 +114,12 @@ export class MetricsService {
                 m.name.toLowerCase() === metric.toLowerCase()
             );
 
-            // If exact match not found, try partial matching
+            // If exact match not found, try tokenized search
             if (!metricInfo) {
-                metricInfo = analysis.availableMetrics.find((m: MetricInfo) =>
-                    m.name.toLowerCase().includes(metric.toLowerCase()) ||
-                    metric.toLowerCase().includes(m.name.toLowerCase())
-                );
+                const searchResults = this.tokenizeAndSearch(metric, analysis.availableMetrics);
+                if (searchResults.length > 0) {
+                    metricInfo = searchResults[0];
+                }
             }
 
             if (!metricInfo) {
@@ -134,5 +146,64 @@ export class MetricsService {
                 metadata: { metric, dateRange, groupBy }
             });
         }
+    }
+
+    private tokenizeAndSearch(prompt: string, availableMetrics: MetricInfo[]): MetricInfo[] {
+        const promptTokens = this.tokenize(prompt.toLowerCase());
+        
+        return availableMetrics
+            .map(metric => ({
+                metric,
+                score: this.calculateRelevanceScore(promptTokens, metric)
+            }))
+            .filter(item => item.score > 0.3)
+            .sort((a, b) => b.score - a.score)
+            .map(item => item.metric);
+    }
+
+    private tokenize(text: string): string[] {
+        return text
+            .split(/[\s\-_\.]+/)
+            .filter(token => token.length > 2)
+            .map(token => token.toLowerCase());
+    }
+
+    private calculateRelevanceScore(promptTokens: string[], metric: MetricInfo): number {
+        let score = 0;
+        const metricTokens = [
+            ...this.tokenize(metric.name),
+            ...this.tokenize(metric.description),
+            metric.valueType,
+            metric.type
+        ];
+        
+        promptTokens.forEach(promptToken => {
+            metricTokens.forEach(metricToken => {
+                if (metricToken.includes(promptToken) || promptToken.includes(metricToken)) {
+                    score += 0.8;
+                }
+            });
+        });
+        
+        score += this.calculateSemanticScore(promptTokens, metric);
+        
+        return Math.min(score, 1.0);
+    }
+
+    private calculateSemanticScore(promptTokens: string[], metric: MetricInfo): number {
+        let semanticScore = 0;
+        
+        promptTokens.forEach(promptToken => {
+            const synonyms = this.SEMANTIC_MAPPINGS[promptToken] || [];
+            const metricText = `${metric.name} ${metric.description}`.toLowerCase();
+            
+            synonyms.forEach((synonym: string) => {
+                if (metricText.includes(synonym)) {
+                    semanticScore += 0.4;
+                }
+            });
+        });
+        
+        return Math.min(semanticScore, 0.6);
     }
 }
