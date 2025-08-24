@@ -255,7 +255,9 @@ export class ReasoningService {
                     severity = severity === 'high' ? 'high' : 'medium';
                 }
 
-                if (metric.groupingDimensions.length > 12) {
+                // Only flag grouping dimensions as problematic for non-time-series data
+                // Time series data can legitimately have many data points (91+ days/weeks)
+                if (metric.groupingDimensions.length > 12 && !metric.hasTimeData) {
                     issues.push(`Too many categories (${metric.groupingDimensions.length}) for effective visualization`);
                     severity = severity === 'high' ? 'high' : 'medium';
                 }
