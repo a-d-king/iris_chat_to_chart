@@ -75,8 +75,8 @@ export class DashboardService {
         const specs = [];
 
         for (const metric of metrics) {
-            // Create a focused prompt for this specific metric
-            const metricPrompt = `Show ${metric.name} ${metric.hasTimeData ? 'trends over time' : 'breakdown'}`;
+            // Create a contextual prompt for this specific metric
+            const metricPrompt = this.buildContextualMetricPrompt(metric, request.prompt, dataAnalysis);
 
             const spec = await this.openAiService.prompt(metricPrompt, dataAnalysis);
             specs.push({
@@ -313,6 +313,28 @@ Respond in this format:
  * @param specs - Array of chart specifications
  * @returns Deduplicated array of chart specifications
  */
+    private buildContextualMetricPrompt(metric: MetricInfo, originalPrompt: string, dataAnalysis: any): string {
+        const contextParts = [
+            `Analyze metric: ${metric.name}`,
+            `Description: ${metric.description}`,
+            `Type: ${metric.type}`,
+            `Value type: ${metric.valueType}`,
+        ];
+
+        if (metric.hasGrouping && metric.groupingDimensions) {
+            contextParts.push(`Categories: ${metric.groupingDimensions.join(', ')}`);
+        }
+
+        if (metric.embeddedMetrics) {
+            contextParts.push(`Sub-metrics: ${metric.embeddedMetrics.join(', ')}`);
+        }
+
+        contextParts.push(`Original request: "${originalPrompt}"`);
+        contextParts.push(`Recommended charts: ${metric.chartRecommendations?.join(', ') || 'any'}`);
+
+        return contextParts.join('\n');
+    }
+
     private deduplicateChartSpecs(specs: any[]): any[] {
         const seenKeys = new Set<string>();
         const deduplicated: any[] = [];
