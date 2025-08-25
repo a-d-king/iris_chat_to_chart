@@ -4,8 +4,6 @@ import { IntentAnalyzerService, IntentAnalysis } from './reasoning/intent-analyz
 import { ChartRankerService, TopKChartsAnalysis, ChartRanking } from './reasoning/chart-ranker.service';
 import { ErrorHandlerService } from './common/error-handler.service';
 
-
-
 /**
  * Interface for reasoning step information
  */
@@ -70,20 +68,6 @@ export class ReasoningService {
         // Check environment variable for reasoning enablement
         this.isEnabled = process.env.ENABLE_REASONING === 'true';
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     /**
      * Comprehensive metric analysis and ranking for dashboards and charts
@@ -271,7 +255,9 @@ export class ReasoningService {
                     severity = severity === 'high' ? 'high' : 'medium';
                 }
 
-                if (metric.groupingDimensions.length > 12) {
+                // Only flag grouping dimensions as problematic for non-time-series data
+                // Time series data can legitimately have many data points (91+ days/weeks)
+                if (metric.groupingDimensions.length > 12 && !metric.hasTimeData) {
                     issues.push(`Too many categories (${metric.groupingDimensions.length}) for effective visualization`);
                     severity = severity === 'high' ? 'high' : 'medium';
                 }

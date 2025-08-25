@@ -1,87 +1,77 @@
-## 🎯 Iris Finance — Chat → Chart AI Platform
+# Iris Finance — Chat → Chart AI Platform
 
-Transform natural language into business charts and dashboards with live Iris data, OpenAI-assisted chart specs, and a transparent reasoning engine with LangGraph integration.
+Transform natural language into interactive business charts and dashboards using live Iris Finance data, advanced AI reasoning, and comprehensive observability.
 
 ---
 
 ## 📋 Table of Contents
 
-- **Overview**
-- **Key Features**
-- **Architecture**
-- **Tech Stack**
-- **Project Structure**
-- **Quick Start**
-- **Configuration**
-- **How It Works (Data & Reasoning Flows)**
-- **API Documentation**
-- **Frontend Components**
-- **Data Analysis Engine**
-- **Dashboard System**
-- **Advanced Reasoning System**
-- **LangGraph Workflow Orchestration**
-- **Observability & Monitoring**
-- **Iris API Integration**
-- **Audit & Compliance**
-- **Testing**
-- **Deployment**
-- **Troubleshooting**
-- **Additional Resources**
+- [Overview](#-overview)
+- [Key Features](#-key-features)
+- [Architecture](#-architecture)
+- [Tech Stack](#-tech-stack)
+- [Project Structure](#-project-structure)
+- [Quick Start](#-quick-start)
+- [Configuration](#-configuration)
+- [Data Flow](#-data-flow)
+- [API Documentation](#-api-documentation)
+- [Frontend Components](#-frontend-components)
+- [Backend Services](#-backend-services)
+- [Advanced Reasoning System](#-advanced-reasoning-system)
+- [LangGraph Workflow Orchestration](#-langgraph-workflow-orchestration)
+- [Observability & Monitoring](#-observability--monitoring)
+- [Data Analysis Engine](#-data-analysis-engine)
+- [Iris API Integration](#-iris-api-integration)
+- [Audit & Compliance](#-audit--compliance)
+- [Testing](#-testing)
+- [Deployment](#-deployment)
+- [Troubleshooting](#-troubleshooting)
 
 ---
 
 ## 🌟 Overview
 
-This app converts plain-English questions into visual insights. Users ask questions, the backend discovers metrics from live Iris Finance data, the AI selects the best visualization and metric, and the frontend renders interactive charts and dashboards. The reasoning system provides sophisticated intent analysis and chart ranking with explainable selection processes.
+This application converts natural language questions into interactive business visualizations using live Iris Finance data. Users ask questions in plain English, and the system uses advanced AI reasoning to select optimal metrics and chart types, then renders interactive charts and comprehensive dashboards.
 
-### Core capabilities
-- **Chat to Chart**: Natural language → structured chart spec with advanced reasoning
-- **Live Data**: Pulls from Iris Finance API with caching and flexible date ranges
-- **Metric Discovery**: Deep analysis over nested, embedded, and dynamic metrics with quality assessment
-- **Smart Dashboards**: Generates multiple related charts, ranked by prompt relevance with diversity optimization
-- **Transparent Reasoning**: Deterministic, explainable selection with advanced intent analysis and fuzzy matching
-- **LangGraph Orchestration**: Structured workflow management for complex multi-step dashboard generation
-- **Full Audit Trail**: Request, spec, data, and metadata saved to disk with comprehensive logging
-- **Enterprise Observability**: Langfuse integration for monitoring, tracing, and performance analysis
+### Core Capabilities
+
+- **Natural Language Processing**: Convert plain English to structured chart specifications
+- **Live Data Integration**: Real-time data from Iris Finance API with intelligent caching
+- **Advanced AI Reasoning**: Multi-step decision making with explainable confidence scoring
+- **Smart Chart Selection**: Intelligent chart type recommendations based on data characteristics
+- **Interactive Dashboards**: Generate multiple related charts with AI-powered insights
+- **Complete Audit Trail**: Comprehensive logging for compliance and analysis
+- **Enterprise Observability**: Full tracing and monitoring with Langfuse integration
 
 ---
 
 ## ✨ Key Features
 
-### Advanced AI and Reasoning
-- **OpenAI-assisted decisions** in `OpenAiService` with explicit step-by-step chain-of-thought output captured as `aiReasoning`
-- **Sophisticated Intent Analysis** in `IntentAnalyzerService` for advanced natural language understanding including:
-  - Complex query processing with conditional statements and multiple clauses
-  - Advanced temporal pattern recognition and periodicity detection
-  - Intent classification for trends, comparisons, breakdowns, correlations, and anomaly detection
-  - Semantic understanding with contextual analysis and confidence scoring
-- **Advanced Chart Ranking** in `ChartRankerService` for systematic chart type selection with:
-  - Weighted evaluation based on data compatibility, intent alignment, and visual effectiveness
-  - Top-K selection with detailed reasoning and explainable results
-  - Data-driven decisions considering metric types and temporal availability
-- **Comprehensive Reasoning** in `ReasoningService` for final decision synthesis with:
-  - Fuzzy string matching and Levenshtein similarity algorithms
-  - Business context boosts and domain knowledge integration  
-  - Diversity-aware metric selection with quality issue detection
-  - Sophisticated confidence calculation and metric analysis ranking
-- **Toggle** with `ENABLE_REASONING=true` to emit reasoning steps and console logs
+### AI-Powered Reasoning
+- **OpenAI GPT-4 Integration**: Advanced chart generation with step-by-step reasoning
+- **Intent Analysis**: Sophisticated natural language understanding with confidence scoring
+- **Chart Ranking**: Systematic evaluation of visualization options with explainable results
+- **Condensed Reasoning Summaries**: Structured decision explanations with rationale points
+- **Fuzzy String Matching**: Levenshtein similarity algorithms for improved metric selection
+- **Business Context Integration**: Domain knowledge boosts for financial metrics
 
-### Visualization
-- **Chart types**: `line`, `bar`, `stacked-bar`, `heatmap`, `waterfall`
-- **Tables**: Interactive `ag-grid` data table for every chart
-- **Formatting**: Automatic currency/percentage/count formatting
+### Visualization Capabilities
+- **Chart Types**: Line, bar, stacked-bar, heatmap, waterfall
+- **Interactive Tables**: AG Grid integration with sorting, filtering, and export
+- **Data Formatting**: Automatic currency, percentage, and count formatting
+- **Responsive Layout**: Adaptive grid system for dashboard visualization
 
-### Data and Dashboards
-- **Data types**: `scalar`, `timeSeries`, `groupedSeries`, `embeddedMetrics`, `dynamicKeyObject`, `array`
-- **Flexible date ranges**: Year, month, single day, ISO range, and custom range support
-- **Smart Dashboard ranking**: Prompt-driven, quality-aware metric selection with deduplication
-- **Enhanced Insights Generation**: AI-powered contextual insights, financial domain knowledge, and composition analysis
+### Data Intelligence
+- **Metric Discovery**: Automatic detection of scalar, time series, grouped series, embedded metrics, dynamic key objects, and arrays
+- **Quality Analysis**: Comprehensive data quality assessment with issue detection
+- **Flexible Date Ranges**: Support for years, months, days, and custom ISO ranges
+- **Semantic Search**: Enhanced metric matching with tokenized relevance scoring
 
-### Enterprise & Observability
-- **Comprehensive Audit logs** in `server/audit-logs/` with full context and chart data usage logging
-- **Advanced Langfuse tracing** for request monitoring and AI interaction tracking
-- **Sophisticated Error handling** with comprehensive error recovery, reporting, and logging
-- **Rich Endpoints** for feedback, audit stats, and reasoning status monitoring
+### Enterprise Features
+- **Comprehensive Auditing**: Full request/response logging in structured JSON format
+- **Feedback System**: User rating collection with aggregated statistics
+- **Performance Monitoring**: Response time tracking and optimization insights
+- **Error Recovery**: Sophisticated error handling with user-friendly messages
 
 ---
 
@@ -91,50 +81,54 @@ This app converts plain-English questions into visual insights. Users ask questi
 graph TB
     subgraph "Frontend (Next.js)"
         UI[User Interface]
-        ChatBox[ChatBox]
+        ChatBox[ChatBox Component]
         DateSelector[DateRangeSelector]
-        ChartView[ChartView]
+        ChartView[ChartView with AG Charts]
         DashboardView[DashboardView]
+        FeedbackWidget[FeedbackWidget]
     end
 
-    subgraph "Backend (NestJS)"
-        API[AppController]
+    subgraph "Backend API (NestJS)"
+        Controller[AppController]
         OpenAI[OpenAiService]
+        Dashboard[DashboardService]
+        Metrics[MetricsService]
         Reasoning[ReasoningService]
+        DataAnalysis[DataAnalysisService]
+        Audit[AuditService]
+        ErrorHandler[ErrorHandlerService]
+    end
+
+    subgraph "Reasoning Engine"
         IntentAnalyzer[IntentAnalyzerService]
         ChartRanker[ChartRankerService]
-        Metrics[MetricsService]
-        DataAnalysis[DataAnalysisService]
-        Dashboard[DashboardService]
-        DashboardGraph[LangGraph Orchestration]
-        Audit[AuditService]
-        IrisAPI[IrisApiService]
-        ErrorHandler[ErrorHandlerService]
-        Langfuse[Langfuse Tracing]
+        DataSlicer[ChartDataSlicerService]
     end
 
-    subgraph "External"
-        GPT4[OpenAI]
-        Iris[Iris Finance API]
-        LangfuseCloud[Langfuse Cloud]
+    subgraph "Workflow Orchestration"
+        LangGraph[LangGraph Engine]
+        DashboardGraph[Dashboard Workflow]
     end
 
-    ChatBox --> API
-    DateSelector --> ChatBox
-    API --> Metrics
-    Metrics --> IrisAPI --> Iris
-    Metrics --> DataAnalysis
-    API --> OpenAI --> GPT4
-    API --> Reasoning
+    subgraph "External Services"
+        GPT4[OpenAI GPT-4]
+        IrisAPI[Iris Finance API]
+        LangfuseCloud[Langfuse Observability]
+    end
+
+    UI --> ChatBox
+    ChatBox --> Controller
+    Controller --> OpenAI --> GPT4
+    Controller --> Dashboard --> LangGraph
+    Controller --> Metrics --> IrisAPI
+    Controller --> Reasoning
     Reasoning --> IntentAnalyzer
     Reasoning --> ChartRanker
-    API --> Dashboard
     Dashboard --> DashboardGraph
-    API --> Audit
-    API --> ChartView
-    API --> DashboardView
-    API --> ErrorHandler
-    API --> Langfuse --> LangfuseCloud
+    Metrics --> DataSlicer
+    Controller --> Audit
+    Controller --> ErrorHandler
+    Controller -.-> LangfuseCloud
 ```
 
 ---
@@ -142,16 +136,24 @@ graph TB
 ## 🛠️ Tech Stack
 
 ### Backend
-- **NestJS 10**, **TypeScript 5**, **OpenAI 4**, **@nestjs/axios**, **rxjs**
-- **LangChain Core 0.3.68 & LangGraph 0.2.74** for workflow orchestration and AI workflow management
-- **Langfuse 3.17** for comprehensive observability and tracing
-- **Swagger** for API documentation
+- **Framework**: NestJS 10 with TypeScript 5
+- **AI Integration**: OpenAI 4 with function calling
+- **Workflow Orchestration**: LangChain Core 0.3.68 & LangGraph 0.2.74
+- **Observability**: Langfuse 3.17 for comprehensive tracing
+- **HTTP Client**: @nestjs/axios with rxjs
+- **Validation**: class-validator & class-transformer
+- **Documentation**: Swagger/OpenAPI with @nestjs/swagger
 
 ### Frontend
-- **Next.js 13**, **React 18**, **ag-charts-react 9.0**, **ag-grid-react 34.0**, **ag-grid-community 34.0**
+- **Framework**: Next.js 13 with React 18
+- **Charts**: ag-charts-react 9.0 for visualization
+- **Data Tables**: ag-grid-react 34.0 & ag-grid-community 34.0
+- **Styling**: CSS-in-JS with responsive design
 
-### Tooling
-- **ts-node**, **nodemon**, **dotenv**
+### Development Tools
+- **Runtime**: ts-node with nodemon for development
+- **Environment**: dotenv for configuration
+- **Type Safety**: Full TypeScript coverage
 
 ---
 
@@ -159,50 +161,69 @@ graph TB
 
 ```
 iris_chat_to_chart/
-├─ server/
-│  ├─ src/
-│  │  ├─ main.ts
-│  │  ├─ app.controller.ts
-│  │  ├─ openai.service.ts
-│  │  ├─ reasoning.service.ts                 ← Advanced algorithms & fuzzy matching
-│  │  ├─ dashboard.service.ts                 ← LangGraph integration & AI insights
-│  │  ├─ dashboard.graph.ts                   ← LangGraph workflow orchestration
-│  │  ├─ reasoning/
-│  │  │  ├─ intent-analyzer.service.ts        ← Complex query processing
-│  │  │  └─ chart-ranker.service.ts           ← Systematic scoring system
-│  │  ├─ data/
-│  │  │  ├─ metrics.service.ts
-│  │  │  ├─ data-analysis.service.ts
-│  │  │  └─ chart-data-slicer.service.ts
-│  │  ├─ api/
-│  │  │  └─ iris-api.service.ts
-│  │  ├─ audit/
-│  │  │  └─ audit.service.ts                  ← Comprehensive logging
-│  │  ├─ common/
-│  │  │  └─ error-handler.service.ts
-│  │  ├─ config/
-│  │  │  └─ iris.config.ts
-│  │  ├─ dto/
-│  │  │  └─ chat.dto.ts
-│  │  ├─ observability/
-│  │  │  └─ langfuse.ts                       ← Enhanced observability
-│  │  ├─ utils/
-│  │  │  └─ date-filter.util.ts
-│  ├─ audit-logs/                             ← Chart data usage tracking
-│  ├─ package.json
-│  └─ tsconfig.json
-├─ web/
-│  ├─ components/
-│  │  ├─ ChatBox.tsx
-│  │  ├─ DateRangeSelector.tsx
-│  │  ├─ ChartView.tsx
-│  │  ├─ DashboardView.tsx
-│  │  └─ FeedbackWidget.tsx
-│  ├─ pages/index.tsx
-│  ├─ package.json
-│  └─ tsconfig.json
-├─ README.md
-└─ AUDIT_README.md
+├── server/                                # NestJS Backend
+│   ├── src/
+│   │   ├── main.ts                       # Application bootstrap
+│   │   ├── app.controller.ts             # Main API controller
+│   │   ├── openai.service.ts            # AI integration service
+│   │   ├── reasoning.service.ts          # Core reasoning algorithms
+│   │   ├── dashboard.service.ts          # Dashboard generation
+│   │   ├── dashboard.graph.ts           # LangGraph workflow
+│   │   │
+│   │   ├── reasoning/                   # Advanced reasoning components
+│   │   │   ├── intent-analyzer.service.ts    # NLP intent analysis
+│   │   │   └── chart-ranker.service.ts       # Chart type selection
+│   │   │
+│   │   ├── data/                        # Data processing services
+│   │   │   ├── metrics.service.ts            # Metric management
+│   │   │   ├── data-analysis.service.ts      # Data discovery
+│   │   │   └── chart-data-slicer.service.ts  # Data transformation
+│   │   │
+│   │   ├── api/                         # External API integration
+│   │   │   └── iris-api.service.ts           # Iris Finance API
+│   │   │
+│   │   ├── audit/                       # Audit and compliance
+│   │   │   └── audit.service.ts              # Comprehensive logging
+│   │   │
+│   │   ├── common/                      # Shared utilities
+│   │   │   └── error-handler.service.ts      # Error management
+│   │   │
+│   │   ├── config/                      # Configuration
+│   │   │   └── iris.config.ts               # Iris API config
+│   │   │
+│   │   ├── dto/                         # Data transfer objects
+│   │   │   └── chat.dto.ts                  # API validation
+│   │   │
+│   │   ├── observability/              # Monitoring and tracing
+│   │   │   └── langfuse.ts                  # Langfuse integration
+│   │   │
+│   │   └── utils/                       # Helper utilities
+│   │       └── date-filter.util.ts          # Date processing
+│   │
+│   ├── audit-logs/                     # Audit log storage (gitignored)
+│   ├── package.json                    # Backend dependencies
+│   └── tsconfig.json                   # TypeScript configuration
+│
+├── web/                                # Next.js Frontend
+│   ├── components/                     # React components
+│   │   ├── ChatBox.tsx                      # User input interface
+│   │   ├── DateRangeSelector.tsx           # Date range picker
+│   │   ├── ChartView.tsx                    # Chart visualization
+│   │   ├── DashboardView.tsx               # Dashboard layout
+│   │   └── FeedbackWidget.tsx              # User feedback collection
+│   │
+│   ├── pages/                          # Next.js pages
+│   │   └── index.tsx                        # Main application page
+│   │
+│   ├── public/                         # Static assets
+│   │   └── iris.jpeg                        # Iris Finance logo
+│   │
+│   ├── package.json                    # Frontend dependencies
+│   └── tsconfig.json                   # TypeScript configuration
+│
+├── README.md                           # This documentation
+├── DATAFLOW.md                         # Detailed data flow documentation
+└── AUDIT_README.md                     # Audit system documentation
 ```
 
 ---
@@ -213,429 +234,712 @@ iris_chat_to_chart/
 - Node.js 18+
 - npm 8+
 - OpenAI API key
-- Iris API token
+- Iris Finance API token
 - Optional: Langfuse API keys for observability
 
-### 1) Install
+### 1. Installation
 ```bash
-git clone <your-repo-url>
+git clone <repository-url>
 cd iris_chat_to_chart
 
+# Install backend dependencies
 cd server && npm install
+
+# Install frontend dependencies
 cd ../web && npm install
 ```
 
-### 2) Configure backend env
+### 2. Environment Configuration
 Create `server/.env`:
 ```bash
+# Required
 OPENAI_API_KEY=sk-...
 IRIS_API_TOKEN=your_iris_api_token
+
 # Optional overrides
 IRIS_API_URL=https://api.irisfinance.co/metrics
 ENABLE_REASONING=true
 PORT=4000
 NODE_ENV=development
 
-# Optional: Langfuse observability
+# Optional observability (recommended for production)
 LANGFUSE_SECRET_KEY=sk-lf-...
 LANGFUSE_PUBLIC_KEY=pk-lf-...
 LANGFUSE_BASEURL=https://cloud.langfuse.com
 ```
 
-### 3) Run
+### 3. Development Server
 ```bash
-# Terminal A (backend)
+# Terminal 1: Start backend
 cd server && npm run dev
 
-# Terminal B (frontend)
+# Terminal 2: Start frontend
 cd web && npm run dev
 ```
 
-Open `http://localhost:3000`.
+Access the application at `http://localhost:3000`
+API documentation at `http://localhost:4000/docs`
 
 ---
 
 ## ⚙️ Configuration
 
-### Backend environment
-- **`OPENAI_API_KEY`**: required for OpenAI
-- **`IRIS_API_TOKEN`**: required for Iris API calls
-- **`IRIS_API_URL`**: Iris endpoint (defaults to production)
-- **`ENABLE_REASONING`**: `true|false` to emit reasoning steps and status
-- **`LANGFUSE_SECRET_KEY`**, **`LANGFUSE_PUBLIC_KEY`**, **`LANGFUSE_BASEURL`**: optional Langfuse tracing
-- **`PORT`**, **`NODE_ENV`**: standard server config
+### Environment Variables
 
-### Date ranges accepted
-- Year: `YYYY`
-- Month: `YYYY-MM`
-- Day: `YYYY-MM-DD`
-- Custom range: `startISO,endISO` or `YYYY-MM-DD,YYYY-MM-DD` (auto-ISO expanded)
+#### Backend Configuration
+- **`OPENAI_API_KEY`** (required): OpenAI API key for GPT-4 access
+- **`IRIS_API_TOKEN`** (required): Authentication token for Iris Finance API
+- **`IRIS_API_URL`** (optional): Iris API endpoint (defaults to production)
+- **`ENABLE_REASONING`** (optional): Enable detailed reasoning logs (`true|false`)
+- **`PORT`** (optional): Server port (default: 4000)
+- **`NODE_ENV`** (optional): Environment mode (development/production)
+
+#### Observability Configuration
+- **`LANGFUSE_SECRET_KEY`** (optional): Langfuse secret key for tracing
+- **`LANGFUSE_PUBLIC_KEY`** (optional): Langfuse public key
+- **`LANGFUSE_BASEURL`** (optional): Langfuse endpoint URL
+
+### Date Range Formats
+The system supports flexible date range inputs:
+- **Year**: `2025`
+- **Month**: `2025-06`
+- **Day**: `2025-06-15`
+- **Custom Range**: `2025-01-01,2025-12-31` or ISO format
 
 ---
 
-## 🔄 How It Works (Data & Reasoning Flows)
+## 🔄 Data Flow
 
-### Single chart flow (`POST /chat`)
-1. **Data Analysis** - `MetricsService.getDataAnalysis(dateRange)`
-   - `IrisApiService.fetchMetrics()` loads live data and caches by date range
-   - `DataAnalysisService.analyzeData()` discovers metrics and suggests chart types
-2. **Advanced Reasoning** - `ReasoningService.generateReasoning()`
-   - `IntentAnalyzerService.performIntentAnalysis()` performs sophisticated natural language understanding with complex query processing
-   - `ChartRankerService.generateTopKCharts()` systematically ranks chart types with weighted scoring and explainable results
-   - Creates deterministic reasoning object with steps, confidence, and detailed explanations
-3. **AI Generation** - `OpenAiService.prompt()`
-   - Generates explicit reasoning text (`aiReasoning`) with context-aware insights
-   - Performs tool call to produce structured chart spec
-4. **Data Slicing** - `MetricsService.slice()`
-   - Slices requested metric into common chart data shape with type-specific processing
-5. **Comprehensive Auditing** - `AuditService.logChartGeneration()`
-   - Persists request, spec, data, analysis, metadata, and detailed usage information
+### Single Chart Generation (`POST /v1/chat`)
+1. **Request Processing**: Validate user prompt and optional date range
+2. **Data Analysis**: Load and analyze Iris Finance data for available metrics
+3. **AI Reasoning**: Use GPT-4 to generate chart specification with reasoning
+4. **Data Slicing**: Transform raw data into chart-ready format
+5. **Audit Logging**: Record complete request/response for compliance
+6. **Response**: Return chart specification with data and metadata
 
-### Dashboard flow (`POST /dashboard`)
-1. **Data Analysis** → `MetricsService.getDataAnalysis()` → metric catalog with quality assessment
-2. **LangGraph Orchestration** → `runDashboardGraph()` with structured workflow:
-   - **Initialization** → Generate dashboard ID and start timing
-   - **Data Analysis** → Load and analyze available metrics
-   - **Metric Selection** → `DashboardService.identifyRelatedMetrics()` using advanced reasoning
-   - **Spec Generation** → `DashboardService.generateChartSpecs()` with OpenAI integration
-   - **Data Fetching** → Process each chart spec with detailed logging
-   - **Insights Computation** → Generate AI-powered contextual insights
-   - **Finalization** → Calculate response times and prepare output
-3. **Advanced Metric Analysis** - `ReasoningService.analyzeAndRankMetrics()`
-   - Fuzzy string matching with Levenshtein similarity algorithms
-   - Business context boosts and domain knowledge integration
-   - Diversity-aware selection with quality issue detection
-4. **Chart Generation** - Per metric OpenAI analysis with robust fallbacks
-5. **Comprehensive Logging** - Chart data usage tracking and quality issue reporting
+### Dashboard Generation (`POST /v1/dashboard`)
+1. **Initialization**: Start LangGraph workflow orchestration
+2. **Data Analysis**: Discover and analyze all available metrics
+3. **Metric Selection**: Use advanced reasoning to identify related metrics
+4. **Chart Generation**: Create multiple chart specifications in parallel
+5. **Data Processing**: Slice and format data for each chart
+6. **Insight Generation**: Create AI-powered dashboard insights
+7. **Layout Calculation**: Determine optimal chart positioning
+8. **Response Assembly**: Combine all charts with metadata
 
 ---
 
 ## 📡 API Documentation
 
-### POST `/chat`
-Body (`ChatDto`):
-```json
-{ "prompt": "Compare revenue by sales channel", "dateRange": "2025-06" }
-```
-Response (with advanced reasoning):
+### Core Endpoints
+
+#### `POST /v1/chat` - Single Chart Generation
+Generate a single chart from natural language input.
+
+**Request Body:**
 ```json
 {
-  "chartType": "bar",
-  "metric": "dataBySalesConnectors.grossSales",
+  "prompt": "Show revenue trends for 2025",
+  "dateRange": "2025-06"  // Optional
+}
+```
+
+**Response:**
+```json
+{
+  "chartType": "line",
+  "metric": "revenue",
   "dateRange": "2025-06",
-  "data": { "dates": [...], "values": [...] },
-  "requestId": "...",
-  "originalPrompt": "...",
-  "dataAnalysis": { 
-    "totalMetrics": 99, 
-    "suggestedChartTypes": ["bar","line"], 
-    "runtimeReasoning": true,
-    "qualityIssues": [...]
+  "data": {
+    "dates": ["2025-01", "2025-02", "2025-03"],
+    "values": [{"label": "Revenue", "values": [10000, 12000, 15000]}]
   },
-  "reasoning": { 
-    "enabled": true, 
-    "steps": [
-      {
-        "step": 1,
-        "category": "prompt_analysis",
-        "title": "Advanced Intent Analysis",
-        "reasoning": "...",
-        "factors": [...],
-        "confidence": 0.85,
-        "intentAnalysis": {...}
-      }
-    ], 
-    "summary": {
-      "selectedChart": "bar",
-      "selectedMetric": "...",
-      "confidence": 0.89,
-      "keyFactors": [...]
-    }, 
-    "metadata": {
-      "totalSteps": 5,
-      "processingTimeMs": 234,
-      "environmentVariable": "ENABLE_REASONING=true"
-    }
+  "requestId": "1703123456789-abc123",
+  "originalPrompt": "Show revenue trends for 2025",
+  "reasoning_summary": {
+    "intent": "temporal_trend",
+    "rationale_points": ["time series data available", "trend analysis requested"],
+    "confidence": 0.85,
+    "decisions": [
+      {"name": "chart_type", "choice": "line", "why": "best for temporal trends"}
+    ]
+  },
+  "dataAnalysis": {
+    "totalMetrics": 45,
+    "suggestedChartTypes": ["line", "bar"]
   }
 }
 ```
 
-### POST `/dashboard`
-Body (`DashboardDto`):
-```json
-{ 
-  "prompt": "Executive sales overview", 
-  "maxCharts": 5, 
-  "dateRange": "2025-06", 
-  "generateInsights": true 
-}
-```
-Response (with LangGraph orchestration):
+#### `POST /v1/dashboard` - Dashboard Generation
+Generate multiple related charts for comprehensive analysis.
+
+**Request Body:**
 ```json
 {
-  "dashboardId": "dashboard_1755123456789_abc123def",
+  "prompt": "Executive sales overview",
+  "maxCharts": 5,          // Optional, default: 5
+  "dateRange": "2025-06",  // Optional
+  "generateInsights": true // Optional, default: false
+}
+```
+
+**Response:**
+```json
+{
+  "dashboardId": "dashboard_1703123456789_xyz",
   "charts": [
     {
       "id": "chart_1",
-      "title": "Sales Channel Performance Comparison",
+      "title": "Sales Channel Performance",
       "chartType": "bar",
-      "metric": "dataBySalesChannels.grossSales",
-      "data": {...},
-      "row": 1,
-      "col": 1,
-      "span": 4
+      "metric": "dataBySalesChannels",
+      "dateRange": "2025-06",
+      "row": 0,
+      "col": 0,
+      "span": 4,
+      "data": { /* chart data */ }
     }
   ],
   "metadata": {
     "totalCharts": 3,
-    "responseTimeMs": 1250,
+    "responseTimeMs": 1247,
     "suggestedInsights": [
       "Cross-channel performance comparison enables optimization opportunities",
-      "Revenue trends support forecasting and seasonal planning decisions"
+      "Revenue trends support forecasting and planning decisions"
     ]
   },
-  "requestId": "dash_1755123456789_xyz789abc"
+  "requestId": "dash_1703123456789_abc",
+  "originalPrompt": "Executive sales overview"
 }
 ```
 
-### POST `/feedback`
-Body (`FeedbackDto`): `{ requestId, rating (1..5), comment?, chartId? }` → OK
+#### `POST /v1/feedback` - Submit User Feedback
+Collect user ratings and feedback for generated charts.
 
-### GET `/feedback/stats`
-Aggregated feedback statistics
+**Request Body:**
+```json
+{
+  "requestId": "1703123456789-abc123",
+  "rating": 4,           // 1-5 scale
+  "comment": "Great visualization!",  // Optional
+  "chartId": "chart_1"   // Optional for dashboard charts
+}
+```
 
-### GET `/audit/stats`
-Audit summary (totals, today, breakdowns, avg response time, top metrics, quality issues)
+### Monitoring Endpoints
 
-### GET `/reasoning/status`
-Runtime toggle/health for the advanced reasoning system
+#### `GET /v1/audit/stats` - Audit Statistics
+Returns comprehensive statistics about chart generation and usage.
+
+#### `GET /v1/feedback/stats` - Feedback Statistics
+Returns aggregated user feedback data and ratings.
+
+#### `GET /v1/reasoning/status` - Reasoning System Status
+Returns current status and configuration of the reasoning system.
 
 ---
 
 ## 🎨 Frontend Components
-- **`pages/index.tsx`**: Orchestrates `ChatBox`, `ChartView`, `DashboardView`
-- **`components/ChatBox.tsx`**: Mode toggle (single/dashboard), date range picker, calls backend
-- **`components/DateRangeSelector.tsx`**: Outputs `YYYY`, `YYYY-MM`, `YYYY-MM-DD`, or `start,end` strings
-- **`components/ChartView.tsx`**: AG Charts config, tooltips, formatting, and `ag-grid` table
-- **`components/DashboardView.tsx`**: Renders list of charts with titles/insights and `ChartView` instances
-- **`components/FeedbackWidget.tsx`**: Sends user ratings back to `/feedback`
+
+### Core Components
+
+#### `pages/index.tsx`
+Main application page that orchestrates the entire user interface:
+- Displays Iris Finance branding and instructions
+- Manages state for both single charts and dashboards
+- Provides responsive layout with glassmorphism design
+- Integrates all major components
+
+#### `components/ChatBox.tsx`
+User input interface with advanced features:
+- Mode switching between single chart and dashboard generation
+- Integrated date range selection
+- Real-time API communication with loading states
+- Error handling and user feedback
+- Smart date range formatting for API compatibility
+
+#### `components/DateRangeSelector.tsx`
+Flexible date range picker supporting:
+- Preset options (year, month, quarter)
+- Custom date range selection
+- Automatic format conversion
+- Validation and error handling
+
+#### `components/ChartView.tsx`
+Interactive chart visualization powered by AG Charts:
+- Dynamic chart type rendering (line, bar, stacked-bar, heatmap, waterfall)
+- Automatic data formatting (currency, percentage, count)
+- Interactive tooltips and legends
+- Integrated data table with AG Grid
+- Export capabilities
+- Responsive design
+
+#### `components/DashboardView.tsx`
+Comprehensive dashboard layout manager:
+- Grid-based layout system
+- Individual chart rendering with titles
+- Integrated insights display
+- Responsive design for multiple charts
+- Chart interaction and feedback collection
+
+#### `components/FeedbackWidget.tsx`
+User feedback collection interface:
+- 5-star rating system
+- Optional comment submission
+- Integration with feedback API
+- Real-time submission status
 
 ---
 
-## 🔍 Data Analysis Engine
-- File: `server/src/data/data-analysis.service.ts`
-- Discovers metrics across nested objects, arrays of objects (embedded metrics), and dynamic key objects
-- Comprehensive quality analysis with issue detection and severity assessment
-- Produces:
-  - `availableMetrics: MetricInfo[]` with quality metadata
-  - `suggestedChartTypes: ChartSuggestion[]` (guided hints for the AI)
-  - `dataContext: string` (compact data description for prompts)
+## 🔧 Backend Services
 
-Metric types detected:
-- `scalar`, `timeSeries`, `groupedSeries`, `embeddedMetrics`, `dynamicKeyObject`, `array`
+### Core Services
 
-Quality issues identified:
-- Unknown/unlabeled categories, inconsistent value types, missing temporal data, excessive categorization
+#### `AppController`
+Main API controller implementing all endpoints:
+- Versioned API routing (`/v1/*`)
+- Comprehensive request validation using DTOs
+- Integrated Langfuse tracing
+- Error handling and user-friendly error messages
+- Swagger/OpenAPI documentation
 
----
+#### `OpenAiService`
+AI integration service with advanced capabilities:
+- GPT-4 function calling for structured output
+- Multi-step reasoning process
+- Condensed reasoning summaries
+- Context-aware prompt generation
+- Error recovery and fallback strategies
 
-## 📊 Dashboard System
-- File: `server/src/dashboard.service.ts`
-- Uses **LangGraph workflow orchestration** via `dashboard.graph.ts`
-- Uses `ReasoningService.analyzeAndRankMetrics()` for intelligent metric selection with:
-  - Fuzzy matching algorithms and business context boosts
-  - Diversity-aware selection and quality issue logging
-  - Advanced confidence calculation and metric analysis ranking
-- Generates chart specs through `OpenAiService` with robust fallbacks and enhanced titles
-- **AI-powered insights generation** with contextual analysis, domain knowledge, and composition insights
+#### `DashboardService`
+Dashboard generation orchestration:
+- LangGraph workflow integration
+- Metric selection and ranking
+- Chart specification generation
+- Layout calculation and positioning
+- AI-powered insight generation
+
+#### `MetricsService`
+Data management and processing:
+- Iris Finance API integration
+- Intelligent caching by date range
+- Metric discovery and analysis
+- Data transformation and slicing
+- Quality assessment and validation
+
+### Specialized Services
+
+#### `ReasoningService`
+Advanced reasoning engine with multiple algorithms:
+- Fuzzy string matching with Levenshtein distance
+- Business context integration
+- Diversity-aware metric selection
+- Confidence calculation and scoring
+- Quality issue detection and reporting
+
+#### `DataAnalysisService`
+Comprehensive data analysis capabilities:
+- Recursive metric extraction
+- Data type detection (scalar, time series, grouped series, etc.)
+- Chart type recommendations
+- Quality issue identification
+- Context generation for AI prompts
+
+#### `AuditService`
+Enterprise-grade audit and compliance:
+- Structured JSON logging
+- Complete request/response capture
+- Performance metrics tracking
+- Feedback integration
+- Statistical reporting
+
+#### `ErrorHandlerService`
+Sophisticated error management:
+- Error categorization and classification
+- User-friendly error message generation
+- Logging and monitoring integration
+- Recovery strategy suggestions
 
 ---
 
 ## 🧠 Advanced Reasoning System
-- **Main Service**: `server/src/reasoning.service.ts` - Sophisticated algorithms and fuzzy matching
-- **Intent Analysis**: `server/src/reasoning/intent-analyzer.service.ts` - Advanced NLU capabilities
-- **Chart Ranking**: `server/src/reasoning/chart-ranker.service.ts` - Systematic scoring system
-- Toggle via `ENABLE_REASONING=true`
 
-### Intent Analysis Capabilities:
-- **Complex Query Processing**: Handles conditional statements, multiple clauses, negations, and ambiguous language
-- **Advanced Temporal Pattern Recognition**: Enhanced detection of timeframes, periodicity signals, and temporal comparisons
-- **Comprehensive Intent Classification**: Detects temporal trends, categorical comparisons, compositional breakdowns, correlation analysis, performance overviews, anomaly detection, forecasting, and drill-down requirements
-- **Semantic Understanding**: Advanced contextual analysis with fuzzy matching and confidence scoring
-- **Fuzzy String Matching**: Levenshtein similarity algorithms for improved keyword matching
+The reasoning system provides sophisticated decision-making capabilities through multiple specialized services.
 
-### Chart Ranking Features:
-- **Systematic Scoring**: Weighted evaluation based on data compatibility, intent alignment, visual effectiveness, and usability
-- **Top-K Selection**: Returns ranked list of chart recommendations with detailed reasoning and explainable results
-- **Data-Driven Decisions**: Considers metric types, grouping dimensions, temporal data availability, and comprehensive data quality assessment
-- **Explainable Results**: Provides strengths, weaknesses, and detailed reasoning for each chart type recommendation
+### Intent Analysis (`IntentAnalyzerService`)
+Advanced natural language understanding:
 
-### Reasoning Capabilities:
-- **Business Context Integration**: Domain knowledge boosts for financial metrics and performance indicators
-- **Diversity-Aware Selection**: Intelligent metric selection with type and value diversity optimization
-- **Quality Issue Detection**: Comprehensive analysis of metric quality with severity assessment
-- **Sophisticated Confidence Calculation**: Multi-factor confidence scoring with intent alignment and quality penalties
-- **Final Decision Synthesis**: Advanced synthesis with confidence assessment and keyword alignment analysis
-- **Comprehensive Metric Analysis**: Enhanced relevance scoring with fuzzy logic and business context
+**Capabilities:**
+- **Complex Query Processing**: Handles conditional statements, multiple clauses, and ambiguous language
+- **Temporal Pattern Recognition**: Advanced detection of timeframes and periodicity
+- **Intent Classification**: Identifies trends, comparisons, breakdowns, correlations, and anomaly detection
+- **Confidence Scoring**: Evidence-based confidence calculation with multi-factor analysis
+- **Keyword Extraction**: Semantic keyword identification and relevance scoring
 
-### Overall Reasoning:
-- Decision synthesis with confidence scoring and key factor extraction
-- Quality analysis: unknown categories, value type inconsistencies, temporal data validation
-- Exposes `getReasoningStatus()` and comprehensive console logging for step-by-step traces
-- Metric ranking with diversity optimization and business domain knowledge
+**Example Analysis:**
+```typescript
+const analysis = await intentAnalyzer.performIntentAnalysis(
+  "Compare Q4 sales performance across channels and identify top performers"
+);
+// Result:
+{
+  primaryIntent: { type: "categorical_comparison", confidence: 0.88 },
+  secondaryIntents: [
+    { type: "performance_ranking", confidence: 0.72 },
+    { type: "temporal_focus", confidence: 0.65 }
+  ],
+  temporalSignals: [
+    { type: "quarterly", confidence: 0.9, keyword: "Q4" }
+  ],
+  explicitMetrics: ["sales", "performance", "channels"]
+}
+```
+
+### Chart Ranking (`ChartRankerService`)
+Systematic chart type evaluation and selection:
+
+**Features:**
+- **Weighted Scoring**: Evaluates data compatibility, intent alignment, and visual effectiveness
+- **Evidence-Based Confidence**: Descriptive levels (Excellent, Good, Acceptable, Poor, Unsuitable)
+- **Top-K Selection**: Returns ranked recommendations with detailed reasoning
+- **Explainable Results**: Provides strengths, weaknesses, and justifications
+
+**Ranking Factors:**
+- Data type compatibility (temporal, categorical, numerical)
+- Intent alignment (comparison, trend, composition)
+- Visual effectiveness and clarity
+- User experience and interpretability
+
+### Core Reasoning Engine (`ReasoningService`)
+Comprehensive decision synthesis:
+
+**Advanced Algorithms:**
+- **Fuzzy String Matching**: Levenshtein similarity for improved metric matching
+- **Business Context Integration**: Domain knowledge boosts for financial metrics
+- **Diversity Optimization**: Ensures varied metric selection across types
+- **Quality Assessment**: Comprehensive analysis of data quality issues
+- **Confidence Calculation**: Multi-factor confidence scoring with conservative baselines
+
+**Configuration:**
+Enable detailed reasoning with `ENABLE_REASONING=true` for:
+- Step-by-step decision logging
+- Confidence score breakdowns
+- Quality issue identification
+- Performance timing analysis
 
 ---
 
 ## 🔗 LangGraph Workflow Orchestration
-- **File**: `server/src/dashboard.graph.ts` - Comprehensive workflow system
-- **Structured Orchestration**: Advanced workflow management for complex multi-step dashboard generation
-- **State Management**: Comprehensive state tracking with reducers and default values
-- **Node-based Processing**: 
-  - **Initialization** → Dashboard ID generation and timing
-  - **Data Analysis** → Metric discovery and quality assessment
-  - **Metric Selection** → Advanced reasoning-based selection
-  - **Spec Generation** → Chart specification creation with fallbacks
-  - **Data Fetching** → Detailed data processing with usage logging
-  - **Insights Computation** → AI-powered contextual insights
-  - **Finalization** → Response time calculation and metadata preparation
-- **Integration**: Seamless integration with LangChain core for sophisticated AI workflow management
-- **Dependency Injection**: Clean separation of concerns with helper function injection
-- **Error Handling**: Robust error management with comprehensive logging
 
-### Workflow Benefits:
-- **Scalability**: Easy addition of new processing steps and decision points
-- **Observability**: Full visibility into each workflow step with timing and logging
-- **Maintainability**: Clear separation of workflow logic from business logic
-- **Extensibility**: Framework for adding complex conditional logic and parallel processing
+The system uses LangGraph for sophisticated workflow management in dashboard generation.
+
+### Workflow Architecture (`dashboard.graph.ts`)
+Structured multi-step process:
+
+1. **Initialization**: Dashboard ID generation and timing setup
+2. **Data Analysis**: Comprehensive metric discovery and quality assessment
+3. **Metric Selection**: Advanced reasoning-based selection with diversity optimization
+4. **Spec Generation**: Parallel chart specification creation with AI integration
+5. **Data Fetching**: Optimized data processing with caching and transformation
+6. **Insights Computation**: AI-powered contextual insights generation
+7. **Finalization**: Response assembly with metadata and performance metrics
+
+### State Management
+Comprehensive state tracking with:
+- **Reducers**: Clean state transformation patterns
+- **Default Values**: Robust initialization and error handling
+- **Node Communication**: Efficient data passing between workflow steps
+- **Error Recovery**: Graceful handling of workflow failures
+
+### Benefits
+- **Scalability**: Easy addition of new processing steps
+- **Observability**: Full visibility into workflow execution
+- **Maintainability**: Clear separation of workflow and business logic
+- **Extensibility**: Framework for complex conditional logic and parallel processing
 
 ---
 
 ## 📊 Observability & Monitoring
-- **Langfuse Integration**: `server/src/observability/langfuse.ts`
-- **Advanced Tracing**: Comprehensive trace generation for AI interactions and workflow steps
-- **Performance Monitoring**: Track request patterns, AI performance, workflow timing, and system health
-- **Quality Tracking**: Monitor metric quality issues, reasoning confidence, and selection diversity
-- **Error Tracking**: Comprehensive error handling with `ErrorHandlerService`
-- **Configuration**: Optional via environment variables - gracefully degrades if not configured
 
-Features:
-- **Request tracing** with comprehensive input/output capture
-- **AI interaction monitoring** with reasoning step tracking
-- **Workflow orchestration tracing** with LangGraph step monitoring
-- **Performance metrics collection** with timing and confidence tracking
-- **Error rate tracking** with categorization and severity
-- **Custom tags** for filtering, analysis, and quality monitoring
+### Langfuse Integration (`langfuse.ts`)
+Comprehensive tracing and monitoring:
+
+**Trace Types:**
+- **Endpoint Traces**: Complete request/response cycles
+- **AI Interaction Traces**: OpenAI API calls with reasoning steps
+- **Workflow Traces**: LangGraph step execution and timing
+- **Performance Traces**: Response times and optimization insights
+
+**Monitoring Capabilities:**
+- Request pattern analysis
+- AI performance optimization
+- Error rate tracking with categorization
+- Custom tags for filtering and analysis
+- Real-time system health monitoring
+
+### Performance Metrics
+Automatic collection of:
+- Response time distributions
+- AI reasoning confidence trends
+- Cache hit/miss ratios
+- Error categorization and frequency
+- User satisfaction metrics
+
+### Error Tracking
+Sophisticated error management:
+- **Categorization**: API, validation, AI, and system errors
+- **Severity Assessment**: Critical, warning, and informational levels
+- **Context Preservation**: Complete error context for debugging
+- **Recovery Suggestions**: Automated recommendation generation
+
+---
+
+## 🔍 Data Analysis Engine
+
+### Metric Discovery (`DataAnalysisService`)
+Advanced data structure analysis:
+
+**Metric Types Detected:**
+- **Scalar**: Single numerical values
+- **Time Series**: Temporal data with date/value pairs
+- **Grouped Series**: Multi-dimensional time series data
+- **Embedded Metrics**: Objects containing multiple related metrics
+- **Dynamic Key Objects**: Objects with variable key structures
+- **Arrays**: List-based data structures
+
+**Quality Analysis:**
+- **Unknown Categories**: Identification of unlabeled data
+- **Type Inconsistencies**: Detection of mixed value types
+- **Temporal Validation**: Time series completeness checks
+- **Categorization Assessment**: Evaluation of grouping effectiveness
+
+### Data Transformation (`ChartDataSlicerService`)
+Strategy pattern implementation for data processing:
+
+**Slicing Strategies:**
+- **TimeSeriesSlicingStrategy**: Temporal data with date filtering
+- **GroupedSeriesSlicingStrategy**: Multi-dimensional grouping
+- **ScalarSlicingStrategy**: Single value processing
+- **DynamicKeyObjectSlicingStrategy**: Variable structure handling
+- **EmbeddedMetricsSlicingStrategy**: Nested metric extraction
+- **ArraySlicingStrategy**: List data processing
 
 ---
 
 ## 🌐 Iris API Integration
-- File: `server/src/api/iris-api.service.ts`
-- Requires `IRIS_API_TOKEN`. Optional `IRIS_API_URL`
-- Error handling with status/data inclusion for easier debugging
-- Builds filters payload, sets browser-like headers, posts via `@nestjs/axios`
-- `parseDateRange()` supports: year, month, day, ISO strings, custom ranges
 
-`MetricsService` features:
-- Caches responses by date range with improved invalidation
-- Normalized chart shape conversion via type-specific slicers:
-  - `sliceTimeSeries`, `sliceGroupedSeries`, `sliceNestedGroupedSeries`, `sliceScalar`, `sliceDynamicKeyObject`, `sliceEmbeddedMetrics`, `sliceArray`
-- Data quality validation and issue reporting
+### `IrisApiService`
+Robust external API integration:
+
+**Features:**
+- **Authentication**: Secure token-based API access
+- **Date Range Processing**: Flexible date format conversion
+- **Error Handling**: Comprehensive status and data validation
+- **Header Management**: Browser-like request headers for compatibility
+- **Response Processing**: Data validation and structure verification
+
+**Supported Date Formats:**
+- Year: `2025` → `2025-01-01T00:00:00.000Z` to `2025-12-31T23:59:59.999Z`
+- Month: `2025-06` → `2025-06-01T00:00:00.000Z` to `2025-06-30T23:59:59.999Z`
+- Day: `2025-06-15` → `2025-06-15T00:00:00.000Z` to `2025-06-15T23:59:59.999Z`
+- Custom: `startDate,endDate` → ISO format conversion
+
+### Caching Strategy
+Intelligent data caching:
+- **Cache Key Generation**: Based on date range and parameters
+- **Invalidation**: Smart cache refresh policies
+- **Performance Optimization**: Reduced API calls and improved response times
 
 ---
 
 ## 🔒 Audit & Compliance
-- File: `server/src/audit/audit.service.ts`
-- Logs to `server/audit-logs/` with comprehensive context:
-  - Prompt, spec, data sample, analysis summary
-  - Detailed metadata (response time, metrics count, quality issues)
-  - Chart data usage tracking with series information
-  - Reasoning steps and confidence scores
-- See `AUDIT_README.md` for format and operations
 
-Security notes:
-- Logs include sensitive business data; directory is `.gitignore`d
-- File permissions and retention policy recommendations
-- Data usage tracking for compliance monitoring
+### Comprehensive Logging (`AuditService`)
+Enterprise-grade audit trail:
+
+**Log Contents:**
+- Complete request/response data
+- AI reasoning steps and decisions
+- Data usage tracking
+- Performance metrics
+- User feedback integration
+- Quality issue reporting
+
+**File Structure:**
+```json
+{
+  "timestamp": "2025-08-25T10:30:00.000Z",
+  "requestId": "1703123456789-abc123",
+  "userPrompt": "Show revenue trends",
+  "chartSpec": { /* complete specification */ },
+  "dataUsed": { /* chart data with metadata */ },
+  "dataAnalysis": { /* analysis results */ },
+  "metadata": {
+    "dataSource": "Iris Finance API",
+    "responseTimeMs": 847,
+    "metricsCount": 3,
+    "qualityIssues": []
+  }
+}
+```
+
+### Security Considerations
+- **Data Privacy**: Audit logs contain sensitive business data
+- **File Permissions**: Restricted access to audit directory
+- **Retention Policies**: Configurable log retention periods
+- **Compliance**: Support for regulatory requirements
+
+### Feedback System
+User satisfaction tracking:
+- **Rating Collection**: 1-5 scale with comments
+- **Statistical Analysis**: Aggregated performance metrics
+- **Quality Monitoring**: Correlation between feedback and technical metrics
 
 ---
 
 ## 🧪 Testing
-Manual checks:
+
+### Manual Testing Scripts
 ```bash
-# Server health with quality metrics
-curl http://localhost:4000/audit/stats | cat
+# Health check with comprehensive metrics
+curl http://localhost:4000/v1/audit/stats
 
-# Advanced reasoning status
-curl http://localhost:4000/reasoning/status | cat
+# Reasoning system status
+curl http://localhost:4000/v1/reasoning/status
 
-# Single chart with reasoning
-curl -X POST http://localhost:4000/chat \
+# Single chart generation
+curl -X POST http://localhost:4000/v1/chat \
   -H 'Content-Type: application/json' \
-  -d '{"prompt":"Show sales trends with quality analysis","dateRange":"2025-06"}' | cat
+  -d '{"prompt":"Show sales trends","dateRange":"2025-06"}'
 
-# Dashboard with LangGraph
-curl -X POST http://localhost:4000/dashboard \
+# Dashboard generation
+curl -X POST http://localhost:4000/v1/dashboard \
   -H 'Content-Type: application/json' \
-  -d '{"prompt":"Executive overview","maxCharts":3,"generateInsights":true}' | cat
+  -d '{"prompt":"Executive overview","maxCharts":3,"generateInsights":true}'
+
+# Feedback submission
+curl -X POST http://localhost:4000/v1/feedback \
+  -H 'Content-Type: application/json' \
+  -d '{"requestId":"1703123456789-abc123","rating":5,"comment":"Excellent chart!"}'
 ```
+
+### API Documentation
+Interactive API documentation available at `http://localhost:4000/docs` with:
+- Complete endpoint specifications
+- Request/response examples
+- Interactive testing interface
+- Authentication requirements
+- Error code documentation
 
 ---
 
 ## 🚀 Deployment
 
-### Backend
+### Backend Production Build
 ```bash
 cd server
 npm run build
 NODE_ENV=production npm start
 ```
 
-### Frontend
+### Frontend Production Build
 ```bash
 cd web
 npm run build
 npm start
 ```
 
-Recommended production env (server):
+### Production Environment Variables
 ```bash
-OPENAI_API_KEY=prod_openai
-IRIS_API_TOKEN=prod_iris
+# Core configuration
+OPENAI_API_KEY=prod_openai_key
+IRIS_API_TOKEN=prod_iris_token
 IRIS_API_URL=https://api.irisfinance.co/metrics
-ENABLE_REASONING=false  # Disable verbose logging in production
 NODE_ENV=production
 PORT=4000
 
-# Production observability (recommended)
+# Performance optimization
+ENABLE_REASONING=false  # Disable verbose logging
+
+# Enterprise monitoring (recommended)
 LANGFUSE_SECRET_KEY=sk-lf-prod-...
 LANGFUSE_PUBLIC_KEY=pk-lf-prod-...
 LANGFUSE_BASEURL=https://cloud.langfuse.com
 ```
 
+### Infrastructure Requirements
+- **Node.js**: 18+ for optimal performance
+- **Memory**: Minimum 2GB RAM for concurrent AI processing
+- **Storage**: SSD recommended for audit log performance
+- **Network**: Outbound HTTPS access for OpenAI and Iris APIs
+
 ---
 
 ## 🐛 Troubleshooting
-- **OpenAI errors**: verify `OPENAI_API_KEY` and outbound network; test `curl https://api.openai.com/v1/models` with Bearer token
-- **Iris API errors**: verify `IRIS_API_TOKEN`; inspect server logs for response status/data details
-- **Date range invalid**: follow accepted formats; custom ranges must be `startISO,endISO` or `YYYY-MM-DD,YYYY-MM-DD`
-- **Metric not found**: check available metrics in error message; quality analysis provides better suggestions
-- **Reasoning system issues**: check `ENABLE_REASONING` setting; verify reasoning service status via `/reasoning/status`; check console for detailed step-by-step logs
-- **LangGraph workflow errors**: check workflow step logs in console; verify all dependencies are properly injected
-- **Langfuse connection**: optional service - application works without it; check environment variables if tracing needed
-- **Quality issues**: check audit logs for detailed metric quality analysis and recommendations
+
+### Common Issues and Solutions
+
+#### OpenAI API Errors
+- **Symptoms**: "OpenAI error" or "tool call failed" messages
+- **Solutions**: 
+  - Verify `OPENAI_API_KEY` is valid and has credits
+  - Test API connectivity: `curl https://api.openai.com/v1/models -H "Authorization: Bearer $OPENAI_API_KEY"`
+  - Check network firewall rules for outbound HTTPS
+
+#### Iris API Connection Issues
+- **Symptoms**: "Failed to fetch metrics" errors
+- **Solutions**:
+  - Verify `IRIS_API_TOKEN` is current and valid
+  - Check API endpoint availability
+  - Review server logs for detailed error information
+
+#### Date Range Validation Errors
+- **Symptoms**: "Invalid date range format" messages
+- **Solutions**:
+  - Use supported formats: `YYYY`, `YYYY-MM`, `YYYY-MM-DD`, or `startISO,endISO`
+  - Ensure custom ranges use comma separation
+  - Verify date values are realistic and within data availability
+
+#### Reasoning System Issues
+- **Symptoms**: Missing reasoning data or analysis failures
+- **Solutions**:
+  - Verify `ENABLE_REASONING` configuration
+  - Check `/v1/reasoning/status` endpoint
+  - Review console logs for detailed reasoning steps
+
+#### Performance Issues
+- **Symptoms**: Slow response times or timeouts
+- **Solutions**:
+  - Monitor Langfuse traces for bottleneck identification
+  - Check cache hit rates in audit statistics
+  - Review concurrent request limits
+  - Optimize date range selections for better caching
+
+#### Dashboard Generation Failures
+- **Symptoms**: Incomplete dashboards or workflow errors
+- **Solutions**:
+  - Check LangGraph workflow logs
+  - Verify all service dependencies are properly injected
+  - Review metric selection and ranking processes
+  - Validate AI service availability and limits
 
 ---
 
 ## 📚 Additional Resources
-- [OpenAI API Documentation](https://platform.openai.com/docs)
-- [NestJS Documentation](https://docs.nestjs.com)
-- [Next.js Documentation](https://nextjs.org/docs)
-- [AG Charts Documentation](https://charts.ag-grid.com)
-- [AG Grid Documentation](https://ag-grid.com/documentation)
-- [LangChain Documentation](https://langchain.com/docs)
-- [LangGraph Documentation](https://langchain-ai.github.io/langgraph/)
-- [Langfuse Documentation](https://langfuse.com/docs)
+
+- **OpenAI Platform Documentation**: [https://platform.openai.com/docs](https://platform.openai.com/docs)
+- **NestJS Framework Documentation**: [https://docs.nestjs.com](https://docs.nestjs.com)
+- **Next.js React Framework**: [https://nextjs.org/docs](https://nextjs.org/docs)
+- **AG Charts Visualization Library**: [https://charts.ag-grid.com](https://charts.ag-grid.com)
+- **AG Grid Data Tables**: [https://ag-grid.com/documentation](https://ag-grid.com/documentation)
+- **LangChain Core Framework**: [https://langchain.com/docs](https://langchain.com/docs)
+- **LangGraph Workflow Engine**: [https://langchain-ai.github.io/langgraph/](https://langchain-ai.github.io/langgraph/)
+- **Langfuse Observability Platform**: [https://langfuse.com/docs](https://langfuse.com/docs)
 
 ---
 
-Built with Next.js, NestJS, OpenAI, LangChain, LangGraph, Langfuse, ag‑charts, and ag‑grid.
+**Built with Next.js, NestJS, OpenAI GPT-4, LangChain, LangGraph, Langfuse, AG Charts, and AG Grid**
+
+*Transform your business data into actionable insights with AI-powered natural language processing and intelligent visualization.*

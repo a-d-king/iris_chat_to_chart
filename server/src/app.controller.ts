@@ -125,6 +125,7 @@ export class AppController {
                 data,
                 requestId,
                 originalPrompt: body.prompt,
+                reasoning_summary: spec.reasoning_summary,
                 dataAnalysis: {
                     totalMetrics: dataAnalysis.availableMetrics.length,
                     suggestedChartTypes: dataAnalysis.suggestedChartTypes.map((s: any) => s.chartType)

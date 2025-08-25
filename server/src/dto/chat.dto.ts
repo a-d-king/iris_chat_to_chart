@@ -66,10 +66,6 @@ export class DashboardDto {
     @ApiPropertyOptional({ type: [String] })
     channels?: string[];
 
-    @IsOptional()
-    @IsBoolean()
-    @ApiPropertyOptional({ default: true })
-    generateInsights?: boolean = true;
 }
 
 /**
@@ -126,7 +122,21 @@ export class DashboardChartDto extends ChartSpecDto {
     @IsArray()
     @IsString({ each: true })
     @ApiPropertyOptional({ type: [String] })
-    insights?: string[];
+
+    @ApiPropertyOptional()
+    reasoning_summary?: ReasoningSummary;
+}
+
+// Interface for condensed reasoning summary
+export interface ReasoningSummary {
+    intent: string;
+    rationale_points: string[];
+    confidence: number;
+    decisions: Array<{
+        name: string;
+        choice: string;
+        why: string;
+    }>;
 }
 
 // Response DTOs for documentation of responses
@@ -157,6 +167,9 @@ export class ChatResponseDto {
         totalMetrics: number;
         suggestedChartTypes: string[];
     };
+
+    @ApiPropertyOptional()
+    reasoning_summary?: ReasoningSummary;
 }
 
 export class DashboardResponseDto {
@@ -170,7 +183,6 @@ export class DashboardResponseDto {
     metadata: {
         totalCharts: number;
         responseTimeMs: number;
-        suggestedInsights: string[];
     };
 
     @ApiProperty()

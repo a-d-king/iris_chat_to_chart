@@ -10,7 +10,6 @@ interface DashboardChart {
     row: number;
     col: number;
     span: number;
-    insights?: string[];
 }
 
 interface DashboardViewProps {
@@ -20,7 +19,6 @@ interface DashboardViewProps {
         metadata: {
             totalCharts: number;
             responseTimeMs: number;
-            suggestedInsights: string[];
         };
         requestId: string;
         originalPrompt: string;
@@ -135,36 +133,6 @@ export default function DashboardView({ dashboard }: DashboardViewProps) {
                     </div>
                 </div>
 
-                {/* Dashboard Insights */}
-                {metadata.suggestedInsights && metadata.suggestedInsights.length > 0 && (
-                    <div style={{
-                        padding: 12,
-                        backgroundColor: '#ecfdf5',
-                        borderRadius: 8,
-                        border: '1px solid #d1fae5'
-                    }}>
-                        <h4 style={{
-                            fontSize: 14,
-                            fontWeight: '600',
-                            color: '#059669',
-                            margin: '0 0 8px 0'
-                        }}>
-                            Dashboard Insights
-                        </h4>
-                        <ul style={{
-                            margin: 0,
-                            paddingLeft: 20,
-                            fontSize: 13,
-                            color: '#047857'
-                        }}>
-                            {metadata.suggestedInsights.map((insight, index) => (
-                                <li key={index} style={{ marginBottom: 4 }}>
-                                    {insight}
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                )}
             </div>
 
             {/* Charts Grid */}

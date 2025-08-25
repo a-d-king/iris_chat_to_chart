@@ -10,7 +10,6 @@ export type DashboardGraphDeps = {
     generateChartSpecs: (request: DashboardDto, metrics: MetricInfo[], dataAnalysis: any) => Promise<any[]>;
     formatTitle: (metricName: string, chartType: string) => string;
     calcSpan: (chartType: string, totalCharts: number) => number;
-    generateInsights: (charts: DashboardChartDto[], originalPrompt: string) => Promise<string[]> | string[];
     generateDashboardId: () => string;
 };
 
@@ -21,7 +20,6 @@ const DashboardAnnotation = Annotation.Root({
     prompt: Annotation<string>(),
     dateRange: Annotation<string | undefined>(),
     maxCharts: Annotation<number | undefined>(),
-    generateInsights: Annotation<boolean | undefined>(),
     // Keep full request available for helpers like generateChartSpecs
     request: Annotation<DashboardDto | undefined>(),
 
@@ -40,10 +38,6 @@ const DashboardAnnotation = Annotation.Root({
     charts: Annotation<DashboardChartDto[]>({
         reducer: (x: DashboardChartDto[] | undefined, y: DashboardChartDto[] | undefined): DashboardChartDto[] => (y ?? x ?? []),
         default: (): DashboardChartDto[] => []
-    }),
-    insights: Annotation<string[]>({
-        reducer: (x: string[] | undefined, y: string[] | undefined): string[] => (y ?? x ?? []),
-        default: (): string[] => []
     }),
 
     // Output metadata
@@ -116,11 +110,6 @@ export function createDashboardGraph(deps: DashboardGraphDeps) {
         return { charts };
     };
 
-    const computeInsightsNode = async (state: DashboardState) => {
-        if (!(state.generateInsights ?? true)) return { insights: [] };
-        const insights = await deps.generateInsights(state.charts, state.prompt);
-        return { insights: Array.isArray(insights) ? insights : [] };
-    };
 
     const finalizeNode = async (state: DashboardState) => {
         const responseTimeMs = Date.now() - state.startTime;
@@ -133,15 +122,13 @@ export function createDashboardGraph(deps: DashboardGraphDeps) {
         .addNode("selectRelatedMetrics", selectRelatedMetricsNode)
         .addNode("generateSpecs", generateSpecsNode)
         .addNode("fetchData", fetchDataNode)
-        .addNode("computeInsights", computeInsightsNode)
         .addNode("finalize", finalizeNode)
         .addEdge(START, "init")
         .addEdge("init", "analyzeData")
         .addEdge("analyzeData", "selectRelatedMetrics")
         .addEdge("selectRelatedMetrics", "generateSpecs")
         .addEdge("generateSpecs", "fetchData")
-        .addEdge("fetchData", "computeInsights")
-        .addEdge("computeInsights", "finalize")
+        .addEdge("fetchData", "finalize")
         .addEdge("finalize", END);
 
     return builder.compile();
@@ -156,7 +143,6 @@ export async function runDashboardGraph(
         prompt: request.prompt,
         dateRange: request.dateRange,
         maxCharts: request.maxCharts,
-        generateInsights: request.generateInsights,
         request,
     } as any);
 
@@ -166,7 +152,6 @@ export async function runDashboardGraph(
         metadata: {
             totalCharts: result.charts?.length ?? 0,
             responseTimeMs: result.responseTimeMs,
-            suggestedInsights: result.insights ?? [],
         },
         requestId: `dash_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
     };
