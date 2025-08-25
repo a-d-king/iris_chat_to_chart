@@ -66,10 +66,6 @@ export class DashboardDto {
     @ApiPropertyOptional({ type: [String] })
     channels?: string[];
 
-    @IsOptional()
-    @IsBoolean()
-    @ApiPropertyOptional({ default: true })
-    generateInsights?: boolean = true;
 }
 
 /**
@@ -126,7 +122,6 @@ export class DashboardChartDto extends ChartSpecDto {
     @IsArray()
     @IsString({ each: true })
     @ApiPropertyOptional({ type: [String] })
-    insights?: string[];
 
     @ApiPropertyOptional()
     reasoning_summary?: ReasoningSummary;
@@ -188,7 +183,6 @@ export class DashboardResponseDto {
     metadata: {
         totalCharts: number;
         responseTimeMs: number;
-        suggestedInsights: string[];
     };
 
     @ApiProperty()

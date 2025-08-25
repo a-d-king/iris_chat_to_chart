@@ -12,7 +12,6 @@ interface DashboardResponse {
     metadata: {
         totalCharts: number;
         responseTimeMs: number;
-        suggestedInsights: string[];
     };
     requestId: string;
 }
@@ -36,7 +35,6 @@ export class DashboardService {
             generateChartSpecs: this.generateChartSpecs.bind(this),
             formatTitle: this.generateChartTitle.bind(this),
             calcSpan: this.calculateChartSpan.bind(this),
-            generateInsights: this.generateInsights.bind(this),
             generateDashboardId: this.generateDashboardId.bind(this),
         });
 
@@ -114,182 +112,6 @@ export class DashboardService {
         return 4;
     }
 
-    public async generateInsights(charts: any[], originalPrompt: string): Promise<string[]> {
-        const insights = [];
-
-        try {
-            // 1. Analyze the original prompt for user intent
-            const intentAnalysis = this.reasoningService['intentAnalyzer']?.performIntentAnalysis(originalPrompt);
-
-            // 2. Generate AI-powered contextual insights
-            const aiInsights = await this.generateAIContextualInsights(charts, originalPrompt, intentAnalysis);
-            insights.push(...aiInsights);
-
-            // 3. Add domain-specific financial insights
-            const domainInsights = this.generateFinancialDomainInsights(charts, originalPrompt, intentAnalysis);
-            insights.push(...domainInsights);
-
-            // 4. Add chart composition insights that reference the original intent
-            const compositionInsights = this.generateSmartCompositionInsights(charts, originalPrompt, intentAnalysis);
-            insights.push(...compositionInsights);
-
-        } catch (error) {
-            console.warn('Enhanced insights generation failed:', error);
-        }
-
-        // Prioritize and limit to top 3 insights
-        return this.prioritizeInsights(insights, originalPrompt).slice(0, 3);
-    }
-
-    private async generateAIContextualInsights(charts: any[], originalPrompt: string, intentAnalysis?: any): Promise<string[]> {
-        try {
-            const chartSummary = charts.map(c => `${c.title || c.metric} (${c.chartType})`).join(', ');
-
-            // Create a focused prompt for business insight generation
-            const systemPrompt = `You are a business intelligence analyst. Given a user's question and the charts generated, provide 1-2 brief, actionable business insights that would help a finance manager make decisions.
-
-User asked: "${originalPrompt}"
-Charts generated: ${chartSummary}
-
-Focus on what these charts reveal together and what actions the user should consider. Keep insights concise (under 15 words each) and business-focused.
-
-Respond in this format:
-- [Insight 1]
-- [Insight 2]`;
-
-            const response = await this.openAiService.prompt(systemPrompt, await this.metricsService.getDataAnalysis());
-
-            // Extract insights from AI response - look for bullet points or numbered lists
-            if (response.aiReasoning) {
-                const insightMatches = response.aiReasoning.match(/[-•]\s*(.+)/g);
-                if (insightMatches) {
-                    return insightMatches.map((match: string) => match.replace(/^[-•]\s*/, '').trim()).slice(0, 2);
-                }
-            }
-        } catch (error) {
-            console.warn('AI contextual insights failed:', error);
-        }
-        return [];
-    }
-
-    private generateFinancialDomainInsights(charts: any[], originalPrompt: string, intentAnalysis?: any): string[] {
-        const insights = [];
-        const metrics = charts.map(c => c.metric || '');
-        const promptLower = originalPrompt.toLowerCase();
-
-        // Sales channel insights
-        const salesChannelCharts = charts.filter(c =>
-            c.metric?.includes('salesChannels') || c.metric?.includes('connector') || c.metric?.includes('Channels')
-        );
-        if (salesChannelCharts.length > 1) {
-            insights.push('Cross-channel performance comparison enables optimization opportunities');
-        }
-
-        // Revenue and performance insights
-        const hasRevenue = metrics.some(m => m.includes('sales') || m.includes('revenue') || m.includes('Sales'));
-        const hasProfit = metrics.some(m => m.includes('profit') || m.includes('margin') || m.includes('Profit'));
-        if (hasRevenue && hasProfit) {
-            insights.push('Revenue and profitability analysis provides complete financial health picture');
-        }
-
-        // DTC vs Wholesale business model insights
-        const hasDTC = metrics.some(m => m.includes('DTC'));
-        const hasWholesale = metrics.some(m => m.includes('Wholesale'));
-        if (hasDTC && hasWholesale) {
-            insights.push('Direct-to-consumer vs wholesale mix analysis reveals channel strategy effectiveness');
-        }
-
-        // Time-based insights for financial planning
-        if (intentAnalysis?.primaryIntent?.type === 'temporal_trend' || promptLower.includes('trend') || promptLower.includes('over time')) {
-            const timeSeriesCharts = charts.filter(c => c.chartType === 'line');
-            if (timeSeriesCharts.length > 0) {
-                insights.push('Temporal patterns support forecasting and seasonal planning decisions');
-            }
-        }
-
-        // Performance comparison insights
-        if (intentAnalysis?.primaryIntent?.type === 'performance_overview' || promptLower.includes('performance') || promptLower.includes('overview')) {
-            insights.push('Performance overview enables identification of underperforming segments');
-        }
-
-        return insights;
-    }
-
-    private generateSmartCompositionInsights(charts: any[], originalPrompt: string, intentAnalysis?: any): string[] {
-        const insights = [];
-        const chartTypes = [...new Set(charts.map(c => c.chartType))];
-        const promptLower = originalPrompt.toLowerCase();
-
-        // Smart chart type combination insights
-        const hasTimeSeries = charts.some(c => c.chartType === 'line');
-        const hasComparison = charts.some(c => c.chartType === 'bar' || c.chartType === 'stacked-bar');
-        const hasBreakdown = charts.some(c => c.chartType === 'stacked-bar');
-
-        if (hasTimeSeries && hasComparison) {
-            if (promptLower.includes('trend') || promptLower.includes('compare')) {
-                insights.push('Trend and comparison charts together reveal both patterns and relative performance');
-            } else {
-                insights.push('Combined temporal and categorical analysis provides comprehensive insights');
-            }
-        }
-
-        if (hasBreakdown && charts.length > 2) {
-            insights.push('Multi-dimensional breakdown enables drill-down analysis for targeted decisions');
-        }
-
-        // Chart count insights with context
-        if (charts.length > 4) {
-            insights.push(`Comprehensive ${charts.length}-chart analysis covers multiple business dimensions`);
-        } else if (charts.length === 2 && promptLower.includes('compare')) {
-            insights.push('Focused comparison analysis enables clear decision-making');
-        }
-
-        return insights;
-    }
-
-
-
-    private prioritizeInsights(insights: string[], originalPrompt: string): string[] {
-        const promptLower = originalPrompt.toLowerCase();
-
-        // Score insights based on relevance to original prompt
-        const scoredInsights = insights.map(insight => ({
-            insight,
-            score: this.scoreInsightRelevance(insight, promptLower)
-        }));
-
-        // Sort by score and return just the insights
-        return scoredInsights
-            .sort((a, b) => b.score - a.score)
-            .map(item => item.insight);
-    }
-
-    private scoreInsightRelevance(insight: string, promptLower: string): number {
-        let score = 1; // Base score
-
-        // Boost insights that are business-focused
-        if (insight.includes('optimization') || insight.includes('decisions') || insight.includes('opportunities')) {
-            score += 2;
-        }
-
-        // Boost insights that relate to prompt keywords
-        if (promptLower.includes('trend') && insight.includes('trend')) score += 1.5;
-        if (promptLower.includes('compare') && insight.includes('comparison')) score += 1.5;
-        if (promptLower.includes('performance') && insight.includes('performance')) score += 1.5;
-        if (promptLower.includes('channel') && insight.includes('channel')) score += 1.5;
-
-        // Penalize generic insights
-        if (insight.startsWith('Generated') || insight.includes('Multiple visualization')) {
-            score -= 1;
-        }
-
-        // Boost financial domain insights
-        if (insight.includes('revenue') || insight.includes('profitability') || insight.includes('financial')) {
-            score += 1;
-        }
-
-        return score;
-    }
 
     public generateDashboardId(): string {
         return `dashboard_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
